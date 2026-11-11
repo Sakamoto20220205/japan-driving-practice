@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14181c">
+<title>日本の運転れんしゅう</title>
+<meta name="description" content="左側通行・日本の標識・教習所コースを安全な画面で練習。外国の方・ペーパードライバー・免許を取りたい人向け。6言語（日本語・やさしい日本語・English・Tiếng Việt・中文・Bahasa Indonesia）。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="日本の運転れんしゅう / Japan Driving Practice">
+<meta property="og:description" content="左側通行・標識・教習所コース・交通ルール問題集・危険予測。6言語対応の運転練習アプリ（学習用）。">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 38'%3E%3Cpath d='M15 38 0 26V0l15 12z' fill='%23f4c430'/%3E%3Cpath d='M15 38l15-12V0L15 12z' fill='%233fb36b'/%3E%3C/svg%3E">
+<style>
+/* 構成：タイトル（車両・入口）→ 運転画面（上方ビュー＋運転席ビュー、案内、操作盤）／クイズ／ルールブック */
+:root{
+  --bg:#14181c;--panel:#1d2329;--panel2:#262e35;--line:#36414a;--ink:#eef1ee;--mute:#9aa5ad;
+  --yel:#f4c430;--red:#e5493c;--grn:#3fb36b;--blu:#4e9be0;--wak:#8bc34a;
+  --f:"Hiragino Sans","Noto Sans JP","Yu Gothic UI","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+  --num:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{padding:10px max(12px,env(safe-area-inset-right)) 24px max(12px,env(safe-area-inset-left));overscroll-behavior:none;touch-action:manipulation}
+body,body *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+button{font-family:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible,select:focus-visible{outline:2px solid var(--yel);outline-offset:2px}
+.app{max-width:1240px;margin:0 auto}
+h1,h2,h3{margin:0;line-height:1.25}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font-size:14px}
+.btn.pri{background:#2b4d39;border-color:var(--grn)}
+.btn[aria-pressed=true]{border-color:var(--yel);color:var(--yel)}
+.muted{color:var(--mute)}
+
+/* ---------- タイトル ---------- */
+.hero{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px 20px 18px;overflow:hidden}
+.hero::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:repeating-linear-gradient(90deg,#fff 0 26px,transparent 26px 44px);opacity:.75}
+.hero h1{font-size:clamp(24px,5vw,38px);letter-spacing:.02em;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.wakaba{width:30px;height:38px;flex:none}
+.hero p{margin:6px 0 0;color:var(--mute);max-width:52em}
+.langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.langs button{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:14px}
+.langs button[aria-pressed=true]{background:#3a3418;border-color:var(--yel);color:var(--yel)}
+.sec{margin-top:14px}
+.sec>h2{font-size:13px;color:var(--mute);letter-spacing:.08em;margin:0 0 8px;font-weight:600}
+.vehicles{display:flex;gap:8px;flex-wrap:wrap}
+.veh{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:14px}
+.veh[aria-pressed=true]{border-color:var(--grn);background:#1f3327}
+.veh[disabled]{opacity:.5;cursor:not-allowed}
+.veh small{font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:10px;padding:0 6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.card{text-align:left;background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--blu);border-radius:8px;padding:12px 14px;display:grid;gap:4px;min-height:92px}
+.card b{font-size:17px}
+.card span{font-size:13px;color:var(--mute)}
+.card.c-learn{border-left-color:var(--wak)}.card.c-exam{border-left-color:var(--red)}.card.c-free{border-left-color:var(--blu)}
+.card.c-quiz{border-left-color:var(--yel)}.card.c-book{border-left-color:#9b7fd1}
+.note{margin-top:14px;font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);padding-top:10px}
+.foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin-top:8px}
+
+/* ---------- 一覧（レッスン・検定） ---------- */
+.head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.head h2{font-size:20px}
+.list{display:grid;gap:8px}
+.item{display:flex;align-items:center;gap:12px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.item .no{font-family:var(--num);font-size:20px;color:var(--wak);width:2ch;flex:none}
+.item .tx{flex:1;min-width:0}.item .tx b{display:block}.item .tx span{font-size:13px;color:var(--mute)}
+.item .st{color:var(--yel);letter-spacing:2px;flex:none}
+
+/* ---------- 運転画面 ---------- */
+.bar{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+.bar .ttl{font-weight:700;font-size:15px;min-width:0;flex:1 1 160px}
+.stats{display:flex;gap:4px 16px;flex-wrap:wrap}
+.stat{display:grid;line-height:1.15}
+.stat .k{font-size:11px;color:var(--mute)}
+.stat .v{font-family:var(--num);font-size:19px;font-variant-numeric:tabular-nums}
+.stat .v.bad{color:var(--red)}
+.stage{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stage[data-view=cab]{grid-template-columns:1fr}.stage[data-view=cab] #fTop{display:none}
+.stage[data-view=top]{grid-template-columns:1fr}.stage[data-view=top] #fCab{display:none}
+.view{margin:0;background:#0d1013;border:1px solid var(--line);border-radius:8px;overflow:hidden;min-width:0;position:relative}
+.view figcaption{position:absolute;left:8px;top:6px;font-size:11px;color:#dfe5e8;background:rgba(0,0,0,.45);padding:1px 7px;border-radius:4px;pointer-events:none}
+.view canvas{display:block;width:100%;aspect-ratio:16/10;touch-action:none}
+.guide{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--grn);border-radius:8px;padding:8px 12px;margin-top:8px;min-height:64px}
+.guide[data-tone=warn]{border-left-color:var(--red)}
+.gIcon{font-size:30px;width:42px;height:42px;display:grid;place-items:center;background:#24402f;border-radius:8px;flex:none;line-height:1}
+.gMain{font-size:16px;font-weight:700}
+.gSub{font-size:13.5px;color:var(--mute);min-height:1.4em}
+.gSub.warn{color:#ff8a7e;font-weight:700}
+.deck{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1fr);gap:8px;margin-top:8px}
+.cl{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px;display:grid;gap:6px;align-content:start;min-width:0}
+.cl .ct{font-size:11px;color:var(--mute);letter-spacing:.06em}
+.gears{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.gears button,.k2{background:var(--panel2);border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:8px 2px;font-weight:700;font-size:16px;min-height:44px}
+.gears button[aria-pressed=true]{background:#3a3418;border-color:var(--yel);color:var(--yel)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+.k2{font-size:13px;font-weight:600;line-height:1.2}
+.k2[aria-pressed=true]{border-color:var(--yel);color:var(--yel);background:#3a3418}
+.k2.on-g[aria-pressed=true]{border-color:var(--grn);color:#bff0cf;background:#1f3a29}
+.k2.on-r[aria-pressed=true]{border-color:var(--red);color:#ffc9c2;background:#3d2020}
+.wheelBox{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:center}.wheelBox>div{min-width:0}.k2{min-width:0;overflow-wrap:anywhere}
+#cWheel{width:128px;height:128px;touch-action:none;display:block}
+.pedals{display:grid;grid-template-columns:1.25fr 1fr;gap:8px;align-items:end;height:100%}
+.ped{border:1px solid var(--line);border-radius:8px;display:grid;place-items:end center;padding:8px 4px;font-weight:700;font-size:14px;touch-action:none;position:relative;overflow:hidden}
+.ped i{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(255,255,255,.14);pointer-events:none}
+.ped.brake{height:120px;background:#3a2020;border-color:#7a3b35}
+.ped.acc{height:150px;background:#1f3326;border-color:#3e6b4c}
+.ped small{display:block;font-size:10px;color:var(--mute);font-weight:500}
+.keys{font-size:12px;color:var(--mute);margin-top:6px}
+kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:0 4px}
+/* 横向きのスマホ：画面と操作を左右に */
+@media (orientation:landscape) and (max-height:540px){
+  body{padding-top:4px;padding-bottom:4px}
+  .drv{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:6px;align-items:start}
+  .drv .bar{grid-column:1/-1;margin:0;padding:4px 8px}
+  .drv .bar .stat .v{font-size:16px}
+  .stage{grid-template-columns:1fr!important}
+  .stage:not([data-view=top]) #fTop{display:none}
+  .stage[data-view=top] #fCab{display:none}
+  .view canvas{aspect-ratio:auto;height:calc(100svh - 150px)}
+  .guide{margin-top:6px;min-height:0;padding:4px 8px}.gIcon{width:32px;height:32px;font-size:22px}.gMain{font-size:14px}.gSub{font-size:12px}
+  .deck{grid-template-columns:1.3fr 1fr;grid-template-areas:"g p" "w p";margin-top:0;gap:6px}
+  .deck>.cl:nth-child(1){grid-area:g}.deck>.cl.wh{grid-area:w}.deck>.cl:nth-child(3){grid-area:p}
+  .cl{padding:6px;gap:4px}.cl .ct{display:none}
+  #cWheel{width:84px;height:84px}.wheelBox .muted{display:none}
+  .pedals{height:100%}.ped.brake{height:calc(100svh - 120px);max-height:200px}.ped.acc{height:calc(100svh - 90px);max-height:240px}
+  .gears button,.k2{min-height:32px;padding:4px 2px;font-size:12px}.gears button{font-size:15px}
+  .bar .btn{padding:4px 8px;font-size:13px}
+  .keys{display:none}
+}
+@media (max-width:760px) and (orientation:portrait){
+  body{padding-top:6px}
+  .bar{padding:5px 8px;gap:4px 10px;margin-bottom:6px}.bar .btn{padding:4px 8px;font-size:13px}.bar .ttl{font-size:14px}.stat .v{font-size:16px}
+  .stage{grid-template-columns:1fr;gap:6px}
+  #cTop{aspect-ratio:16/8}
+  .guide{margin-top:6px;min-height:0;padding:6px 10px}.gIcon{width:34px;height:34px;font-size:24px}.gMain{font-size:14px;line-height:1.35}.gSub{font-size:12.5px}
+  .deck{grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+  .deck .cl.wh{grid-column:1/-1;order:-1}
+  .cl{padding:6px;gap:5px}
+  #cWheel{width:100px;height:100px}.wheelBox .muted{display:none}
+  .gears button,.k2{min-height:38px;font-size:12px;padding:4px 2px}.gears button{font-size:16px}
+  .ped.brake{height:112px}.ped.acc{height:140px}
+  .keys{display:none}
+}
+
+/* ---------- クイズ ---------- */
+.quiz{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;max-width:760px;margin:0 auto}
+.qmeta{display:flex;justify-content:space-between;color:var(--mute);font-size:13px}
+.qfig{display:grid;place-items:center;background:#e9ece8;border-radius:8px;padding:8px}
+.qfig.dark{background:#1a2026}
+.qfig canvas{width:min(100%,420px);height:auto;display:block}
+.qq{font-size:18px;font-weight:700}
+.choices{display:grid;gap:8px}
+.choices button{text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:15px}
+.choices button.ok{border-color:var(--grn);background:#1f3a29}
+.choices button.ng{border-color:var(--red);background:#3d2020}
+.fb{border-left:5px solid var(--grn);background:#1b2a21;padding:8px 12px;border-radius:6px}
+.fb.ng{border-left-color:var(--red);background:#2b1d1d}
+.fb b{display:block;margin-bottom:2px}
+/* ---------- ルールブック ---------- */
+.book{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.bk{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:6px;align-content:start}
+.bk canvas{width:84px;height:84px;background:#e9ece8;border-radius:6px}
+.bk b{font-size:15px}
+.bk p{margin:0;font-size:13.5px;color:#cfd6da}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+/* ---------- モーダル ---------- */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px;z-index:20}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:520px;width:100%;max-height:90svh;overflow:auto;display:grid;gap:10px}
+.mbox h3{font-size:24px}
+.mbox .big{font-family:var(--num);font-size:42px}
+.mbox ul{margin:0;padding-left:1.2em;font-size:14px}
+.mbox .btns{display:flex;gap:8px;flex-wrap:wrap}
+.set{display:grid;gap:8px}
+.set label{display:flex;gap:8px;align-items:center;font-size:14px}
+.set input[type=range]{flex:1}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- ===== タイトル ===== -->
+<section id="scTitle">
+  <div class="hero">
+    <h1><svg class="wakaba" viewBox="0 0 30 38" aria-hidden="true"><path d="M15 38 0 26V0l15 12z" fill="#f4c430"/><path d="M15 38l15-12V0L15 12z" fill="#3fb36b"/></svg><span data-i="title"></span></h1>
+    <p data-i="sub"></p>
+    <div class="langs" id="langs"></div>
+  </div>
+  <div class="sec"><h2 data-i="vehicle"></h2><div class="vehicles" id="vehicles"></div></div>
+  <div class="sec"><h2 data-i="drive"></h2>
+    <div class="cards">
+      <button class="card c-learn" data-go="lessons"><b data-i="learn"></b><span data-i="learnD"></span></button>
+      <button class="card c-exam" data-go="exams"><b data-i="exam"></b><span data-i="examD"></span></button>
+      <button class="card c-free" data-go="free"><b data-i="free"></b><span data-i="freeD"></span></button>
+    </div>
+  </div>
+  <div class="sec"><h2 data-i="study"></h2>
+    <div class="cards">
+      <button class="card c-quiz" data-go="q-sign"><b data-i="quizSign"></b><span data-i="quizSignD"></span></button>
+      <button class="card c-quiz" data-go="q-rule"><b data-i="quizRule"></b><span data-i="quizRuleD"></span></button>
+      <button class="card c-quiz" data-go="q-haz"><b data-i="quizHaz"></b><span data-i="quizHazD"></span></button>
+      <button class="card c-book" data-go="book"><b data-i="book"></b><span data-i="bookD"></span></button>
+    </div>
+  </div>
+  <div class="note"><span data-i="note"></span>
+    <div class="foot"><span><button class="btn" id="bSet" data-i="settings"></button></span><span id="verT"></span></div>
+  </div>
+</section>
+
+<!-- ===== 一覧 ===== -->
+<section id="scList" hidden>
+  <div class="head"><button class="btn" data-back data-i="back"></button><h2 id="listT"></h2></div>
+  <div class="list" id="listB"></div>
+</section>
+
+<!-- ===== 運転 ===== -->
+<section id="scDrive" class="drv" hidden>
+  <header class="bar">
+    <button class="btn" id="dBack" data-i="back"></button>
+    <div class="ttl" id="dTitle"></div>
+    <div class="stats">
+      <div class="stat" id="stScoreW"><span class="k" data-i="score"></span><span class="v" id="stScore">100</span></div>
+      <div class="stat"><span class="k" data-i="speed"></span><span class="v" id="stSpeed">0</span></div>
+      <div class="stat"><span class="k" data-i="gear"></span><span class="v" id="stGear">P</span></div>
+    </div>
+    <button class="btn" id="dView"></button>
+    <button class="btn" id="dRestart" data-i="restart"></button>
+  </header>
+  <div>
+    <div class="stage" id="stage" data-view="both">
+      <figure class="view" id="fCab"><figcaption data-i="viewCab"></figcaption><canvas id="cCab"></canvas></figure>
+      <figure class="view" id="fTop"><figcaption data-i="viewTop"></figcaption><canvas id="cTop"></canvas></figure>
+    </div>
+    <div class="guide" id="guide"><div class="gIcon" id="gIcon">↑</div><div><div class="gMain" id="gMain"></div><div class="gSub" id="gSub"></div></div></div>
+  </div>
+  <div class="deck">
+    <div class="cl">
+      <div class="ct" data-i="gear"></div>
+      <div class="gears" id="gears"><button data-g="P">P</button><button data-g="R">R</button><button data-g="N">N</button><button data-g="D">D</button></div>
+      <div class="row2"><button class="k2 on-r" id="bPB" data-i="pb"></button><button class="k2 on-g" id="bBelt" data-i="belt"></button></div>
+      <div class="row2"><button class="k2 on-g" id="bWL" data-i="winkL"></button><button class="k2 on-g" id="bWR" data-i="winkR"></button></div>
+    </div>
+    <div class="cl wh">
+      <div class="wheelBox"><canvas id="cWheel" width="256" height="256"></canvas>
+        <div style="display:grid;gap:6px">
+          <div class="ct" data-i="lookT"></div>
+          <div class="row3"><button class="k2" id="bLL" data-i="lookL"></button><button class="k2" id="bLB" data-i="lookB"></button><button class="k2" id="bLR" data-i="lookR"></button></div>
+          <div class="ct muted" data-i="wheelHint"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cl">
+      <div class="pedals"><button class="ped brake" id="pBrk"><i></i><span data-i="brake"></span></button><button class="ped acc" id="pAcc"><i></i><span data-i="accel"></span></button></div>
+    </div>
+  </div>
+  <div class="keys" id="keysHelp"></div>
+</section>
+
+<!-- ===== クイズ ===== -->
+<section id="scQuiz" hidden>
+  <div class="head"><button class="btn" data-back data-i="back"></button><h2 id="quizT"></h2></div>
+  <div class="quiz" id="quizB"></div>
+</section>
+
+<!-- ===== ルールブック ===== -->
+<section id="scBook" hidden>
+  <div class="head"><button class="btn" data-back data-i="back"></button><h2 data-i="book"></h2>
+    <div class="tabs"><button class="btn" id="tbRule" aria-pressed="true" data-i="tabRule"></button><button class="btn" id="tbSign" aria-pressed="false" data-i="tabSign"></button></div></div>
+  <div class="book" id="bookB"></div>
+</section>
+
+<div class="modal" id="modal" hidden><div class="mbox" id="mbox"></div></div>
+</div>
+
+<script>
+(()=>{'use strict';
+const VER='Ver.1.1';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const clamp=(v,a,b)=>v<a?a:v>b?b:v, hyp=Math.hypot, PI=Math.PI;
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+
+/* ================= 多言語 ================= */
+// 並び：[日本語, やさしい日本語, English, Tiếng Việt, 中文, Bahasa Indonesia]
+const LANGS=[['ja','日本語'],['easy','やさしい にほんご'],['en','English'],['vi','Tiếng Việt'],['zh','中文'],['id','Bahasa Indonesia']];
+const LI={ja:0,easy:1,en:2,vi:3,zh:4,id:5};
+const S={
+title:['日本の運転れんしゅう','にほんの うんてん れんしゅう','Japan Driving Practice','Luyện lái xe tại Nhật','日本驾驶练习','Latihan Mengemudi di Jepang'],
+sub:['左側通行・標識・教習所のコースを、安全な画面の中で練習できます。日本で運転する外国の方、ペーパードライバー、免許を取りたい人のためのアプリです。','ひだりがわを はしる こと、ひょうしき、コースを、あんぜんな がめんで れんしゅう できます。','Practice left-side driving, Japanese road signs and a driving-school course safely on screen — for foreign drivers in Japan, rusty drivers and learners.','Luyện lái bên trái, biển báo Nhật và sân tập lái một cách an toàn trên màn hình — dành cho người nước ngoài lái xe ở Nhật, người lâu không lái và người học bằng.','在安全的画面中练习靠左行驶、日本交通标志和驾校场地。适合在日本开车的外国人、久未开车的人和学车的人。','Latihan lajur kiri, rambu Jepang, dan lintasan sekolah mengemudi dengan aman di layar — untuk pengemudi asing di Jepang, yang lama tidak menyetir, dan calon pemegang SIM.'],
+vehicle:['車両','くるまの しゅるい','Vehicle','Loại xe','车型','Kendaraan'],
+car:['乗用車（AT）','じょうようしゃ（AT）','Car (automatic)','Ô tô (số tự động)','轿车（自动挡）','Mobil (otomatis)'],
+truck:['トラック','トラック','Truck','Xe tải','卡车','Truk'],
+taxi:['二種（タクシー・バス）','にしゅ（タクシー・バス）','Class 2 (taxi/bus)','Hạng 2 (taxi/buýt)','二类（出租车/巴士）','Kelas 2 (taksi/bus)'],
+moto:['バイク','バイク','Motorcycle','Xe máy','摩托车','Sepeda motor'],
+tractor:['トラクター','トラクター','Tractor','Máy kéo','拖拉机','Traktor'],
+excav:['ショベル','ショベル','Excavator','Máy xúc','挖掘机','Ekskavator'],
+soon:['準備中','じゅんびちゅう','Coming soon','Sắp có','准备中','Segera'],
+drive:['運転する','うんてん する','Drive','Lái xe','驾驶','Mengemudi'],
+study:['知識をたしかめる','ちしきを たしかめる','Check your knowledge','Kiểm tra kiến thức','检验知识','Uji pengetahuan'],
+learn:['まなぶ（レッスン）','まなぶ','Learn (lessons)','Học (bài học)','学习（课程）','Belajar (pelajaran)'],
+learnD:['発進・曲がる・一時停止・信号・踏切・S字・クランク・車庫入れ・縦列駐車を1つずつ','すこしずつ れんしゅう します','Starting, turning, stop signs, signals, rail crossings, S-curve, crank, reverse parking, parallel parking — one by one','Xuất phát, rẽ, biển dừng, đèn, đường ray, đường S, đường gấp khúc, lùi chuồng, đỗ song song — từng bài','起步、转弯、停车让行、信号灯、铁路道口、S弯、直角弯、倒车入库、侧方停车，一项一项练习','Berangkat, belok, rambu stop, lampu lalu lintas, perlintasan kereta, S, engkol, parkir mundur, parkir paralel — satu per satu'],
+exam:['検定コース','けんてい コース','Driving test course','Bài thi sa hình','考试路线','Lintasan ujian'],
+examD:['100点から減点。70点以上で合格（アプリの目安）','100てんから へります。70てん いじょうで ごうかく','Start at 100 points; 70+ to pass (app guideline)','Bắt đầu 100 điểm, từ 70 trở lên là đạt (mức tham khảo)','从100分开始扣分，70分以上合格（参考标准）','Mulai 100 poin, lulus jika 70+ (acuan aplikasi)'],
+free:['自由に走る','じゆうに はしる','Free drive','Lái tự do','自由驾驶','Mengemudi bebas'],
+freeD:['教習所のコースを自由に。歩行者・自転車・列車も動いています','コースを じゆうに はしります','Drive freely around the course with pedestrians, a cyclist and trains','Lái tự do quanh sân, có người đi bộ, xe đạp và tàu','在场地内自由驾驶，有行人、自行车和火车','Bebas berkeliling lintasan dengan pejalan kaki, sepeda, dan kereta'],
+quizSign:['標識クイズ','ひょうしき クイズ','Sign quiz','Đố biển báo','标志测验','Kuis rambu'],
+quizSignD:['日本の標識・マークの意味','にほんの ひょうしきの いみ','Meanings of Japanese signs and marks','Ý nghĩa biển báo Nhật','日本交通标志的含义','Arti rambu dan tanda di Jepang'],
+quizRule:['交通ルール問題集','こうつう ルールの もんだい','Traffic rules quiz','Câu hỏi luật giao thông','交通规则题库','Kuis aturan lalu lintas'],
+quizRuleD:['母国とちがう日本のルール。2026年の改正も','くにと ちがう にほんの ルール','Japanese rules that differ from other countries, incl. 2026 changes','Luật Nhật khác với nước bạn, kể cả thay đổi 2026','与本国不同的日本规则，包括2026年修订','Aturan Jepang yang berbeda, termasuk perubahan 2026'],
+quizHaz:['危険予測（安全運転）','あぶない ことを よそう','Hazard prediction','Dự đoán nguy hiểm','危险预测（安全驾驶）','Prediksi bahaya'],
+quizHazD:['見えない危険に気づく練習','みえない きけんに きづく','Spot the hidden danger','Nhận ra nguy hiểm khó thấy','发现看不见的危险','Kenali bahaya tersembunyi'],
+book:['ルールブック','ルールブック','Rule book','Sổ tay luật','规则手册','Buku aturan'],
+bookD:['日本の運転の基本と標識の一覧','うんてんの きほんと ひょうしき','Basics of driving in Japan and a sign list','Cơ bản lái xe ở Nhật và danh sách biển báo','日本驾驶基础与标志一览','Dasar mengemudi di Jepang dan daftar rambu'],
+tabRule:['ルール','ルール','Rules','Luật','规则','Aturan'],
+tabSign:['標識','ひょうしき','Signs','Biển báo','标志','Rambu'],
+settings:['設定','せってい','Settings','Cài đặt','设置','Pengaturan'],
+note:['このアプリは学習用です。実際に運転するには、日本で有効な運転免許が必要です。法令は変わることがあります（2026年11月時点の内容）。採点はアプリ独自の目安で、実際の検定とは異なります。','このアプリは れんしゅう ようです。ほんとうに うんてん するには、にほんで つかえる めんきょが ひつようです。','This app is for learning only. To drive in Japan you need a valid licence. Laws can change (content as of Nov 2026). Scoring is an app guideline and differs from the real test.','Ứng dụng chỉ dùng để học. Để lái xe ở Nhật bạn cần bằng lái hợp lệ. Luật có thể thay đổi (nội dung tính đến 11/2026). Cách chấm điểm chỉ là tham khảo.','本应用仅供学习。在日本驾驶需要有效的驾照。法规可能变化（内容截至2026年11月）。评分为本应用的参考标准，与实际考试不同。','Aplikasi ini hanya untuk belajar. Untuk mengemudi di Jepang Anda memerlukan SIM yang berlaku. Peraturan dapat berubah (isi per Nov 2026). Penilaian hanya acuan aplikasi.'],
+back:['← もどる','← もどる','← Back','← Quay lại','← 返回','← Kembali'],
+lessons:['レッスン','レッスン','Lessons','Bài học','课程','Pelajaran'],
+exams:['検定コース','けんてい コース','Test courses','Bài thi','考试路线','Lintasan ujian'],
+courseA:['コースA','コースA','Course A','Lộ trình A','路线A','Lintasan A'],
+courseAD:['信号・一時停止・横断歩道・S字・方向変換・指示速度','しんごう・とまれ・おうだんほどう・Sじ・ほうこうてんかん','Signals, stop sign, crosswalk, S-curve, reverse into a garage, speed section','Đèn, biển dừng, vạch qua đường, đường S, lùi chuồng, đoạn tốc độ','信号灯、停车让行、人行横道、S弯、倒车入库、指定速度','Lampu, stop, penyeberangan, S, parkir mundur, kecepatan'],
+courseB:['コースB','コースB','Course B','Lộ trình B','路线B','Lintasan B'],
+courseBD:['縦列駐車・踏切・クランク・信号','じゅうれつ ちゅうしゃ・ふみきり・クランク','Parallel parking, rail crossing, crank, signals','Đỗ song song, đường ray, gấp khúc, đèn','侧方停车、铁路道口、直角弯、信号灯','Parkir paralel, perlintasan kereta, engkol, lampu'],
+score:['点数','てんすう','Score','Điểm','分数','Skor'],
+speed:['速度 km/h','はやさ km/h','Speed km/h','Tốc độ km/h','速度 km/h','Kecepatan km/h'],
+gear:['ギア','ギア','Gear','Số','档位','Gigi'],
+viewTop:['上から','うえから','Top view','Nhìn từ trên','俯视','Tampak atas'],
+viewCab:['運転席（右ハンドル）','うんてんせき（みぎハンドル）','Driver\'s seat (right-hand drive)','Ghế lái (tay lái bên phải)','驾驶座（右舵）','Kursi pengemudi (setir kanan)'],
+vBoth:['表示：両方','ひょうじ：りょうほう','View: both','Hiển thị: cả hai','显示：两者','Tampilan: keduanya'],
+vCab:['表示：運転席','ひょうじ：うんてんせき','View: driver','Hiển thị: ghế lái','显示：驾驶座','Tampilan: pengemudi'],
+vTop:['表示：上から','ひょうじ：うえから','View: top','Hiển thị: từ trên','显示：俯视','Tampilan: atas'],
+restart:['やり直す','もういちど','Restart','Làm lại','重来','Ulangi'],
+brake:['ブレーキ','ブレーキ','Brake','Phanh','刹车','Rem'],
+accel:['アクセル','アクセル','Accel','Ga','油门','Gas'],
+pb:['パーキングブレーキ','パーキングブレーキ','Parking brake','Phanh tay','驻车制动','Rem parkir'],
+belt:['シートベルト','シートベルト','Seat belt','Dây an toàn','安全带','Sabuk'],
+winkL:['← 左ウインカー','← ひだり ウインカー','← Left signal','← Xi nhan trái','← 左转向灯','← Sein kiri'],
+winkR:['右ウインカー →','みぎ ウインカー →','Right signal →','Xi nhan phải →','右转向灯 →','Sein kanan →'],
+lookT:['安全確認（目で見る）','あんぜん かくにん（めで みる）','Safety check (look)','Quan sát an toàn','安全确认（用眼看）','Cek keselamatan (lihat)'],
+lookL:['左を見る','ひだりを みる','Look left','Nhìn trái','看左边','Lihat kiri'],
+lookB:['右後ろ','みぎうしろ','Look back','Nhìn sau','看右后方','Lihat belakang'],
+lookR:['右を見る','みぎを みる','Look right','Nhìn phải','看右边','Lihat kanan'],
+wheelHint:['ハンドルは回して操作。手をはなすと戻ります','ハンドルを まわします','Drag the wheel round to steer; it returns when released','Kéo xoay vô lăng; thả tay sẽ tự trả về','拖动转动方向盘，松手自动回正','Putar setir dengan menyeret; lepas untuk kembali'],
+keys:['キー操作：<kbd>↑</kbd>/<kbd>W</kbd> アクセル　<kbd>↓</kbd>/<kbd>S</kbd> ブレーキ　<kbd>←</kbd><kbd>→</kbd>/<kbd>A</kbd><kbd>D</kbd> ハンドル　<kbd>1</kbd>P <kbd>2</kbd>R <kbd>3</kbd>N <kbd>4</kbd>D　<kbd>Q</kbd>/<kbd>E</kbd> ウインカー　<kbd>B</kbd> パーキングブレーキ　<kbd>V</kbd> シートベルト　<kbd>Z</kbd> 左確認 <kbd>X</kbd> 右後ろ <kbd>C</kbd> 右確認','','Keys: <kbd>↑</kbd>/<kbd>W</kbd> accel  <kbd>↓</kbd>/<kbd>S</kbd> brake  <kbd>←</kbd><kbd>→</kbd>/<kbd>A</kbd><kbd>D</kbd> steer  <kbd>1</kbd>P <kbd>2</kbd>R <kbd>3</kbd>N <kbd>4</kbd>D  <kbd>Q</kbd>/<kbd>E</kbd> signals  <kbd>B</kbd> parking brake  <kbd>V</kbd> seat belt  <kbd>Z</kbd> look left <kbd>X</kbd> look back <kbd>C</kbd> look right','Phím: <kbd>↑</kbd>/<kbd>W</kbd> ga  <kbd>↓</kbd>/<kbd>S</kbd> phanh  <kbd>←</kbd><kbd>→</kbd>/<kbd>A</kbd><kbd>D</kbd> lái  <kbd>1</kbd>P <kbd>2</kbd>R <kbd>3</kbd>N <kbd>4</kbd>D  <kbd>Q</kbd>/<kbd>E</kbd> xi nhan  <kbd>B</kbd> phanh tay  <kbd>V</kbd> dây an toàn  <kbd>Z</kbd> nhìn trái <kbd>X</kbd> nhìn sau <kbd>C</kbd> nhìn phải','按键：<kbd>↑</kbd>/<kbd>W</kbd> 油门  <kbd>↓</kbd>/<kbd>S</kbd> 刹车  <kbd>←</kbd><kbd>→</kbd>/<kbd>A</kbd><kbd>D</kbd> 转向  <kbd>1</kbd>P <kbd>2</kbd>R <kbd>3</kbd>N <kbd>4</kbd>D  <kbd>Q</kbd>/<kbd>E</kbd> 转向灯  <kbd>B</kbd> 驻车制动  <kbd>V</kbd> 安全带  <kbd>Z</kbd> 看左 <kbd>X</kbd> 看后 <kbd>C</kbd> 看右','Tombol: <kbd>↑</kbd>/<kbd>W</kbd> gas  <kbd>↓</kbd>/<kbd>S</kbd> rem  <kbd>←</kbd><kbd>→</kbd>/<kbd>A</kbd><kbd>D</kbd> setir  <kbd>1</kbd>P <kbd>2</kbd>R <kbd>3</kbd>N <kbd>4</kbd>D  <kbd>Q</kbd>/<kbd>E</kbd> sein  <kbd>B</kbd> rem parkir  <kbd>V</kbd> sabuk  <kbd>Z</kbd> lihat kiri <kbd>X</kbd> belakang <kbd>C</kbd> kanan'],
+pass:['合格','ごうかく','PASS','ĐẠT','合格','LULUS'],
+fail:['不合格','ふごうかく','FAIL','KHÔNG ĐẠT','不合格','TIDAK LULUS'],
+stopped:['検定中止','けんてい ちゅうし','Test stopped','Dừng bài thi','考试中止','Ujian dihentikan'],
+reason:['理由：{0}','りゆう：{0}','Reason: {0}','Lý do: {0}','原因：{0}','Alasan: {0}'],
+done:['よくできました！','よく できました！','Well done!','Làm tốt lắm!','做得好！','Bagus sekali!'],
+mistakes:['注意されたこと','ちゅうい された こと','Points to improve','Điểm cần chú ý','需要注意的地方','Hal yang perlu diperbaiki'],
+none:['なし。完ぺきです','なし','None — perfect','Không có — hoàn hảo','无，完美','Tidak ada — sempurna'],
+again:['もう一度','もういちど','Try again','Làm lại','再来一次','Coba lagi'],
+toMenu:['メニューへ','メニューへ','Menu','Về menu','回到菜单','Menu'],
+nextL:['次のレッスン','つぎの レッスン','Next lesson','Bài tiếp','下一课','Pelajaran berikut'],
+pts:['点','てん','pts','điểm','分','poin'],
+assist:['補助表示','ほじょ ひょうじ','Driving aids','Hỗ trợ hiển thị','辅助显示','Bantuan tampilan'],
+aPath:['予想進路線（タイヤの通り道）','タイヤが とおる せん','Predicted tire path','Đường bánh xe dự kiến','预测轮胎轨迹','Perkiraan jalur ban'],
+aRoute:['ルート案内の矢印','みちあんない','Route arrow','Mũi tên chỉ đường','路线箭头','Panah rute'],
+aTrack:['タイヤの跡','タイヤの あと','Tire tracks','Vết bánh xe','轮胎痕迹','Jejak ban'],
+aMirror:['ミラーを表示','ミラー','Show mirrors','Hiện gương','显示后视镜','Tampilkan spion'],
+sound:['音','おと','Sound','Âm thanh','声音','Suara'],
+sens:['ハンドルの速さ（キー）','ハンドルの はやさ','Steering speed (keys)','Tốc độ lái (phím)','转向速度（按键）','Kecepatan setir (tombol)'],
+close:['閉じる','とじる','Close','Đóng','关闭','Tutup'],
+qn:['問題 {0}/{1}','もんだい {0}/{1}','Question {0}/{1}','Câu {0}/{1}','第{0}/{1}题','Soal {0}/{1}'],
+correct:['正解！','せいかい！','Correct!','Đúng!','正确！','Benar!'],
+wrong:['ざんねん','ざんねん','Not quite','Chưa đúng','不对','Kurang tepat'],
+nextQ:['次へ','つぎへ','Next','Tiếp','下一题','Lanjut'],
+result:['{0}問中 {1}問正解','{0}もん ちゅう {1}もん せいかい','{1} of {0} correct','Đúng {1}/{0} câu','{0}题中答对{1}题','Benar {1} dari {0}'],
+signQ:['この標識・マークの意味は？','この ひょうしきの いみは？','What does this sign or mark mean?','Biển/dấu này có nghĩa là gì?','这个标志是什么意思？','Apa arti rambu/tanda ini?'],
+hazQ:['このあと、何に一番気をつけますか？','このあと、なにに いちばん きを つけますか？','What should you watch out for most?','Bạn cần chú ý điều gì nhất?','接下来最需要注意什么？','Apa yang paling harus diwaspadai?'],
+hidden:['見えにくい危険','みえにくい きけん','Hidden danger','Nguy hiểm khó thấy','隐藏的危险','Bahaya tersembunyi'],
+needBrake:['ブレーキを踏みながらシフトしよう','ブレーキを ふみながら ギアを かえよう','Hold the brake while shifting','Đạp phanh khi chuyển số','换挡时请踩住刹车','Injak rem saat memindah gigi'],
+needStop:['止まってからシフトしよう','とまってから ギアを かえよう','Stop before shifting','Dừng hẳn rồi mới chuyển số','停稳后再换挡','Berhenti dulu sebelum memindah gigi'],
+pbHold:['パーキングブレーキがかかっています','パーキングブレーキが かかって います','Parking brake is on','Phanh tay đang kéo','驻车制动未松开','Rem parkir masih aktif'],
+label_S:['S字','Sじ','S-curve','Đường S','S弯','S'],
+label_crank:['クランク','クランク','Crank','Gấp khúc','直角弯','Engkol'],
+label_garage:['方向変換','ほうこうてんかん','Reverse into garage','Lùi chuồng','倒车入库','Parkir mundur'],
+label_par:['縦列駐車','じゅうれつ ちゅうしゃ','Parallel parking','Đỗ song song','侧方停车','Parkir paralel'],
+label_rail:['踏切','ふみきり','Rail crossing','Đường ray','铁路道口','Perlintasan'],
+label_start:['発着点','スタート','Start/Finish','Xuất phát','起终点','Start'],
+/* 採点の項目 */
+ev_off:['脱輪（タイヤが道から出た）','だつりん（タイヤが みちから でた）','Wheel went off the road','Bánh xe ra khỏi đường','车轮驶出路面','Roda keluar jalan'],
+ev_offrun:['脱輪したまま進んだ','だつりん したまま すすんだ','Kept driving with a wheel off the road','Tiếp tục chạy khi bánh xe ra ngoài','车轮出界后继续行驶','Terus melaju dengan roda di luar jalan'],
+ev_touch:['ポール・障害物に接触','ポールに ぶつかった','Hit a pole or obstacle','Chạm cọc / vật cản','碰到标杆或障碍物','Menyentuh tiang/rintangan'],
+ev_crash:['衝突','しょうとつ','Collision','Va chạm','碰撞','Tabrakan'],
+ev_red:['信号無視（赤信号で停止線をこえた）','あかしんごうで すすんだ','Ran a red light','Vượt đèn đỏ','闯红灯','Menerobos lampu merah'],
+ev_nostop:['一時不停止（停止線の直前で完全に止まる）','とまれ で とまらなかった','Did not stop completely at the stop line','Không dừng hẳn trước vạch dừng','未在停止线前完全停车','Tidak berhenti total di garis stop'],
+ev_stoppos:['停止位置が遠い（停止線のすぐ手前で止まる）','とまる ところが とおい','Stopped too far before the line','Dừng quá xa vạch','停车位置离停止线太远','Berhenti terlalu jauh dari garis'],
+ev_nolook:['安全不確認（止まって左右を見ていない）','ひだりと みぎを みて いない','Did not check left and right while stopped','Không quan sát trái phải khi dừng','停车时未确认左右','Tidak melihat kiri-kanan saat berhenti'],
+ev_railstop:['踏切の直前で止まらなかった','ふみきりの まえで とまらなかった','Did not stop before the rail crossing','Không dừng trước đường ray','未在铁路道口前停车','Tidak berhenti sebelum perlintasan'],
+ev_railin:['警報が鳴っているのに踏切に入った','けいほうが なって いるのに ふみきりに はいった','Entered the crossing while the alarm was ringing','Vào đường ray khi chuông đang kêu','警报响时进入道口','Masuk perlintasan saat alarm berbunyi'],
+ev_ped:['横断歩道の歩行者を妨害','あるく ひとを まもらなかった','Did not yield to a pedestrian at the crosswalk','Không nhường người đi bộ qua đường','未礼让人行横道上的行人','Tidak memberi jalan pejalan kaki'],
+ev_right:['右側通行（日本は左側通行）','みぎがわを はしった（にほんは ひだりがわ）','Drove on the right (Japan drives on the LEFT)','Đi bên phải (Nhật đi bên TRÁI)','靠右行驶（日本靠左行驶）','Di lajur kanan (Jepang lajur KIRI)'],
+ev_speed:['速度超過','スピードの だしすぎ','Speeding','Chạy quá tốc độ','超速','Terlalu cepat'],
+ev_slow:['指示速度に達しない','いわれた はやさに ならなかった','Did not reach the instructed speed','Không đạt tốc độ yêu cầu','未达到指定速度','Tidak mencapai kecepatan yang diminta'],
+ev_sig:['合図（ウインカー）を出していない','ウインカーを だして いない','No turn signal','Không bật xi nhan','未打转向灯','Tidak menyalakan sein'],
+ev_siglate:['合図がおそい（曲がる30m手前で出す）','ウインカーが おそい','Signal too late (signal 30 m before)','Xi nhan muộn (bật trước 30 m)','转向灯太晚（应在30米前打灯）','Sein terlambat (nyalakan 30 m sebelumnya)'],
+ev_bike:['自転車との間隔が近い（約1mあけるか、ゆっくり）','じてんしゃに ちかい（1m あけるか、ゆっくり）','Passed a cyclist too closely (keep about 1 m or slow down)','Đi quá gần xe đạp (cách ~1 m hoặc đi chậm)','离自行车太近（保持约1米或减速）','Terlalu dekat sepeda (jaga ±1 m atau pelan)'],
+ev_pb:['パーキングブレーキをかけたまま走った','パーキングブレーキを かけた まま','Drove with the parking brake on','Chạy khi phanh tay còn kéo','未松驻车制动就行驶','Melaju dengan rem parkir aktif'],
+ev_belt:['シートベルトをしていない','シートベルトを して いない','Seat belt not fastened','Chưa thắt dây an toàn','未系安全带','Sabuk pengaman belum dipasang'],
+ev_startlook:['発進前に右後ろを確認していない','うごく まえに みぎうしろを みて いない','Did not check behind right before moving off','Không nhìn sau bên phải trước khi xuất phát','起步前未确认右后方','Tidak cek kanan belakang sebelum berangkat'],
+ev_startsig:['発進の合図（右ウインカー）がない','うごく ときに みぎウインカーが ない','No right signal when moving off','Không bật xi nhan phải khi xuất phát','起步时未打右转向灯','Tidak menyalakan sein kanan saat berangkat'],
+ev_kiri:['切り返し（前後の動きなおし）','きりかえし','Extra back-and-forth correction','Đánh lái lại','多次前后修正','Koreksi maju-mundur'],
+/* 案内 */
+g_start:['発進：シートベルト → ブレーキを踏んで D → パーキングブレーキ解除 → 右ウインカー → 右後ろを確認 → 発進','シートベルト → ブレーキ → D → パーキングブレーキ → みぎウインカー → みぎうしろ → すすむ','Start: seat belt → hold brake, D → release parking brake → right signal → look back right → go','Xuất phát: dây an toàn → đạp phanh, số D → nhả phanh tay → xi nhan phải → nhìn sau phải → đi','起步：系安全带 → 踩刹车挂D → 松驻车制动 → 右转向灯 → 看右后方 → 起步','Berangkat: sabuk → injak rem, D → lepas rem parkir → sein kanan → lihat kanan belakang → jalan'],
+g_speed:['この直線で 40km/h まで加速して、次の交差点の前でしっかり減速','この まっすぐな みちで 40km/h まで はやく、そのあと ゆっくり','Accelerate to 40 km/h on this straight, then slow down well before the junction','Tăng tốc lên 40 km/h trên đoạn thẳng, rồi giảm tốc trước giao lộ','在这段直路加速到40km/h，然后在路口前充分减速','Percepat hingga 40 km/jam di jalan lurus ini, lalu pelankan sebelum persimpangan'],
+g_left:['次を左折（30m手前で左ウインカー、左に寄ってゆっくり）','つぎを ひだりに まがる','Turn LEFT next (signal 30 m before, keep left, go slowly)','Rẽ TRÁI tiếp theo (xi nhan trước 30 m, đi sát trái, chậm)','下一个路口左转（提前30米打灯，靠左慢行）','Belok KIRI berikutnya (sein 30 m sebelum, rapat kiri, pelan)'],
+g_right:['次を右折（30m手前で右ウインカー、中央に寄って小回り）','つぎを みぎに まがる','Turn RIGHT next (signal 30 m before, move to the centre, tight turn)','Rẽ PHẢI tiếp theo (xi nhan trước 30 m, đi sát giữa, rẽ gọn)','下一个路口右转（提前30米打灯，靠中线小转弯）','Belok KANAN berikutnya (sein 30 m sebelum, ke tengah, belok rapat)'],
+g_straight:['交差点を直進（信号をよく見る）','まっすぐ（しんごうを みる）','Go straight through the junction (watch the signal)','Đi thẳng qua giao lộ (chú ý đèn)','直行通过路口（注意信号灯）','Lurus melewati persimpangan (perhatikan lampu)'],
+g_stopline:['一時停止：停止線の直前で完全に止まり、左右を見る','とまれ：せんの まえで とまって、ひだりと みぎを みる','STOP: stop completely just before the line and look left and right','DỪNG: dừng hẳn sát vạch, nhìn trái và phải','停车让行：在停止线前完全停下，看左右','STOP: berhenti total tepat sebelum garis, lihat kiri dan kanan'],
+g_rail:['踏切：直前で止まり、左右を見て、列車が来ないことを確かめてから渡る','ふみきり：とまって、ひだりと みぎを みてから わたる','Rail crossing: stop just before it, look left and right, then cross','Đường ray: dừng sát trước, nhìn trái phải rồi mới qua','铁路道口：在道口前停车，看左右确认没有火车再通过','Perlintasan: berhenti tepat sebelumnya, lihat kiri-kanan, lalu menyeberang'],
+g_cross:['横断歩道：渡ろうとしている人がいたら、手前で止まる','おうだんほどう：わたる ひとが いたら とまる','Crosswalk: if someone is about to cross, stop before it','Vạch qua đường: có người sắp qua thì dừng trước','人行横道：有人要过马路就在前面停车','Penyeberangan: jika ada orang akan menyeberang, berhenti'],
+g_leftS:['左折してS字へ','ひだりに まがって Sじへ','Turn left into the S-curve','Rẽ trái vào đường S','左转进入S弯','Belok kiri masuk tikungan S'],
+g_S:['S字：ゆっくり。前のタイヤと後ろのタイヤの通り道を意識','Sじ：ゆっくり','S-curve: go slowly; mind where the front and rear tyres go','Đường S: chậm, chú ý bánh trước và sau','S弯：慢行，注意前后轮的轨迹','S: pelan, perhatikan jalur ban depan dan belakang'],
+g_leftCrank:['左折してクランクへ','ひだりに まがって クランクへ','Turn left into the crank','Rẽ trái vào đường gấp khúc','左转进入直角弯','Belok kiri masuk engkol'],
+g_crank:['クランク：角の手前で十分ゆっくり。前輪が角を過ぎてからハンドルを回す','クランク：かどの まえで ゆっくり','Crank: slow right down; turn the wheel once the front wheel passes the corner','Gấp khúc: rất chậm; đánh lái khi bánh trước qua góc','直角弯：充分减速，前轮过了拐角再转方向盘','Engkol: sangat pelan; putar setir setelah roda depan melewati sudut'],
+g_leftGarage:['左折して方向変換の道へ','ひだりに まがって ほうこうてんかんへ','Turn left into the garage road','Rẽ trái vào đường lùi chuồng','左转进入倒车入库区','Belok kiri ke jalur parkir mundur'],
+g_garage:['方向変換：奥まで進んで止まり、R に入れて左の車庫にバックで入る。車庫の中で止まる','いちど とおりすぎて、うしろむきで ひだりの しゃこに はいる','Garage: drive past, stop, shift to R and reverse into the LEFT bay; stop inside','Lùi chuồng: chạy qua, dừng, số R, lùi vào ô bên TRÁI; dừng trong ô','倒车入库：开过去停下，挂R倒入左侧车库，在库内停稳','Parkir mundur: lewati, berhenti, gigi R, mundur ke petak KIRI; berhenti di dalam'],
+g_garageOut:['D に入れ、左ウインカーを出して前に出る。来た道へ戻る','D に して、ひだりウインカーで まえに でる','Shift to D, signal left and drive out the way you came','Số D, xi nhan trái, chạy ra lối cũ','挂D，打左转向灯，向前开出回到原路','Gigi D, sein kiri, keluar ke jalan semula'],
+g_rightPark:['右折して縦列駐車の道へ','みぎに まがって じゅうれつ ちゅうしゃへ','Turn right into the parallel-parking road','Rẽ phải vào đường đỗ song song','右转进入侧方停车区','Belok kanan ke jalur parkir paralel'],
+g_parallel:['縦列駐車：枠を少し通り過ぎて止まり、R でバックしながら左の枠に入る。枠の中でまっすぐ止まる','じゅうれつ ちゅうしゃ：うしろむきで ひだりの わくに はいる','Parallel parking: pull past the bay, stop, reverse into the LEFT bay; stop straight inside','Đỗ song song: chạy quá ô, dừng, lùi vào ô bên TRÁI; dừng thẳng trong ô','侧方停车：开过车位停下，倒车进入左侧车位，在位内摆正停稳','Parkir paralel: lewati petak, berhenti, mundur ke petak KIRI; berhenti lurus di dalam'],
+g_parallelOut:['右ウインカー、右後ろを確認して出る','みぎウインカー、みぎうしろを みて でる','Right signal, look back right, then pull out','Xi nhan phải, nhìn sau phải rồi ra','打右转向灯，看右后方再开出','Sein kanan, lihat kanan belakang, lalu keluar'],
+g_finish:['発着点で止まり、P に入れてパーキングブレーキ','スタートで とまって、P と パーキングブレーキ','Stop at the start/finish, shift to P, set the parking brake','Dừng ở điểm xuất phát, số P, kéo phanh tay','在起终点停车，挂P，拉驻车制动','Berhenti di start, gigi P, pasang rem parkir'],
+g_free:['自由に走ってみよう。日本は左側通行です','じゆうに はしろう。にほんは ひだりがわ','Drive freely. Japan drives on the LEFT','Lái tự do. Nhật đi bên TRÁI','自由驾驶吧。日本靠左行驶','Mengemudi bebas. Jepang lajur KIRI'],
+g_bike:['前の自転車の右を通るときは、約1mあけるか、ゆっくり（2026年4月から）','じてんしゃの よこは 1m あけるか ゆっくり','When passing the cyclist, keep about 1 m or go slowly (rule since April 2026)','Khi vượt xe đạp, cách ~1 m hoặc đi chậm (từ 4/2026)','超过自行车时保持约1米或减速（2026年4月起）','Saat melewati sepeda, jaga ±1 m atau pelan (sejak April 2026)'],
+g_end:['ゴールの目印まで進んで止まる','めじるしまで すすんで とまる','Drive to the marker and stop','Chạy đến điểm đánh dấu và dừng','开到标记处停车','Maju ke penanda lalu berhenti'],
+l_belt:['シートベルトをしめる','シートベルトを しめる','Fasten your seat belt','Thắt dây an toàn','系好安全带','Pasang sabuk pengaman'],
+l_brakeD:['ブレーキを踏んだまま、ギアを D に','ブレーキを ふんで、D に する','Hold the brake and shift to D','Đạp phanh và chuyển sang D','踩住刹车，挂到D档','Injak rem dan pindah ke D'],
+l_pboff:['パーキングブレーキを解除','パーキングブレーキを はずす','Release the parking brake','Nhả phanh tay','松开驻车制动','Lepas rem parkir'],
+l_sigR:['右ウインカーを出す（道路の端から出るときの合図）','みぎ ウインカーを だす','Turn on the right signal (you are pulling out from the kerb)','Bật xi nhan phải (đang rời lề đường)','打右转向灯（从路边起步）','Nyalakan sein kanan (keluar dari tepi jalan)'],
+l_lookR:['右後ろを目で確認（「右後ろ」ボタン）','みぎうしろを みる','Look back over your right shoulder (Look back button)','Nhìn qua vai phải ra sau','回头确认右后方','Lihat ke kanan belakang'],
+l_go:['ブレーキをゆるめるとクリープで動きます。アクセルを少し踏んで発進','ブレーキを ゆるめると うごきます','Release the brake — the car creeps. Press the accel gently to go','Nhả phanh xe sẽ bò. Đạp ga nhẹ để đi','松开刹车车会蠕行，轻踩油门起步','Lepas rem, mobil merayap. Injak gas pelan'],
+l_20:['20km/h くらいまで加速','20km/h くらいまで はやく','Speed up to about 20 km/h','Tăng tốc đến khoảng 20 km/h','加速到约20km/h','Percepat hingga ±20 km/jam'],
+l_stopmark:['緑の目印のところで止まる','みどりの めじるしで とまる','Stop at the green marker','Dừng ở điểm xanh','在绿色标记处停车','Berhenti di penanda hijau'],
+l_P:['止まったら、ブレーキを踏んだまま P に入れ、パーキングブレーキ','とまったら P と パーキングブレーキ','Once stopped, hold the brake, shift to P and set the parking brake','Khi đã dừng, đạp phanh, số P và kéo phanh tay','停稳后踩住刹车挂P，拉驻车制动','Setelah berhenti, injak rem, gigi P, pasang rem parkir'],
+/* レッスン名 */
+ls1:['発進と停止（AT・クリープ）','うごく・とまる','Starting and stopping (automatic, creep)','Xuất phát và dừng (số tự động)','起步与停车（自动挡、蠕行）','Berangkat dan berhenti (otomatis)'],
+ls2:['左折・右折と合図','まがる・ウインカー','Left and right turns, signalling','Rẽ trái, rẽ phải, xi nhan','左转、右转与转向灯','Belok kiri-kanan dan sein'],
+ls3:['一時停止と安全確認','とまれ と かくにん','Stop sign and safety check','Biển dừng và quan sát','停车让行与安全确认','Rambu stop dan cek keselamatan'],
+ls4:['信号と横断歩道','しんごう と おうだんほどう','Traffic signals and crosswalks','Đèn và vạch qua đường','信号灯与人行横道','Lampu dan penyeberangan'],
+ls5:['踏切','ふみきり','Railroad crossing','Đường ray','铁路道口','Perlintasan kereta'],
+ls6:['S字','Sじ','S-curve','Đường S','S弯','Tikungan S'],
+ls7:['クランク','クランク','Crank','Đường gấp khúc','直角弯','Engkol'],
+ls8:['方向変換（車庫入れ）','しゃこいれ','Reversing into a garage','Lùi chuồng','倒车入库','Parkir mundur'],
+ls9:['縦列駐車','じゅうれつ ちゅうしゃ','Parallel parking','Đỗ song song','侧方停车','Parkir paralel'],
+ls10:['自転車の横を通る（2026年4月〜）','じてんしゃの よこを とおる','Passing a cyclist (since April 2026)','Vượt xe đạp (từ 4/2026)','超过自行车（2026年4月起）','Melewati sepeda (sejak April 2026)']
+};
+let LANG=store.get('jdp_lang',null)||(()=>{const n=(navigator.language||'ja').toLowerCase();return n.startsWith('ja')?'ja':n.startsWith('vi')?'vi':n.startsWith('zh')?'zh':(n.startsWith('id')||n.startsWith('ms'))?'id':'en';})();
+function t(k,...a){const e=S[k];if(!e)return k;let s=e[LI[LANG]];if(!s)s=LANG==='easy'?e[0]:(e[2]||e[0]);return s.replace(/\{(\d)\}/g,(_,i)=>a[i]);}
+function tq(o){if(o==null)return '';if(typeof o==='string')return o;return o[LANG]||(LANG==='easy'?o.ja:o.en)||o.ja;}
+function applyI18n(){document.documentElement.lang=LANG==='easy'?'ja':LANG;$$('[data-i]').forEach(el=>{el.textContent=t(el.dataset.i);});$('#keysHelp').innerHTML=t('keys');document.title=t('title');renderLangs();renderVehicles();$('#verT').textContent=VER+' © 合同会社アップテック';updViewBtn();}
+
+/* ================= 設定 ================= */
+const SET=Object.assign({path:true,route:true,track:false,mirror:true,sound:true,sens:1},store.get('jdp_set',{}));
+const PROG=store.get('jdp_prog',{});
+
+/* ================= コース（単位：m、x右・y下＝北が上） ================= */
+const RD=[];               // 道路 {pts,w,two}
+function road(pts,w,two){RD.push({pts,w,two});}
+road([[12,12],[138,12],[138,83],[12,83],[12,12]],7,true);   // 外周（左回り）
+road([[12,47.5],[138,47.5]],7,true);                           // 中央の横の道
+road([[75,12],[75,83]],7,true);                                // 中央の縦の道
+function pathBuild(x,y,a,ops){const P=[[x,y]];for(const o of ops){if(o[0]==='L'){x+=Math.cos(a)*o[1];y+=Math.sin(a)*o[1];P.push([x,y]);}else{const ang=o[1]*PI/180,r=o[2],n=Math.max(4,Math.ceil(Math.abs(o[1])/6)),da=ang/n,st=r*Math.abs(da);for(let i=0;i<n;i++){a+=da/2;x+=Math.cos(a)*st;y+=Math.sin(a)*st;a+=da/2;P.push([x,y]);}}}return P;}
+const S_PTS=pathBuild(13,29,0,[['L',6],['A',-45,7],['A',90,7],['A',-90,7],['A',45,7]]);
+{const e=S_PTS[S_PTS.length-1];S_PTS.push([54,e[1]]);const p2=pathBuild(54,e[1],0,[['A',90,6]]);p2.shift();S_PTS.push(...p2);const f=S_PTS[S_PTS.length-1];S_PTS.push([f[0],46]);}
+road(S_PTS,4.0,false);
+road([[125,13],[125,22],[110,22],[110,32],[95,32],[95,46]],4.5,false);     // クランク
+road([[40,49],[40,72]],7,false);                                         // 方向変換の道（行き止まり）
+road([[76,60],[128,60],[128,46]],6,false);                             // 縦列駐車の道
+const S_EXIT=S_PTS[S_PTS.length-2];
+const BAYS={gW:{x0:31,x1:36.5,y0:62.75,y1:65.25},gE:{x0:43.5,x1:49,y0:62.75,y1:65.25},pp:{x0:100,x1:107,y0:54.5,y1:57}};
+const POLES=[[36.5,62.75],[36.5,65.25],[43.5,62.75],[43.5,65.25],[100,57],[107,57],[100,54.5],[107,54.5]].map(([x,y])=>({x,y,r:0.11}));
+// 内側の角の丸み（fillet）
+const FIL=[];
+function fillet(px,py,ux,uy,vx,vy,r){const cx=px+r*(ux+vx),cy=py+r*(uy+vy),P=[[px,py],[px+r*ux,py+r*uy]];for(let i=1;i<10;i++){const th=i/10*PI/2;P.push([cx+r*(-vx*Math.cos(th)-ux*Math.sin(th)),cy+r*(-vy*Math.cos(th)-uy*Math.sin(th))]);}P.push([px+r*vx,py+r*vy]);FIL.push(P);}
+for(const [x0,x1,y0,y1] of [[15.5,71.5,15.5,44],[78.5,134.5,15.5,44],[15.5,71.5,51,79.5],[78.5,134.5,51,79.5]]){
+  fillet(x0,y0,1,0,0,1,6);fillet(x1,y0,-1,0,0,1,6);fillet(x0,y1,1,0,0,-1,6);fillet(x1,y1,-1,0,0,-1,6);}
+fillet(15.5,27,0,-1,1,0,3);fillet(15.5,31,0,1,1,0,3);
+{const ex=S_EXIT[0];fillet(ex-2,44,-1,0,0,-1,3);fillet(ex+2,44,1,0,0,-1,3);}
+fillet(122.75,15.5,-1,0,0,1,3);fillet(127.25,15.5,1,0,0,1,3);fillet(92.75,44,-1,0,0,-1,3);fillet(97.25,44,1,0,0,-1,3);
+fillet(36.5,51,-1,0,0,1,4);fillet(43.5,51,1,0,0,1,4);
+fillet(78.5,57,0,-1,1,0,4);fillet(78.5,63,0,1,1,0,4);fillet(125,51,-1,0,0,1,4);fillet(131,51,1,0,0,1,4);fillet(125,57,-1,0,0,-1,4);
+// 走れる範囲（多角形）と、地面の絵
+const DRV=[],GND=[];
+function bbox(P){let a=1e9,b=1e9,c=-1e9,d=-1e9;for(const [x,y] of P){a=Math.min(a,x);b=Math.min(b,y);c=Math.max(c,x);d=Math.max(d,y);}return [a,b,c,d];}
+function addDrv(P,col){DRV.push({pts:P,bb:bbox(P)});GND.push({pts:P,col:col||'#5b6065'});}
+const SEGS=[];
+for(const R of RD){const h=R.w/2;for(let i=0;i<R.pts.length-1;i++){const [ax,ay]=R.pts[i],[bx,by]=R.pts[i+1];const L=hyp(bx-ax,by-ay),dx=(bx-ax)/L,dy=(by-ay)/L,nx=-dy,ny=dx;
+  const A=[ax-dx*h,ay-dy*h],B=[bx+dx*h,by+dy*h];addDrv([[A[0]+nx*h,A[1]+ny*h],[B[0]+nx*h,B[1]+ny*h],[B[0]-nx*h,B[1]-ny*h],[A[0]-nx*h,A[1]-ny*h]]);
+  SEGS.push({ax,ay,bx,by,dx,dy,L,w:R.w,two:R.two});}}
+for(const F of FIL)addDrv(F);
+for(const k in BAYS){const b=BAYS[k];addDrv([[b.x0,b.y0],[b.x1,b.y0],[b.x1,b.y1],[b.x0,b.y1]],'#61666b');}
+function pip(P,x,y){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c;}return c;}
+function inDrv(x,y){for(const D of DRV){if(x<D.bb[0]||x>D.bb[2]||y<D.bb[1]||y>D.bb[3])continue;if(pip(D.pts,x,y))return true;}return false;}
+const JUNC=[[12,12],[138,12],[12,83],[138,83],[12,47.5],[138,47.5],[75,12],[75,83],[75,47.5]];
+const nearJ=(x,y,m)=>JUNC.some(([a,b])=>Math.abs(x-a)<m&&Math.abs(y-b)<m);
+// 路面の表示（白線など）
+const MARK=[];  // {pts,col}
+const rect=(x0,y0,x1,y1)=>[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];
+function quadAlong(ax,ay,bx,by,hw){const L=hyp(bx-ax,by-ay),nx=-(by-ay)/L*hw,ny=(bx-ax)/L*hw;return [[ax+nx,ay+ny],[bx+nx,by+ny],[bx-nx,by-ny],[ax-nx,ay-ny]];}
+for(const s of SEGS){if(!s.two)continue;for(let d=1;d<s.L-1;d+=6){const x=s.ax+s.dx*d,y=s.ay+s.dy*d,x2=s.ax+s.dx*Math.min(s.L,d+3),y2=s.ay+s.dy*Math.min(s.L,d+3);if(nearJ(x,y,9.5)||nearJ(x2,y2,9.5))continue;MARK.push({pts:quadAlong(x,y,x2,y2,0.08),col:'#e9e9e2'});}}
+// 停止線 {x1,y1,x2,y2,dir,type,approach}
+const SL=[
+ {id:'sigN',type:'signal',ph:'NS',x1:71.5,y1:57.5,x2:75,y2:57.5,dir:[0,-1]},
+ {id:'sigS',type:'signal',ph:'NS',x1:75,y1:37.5,x2:78.5,y2:37.5,dir:[0,1]},
+ {id:'sigE',type:'signal',ph:'EW',x1:65,y1:44,x2:65,y2:47.5,dir:[1,0]},
+ {id:'sigW',type:'signal',ph:'EW',x1:85,y1:47.5,x2:85,y2:51,dir:[-1,0]},
+ {id:'stopT',type:'stop',x1:71.5,y1:23,x2:75,y2:23,dir:[0,-1]},
+ {id:'railN',type:'rail',x1:134.5,y1:35,x2:138,y2:35,dir:[0,-1]},
+ {id:'railS',type:'rail',x1:138,y1:25,x2:141.5,y2:25,dir:[0,1]}];
+for(const s of SL){const L=hyp(s.x2-s.x1,s.y2-s.y1);s.cx=(s.x1+s.x2)/2;s.cy=(s.y1+s.y2)/2;s.half=L/2;s.ux=(s.x2-s.x1)/L;s.uy=(s.y2-s.y1)/L;
+  const ox=s.dir[0]*0.22,oy=s.dir[1]*0.22;MARK.push({pts:[[s.x1-ox,s.y1-oy],[s.x2-ox,s.y2-oy],[s.x2+ox,s.y2+oy],[s.x1+ox,s.y1+oy]],col:'#f2f2ea'});}
+// 横断歩道（外周の上の道）
+const CW={x0:43,x1:47,y0:8.5,y1:15.5};
+for(let y=8.9;y<15.3;y+=0.9)MARK.push({pts:rect(CW.x0,y,CW.x1,y+0.45),col:'#f2f2ea'});
+for(const [dx,yy] of [[60,13.75],[30,10.25]]){const d=[[dx-1.5,yy],[dx,yy-0.6],[dx+1.5,yy],[dx,yy+0.6]];MARK.push({pts:d,col:'#f2f2ea'});MARK.push({pts:d.map(([x,y])=>[x+(x-dx)*-0.75,y+(y-yy)*-0.75]),col:'#5b6065'});}
+// 「止まれ」路面の三角と、発着点・目印
+MARK.push({pts:rect(19.5,79.7,28.5,81.6),col:'rgba(120,200,255,.28)'});
+// 駐車枠の線
+for(const k in BAYS){const b=BAYS[k];for(const P of [rect(b.x0,b.y0,b.x1,b.y0+0.12),rect(b.x0,b.y1-0.12,b.x1,b.y1),k==='pp'?rect(b.x0,b.y0,b.x0+0.12,b.y1):(k==='gW'?rect(b.x0,b.y0,b.x0+0.12,b.y1):rect(b.x1-0.12,b.y0,b.x1,b.y1)),k==='pp'?rect(b.x1-0.12,b.y0,b.x1,b.y1):null])if(P)MARK.push({pts:P,col:'#f2f2ea'});}
+// 線路
+const RAIL={y:30,x0:112,x1:165};
+GND.push({pts:rect(112,28.2,165,31.8),col:'#6e6152',noDrv:1});
+MARK.push({pts:rect(134.5,28.4,141.5,31.6),col:'#4a4f54'});
+for(const yy of [29.3,30.7])MARK.push({pts:rect(112,yy-0.06,165,yy+0.06),col:'#b8bcc0'});
+// 歩道
+for(const [y0,y1] of [[6.6,8.5],[15.5,17.2]])GND.push({pts:rect(28,y0,62,y1),col:'#a9a69c',noDrv:1});
+
+/* 景色（建物・木） */
+const SCN=[];SCN.push({t:'box',x:111,y:30,hw:1,hh:3.2,a:0,z0:0,z1:5,col:'#7d7468'});SCN.push({t:'box',x:166,y:30,hw:1,hh:3.2,a:0,z0:0,z1:5,col:'#7d7468'});
+function bld(x,y,w,h,z,col){SCN.push({t:'box',x,y,hw:w/2,hh:h/2,a:0,z0:0,z1:z,col,top:shade(col,1.15)});}
+function tree(x,y){SCN.push({t:'tree',x,y});}
+[[20,-2,16,6,9,'#c9b79c'],[45,-3,22,7,14,'#9fb0c0'],[80,-2,18,6,7,'#d7c9b0'],[110,-3,24,7,18,'#a8a296'],[140,-2,14,6,10,'#b9c4c9'],
+ [-4,30,6,20,8,'#b7a99a'],[-4,65,6,24,12,'#c6c0b6'],[154,60,6,26,9,'#b3bac2'],[30,97,26,6,6,'#cbbca5'],[75,98,20,6,11,'#a7b4bf'],[118,97,26,6,8,'#c4b8a6']].forEach(b=>bld(...b));
+[[30,40],[45,40],[22,70],[60,75],[90,72],[110,75],[85,25],[100,40],[118,40],[132,75],[52,20],[30,20]].forEach(p=>tree(...p));
+
+/* ================= 状態 ================= */
+const CAR={wb:2.6,fo:0.9,ro:0.9,hw:0.85,tw:0.73,maxSt:36*PI/180,ratio:15};
+let G=null;
+function newState(spawn){return {x:spawn.x,y:spawn.y,a:spawn.a,v:0,wheel:0,thr:0,brk:0,gear:spawn.gear||'P',pb:spawn.pb!==false,belt:!!spawn.belt,
+  wink:null,winkT:0,winkA:0,look:0,lookYaw:0,lookUntil:0,lookT:{L:-99,R:-99,B:-99},
+  time:0,events:[],score:100,over:false,offAny:false,offRun:0,cool:{},slState:{},tracks:[],trkD:0,started:false,startCheck:!!spawn.startCheck,
+  moved:0,rightT:0,bikeFlag:false,leg:0,legs:[],legData:{},kiri:0,maxV:0,msg:'',sub:'',subT:0,subWarn:false};}
+const W={sigT:0,train:{t:-20,next:22},ped:{s:'walk',t:0,side:0,x:45,y:7.3},bike:{x:14.9,y:30,on:false}};
+const keys={};
+let MODE=null; // {kind:'free'|'lesson'|'exam', id}
+
+/* ================= 信号・列車・歩行者・自転車 ================= */
+function sigState(ph){const c=W.sigT%30;if(ph==='NS')return c<1?'R':c<12?'G':c<15?'Y':'R';return c<16?'R':c<27?'G':'Y';}
+function trainInfo(){const T=W.train,tt=T.t;const warn=tt>=0&&tt<15;const gate=tt<0?0:tt<3?0:tt<6?(tt-3)/3:tt<12?1:tt<14?1-(tt-12)/2:0;
+  let tx=null,t0=0,t1=0;if(tt>=6){const a=175-15*(tt-6);t0=Math.max(a,RAIL.x0);t1=Math.min(a+36,RAIL.x1);if(t1>t0+0.2)tx=a;}return {warn,gate,tx,t0,t1};}
+function worldTick(dt){W.sigT+=dt;const T=W.train;T.t+=dt;if(T.t>16){T.t=-(T.next);T.next=25+Math.random()*20;}
+  // 歩行者：歩く → 待つ → 渡る → 反対で歩く
+  const P=W.ped;P.t+=dt;const carOn=G&&carRectOverlap(CW.x0-1,CW.y0,CW.x1+1,CW.y1);
+  const carNear=G&&carRectOverlap(CW.x0-6,CW.y0,CW.x1+6,CW.y1)&&Math.abs(G.v)>2;
+  const y0=7.3,y1=16.4;
+  if(P.s==='walk'){const tx=45,ty=P.side?y1:y0,sx=P.side?62:28;const k=clamp(P.t/7,0,1);P.x=sx+(tx-sx)*k;P.y=ty;if(k>=1){P.s='wait';P.t=0;}}
+  else if(P.s==='wait'){if(P.t>1.6&&!carOn&&!carNear){P.s='cross';P.t=0;}}
+  else if(P.s==='cross'){const from=P.side?y1:y0,to=P.side?y0:y1;const k=clamp(P.t*1.25/(y1-y0),0,1);P.y=from+(to-from)*k;P.x=45;if(k>=1){P.s='idle';P.t=0;P.side^=1;}}
+  else if(P.s==='idle'){if(P.t>9){P.s='walk';P.t=0;}}
+  // 自転車：西の道を南へ（外周の内側車線の左端）
+  const B=W.bike;if(B.on){B.y+=4.4*dt;if(B.y>74){B.y=20;}}}
+function carRectOverlap(x0,y0,x1,y1){const C=bodyPts(G.x,G.y,G.a);const xs=C.map(p=>p[0]),ys=C.map(p=>p[1]);return Math.max(...xs)>x0&&Math.min(...xs)<x1&&Math.max(...ys)>y0&&Math.min(...ys)<y1;}
+
+/* ================= 車の形 ================= */
+function fr(a){return [Math.cos(a),Math.sin(a),-Math.sin(a),Math.cos(a)];} // 前fx,fy 右rx,ry
+function bodyPts(x,y,a){const [fx,fy,rx,ry]=fr(a);const P=[];for(const [l,s] of [[3.5,1],[3.5,-1],[-0.9,-1],[-0.9,1]])P.push([x+fx*l+rx*s*CAR.hw,y+fy*l+ry*s*CAR.hw]);return P;}
+function tirePts(x,y,a){const [fx,fy,rx,ry]=fr(a);return [[x+fx*2.6-rx*CAR.tw,y+fy*2.6-ry*CAR.tw],[x+fx*2.6+rx*CAR.tw,y+fy*2.6+ry*CAR.tw],[x-rx*CAR.tw,y-ry*CAR.tw],[x+rx*CAR.tw,y+ry*CAR.tw]];}
+function toLocal(px,py,x,y,a){const [fx,fy,rx,ry]=fr(a);const dx=px-x,dy=py-y;return [dx*fx+dy*fy,dx*rx+dy*ry];}
+function hitCircle(x,y,a,cx,cy,r){const [l,s]=toLocal(cx,cy,x,y,a);return l>-0.9-r&&l<3.5+r&&Math.abs(s)<CAR.hw+r;}
+function segHit(x,y,a,x1,y1,x2,y2){for(let i=0;i<=8;i++){const k=i/8;if(hitCircle(x,y,a,x1+(x2-x1)*k,y1+(y2-y1)*k,0.06))return true;}return false;}
+function gateLines(){const g=trainInfo().gate,L=4.3,ph=(1-g)*PI/2*0.95;const c=Math.cos(ph);return [{px:133.9,py:33.6,ex:133.9+L*c,ey:33.6,z:1.0+L*Math.sin(ph),down:g>0.65},{px:142.1,py:26.4,ex:142.1-L*c,ey:26.4,z:1.0+L*Math.sin(ph),down:g>0.65}];}
+function collide(x,y,a){
+  for(const p of POLES)if(hitCircle(x,y,a,p.x,p.y,p.r))return 'touch';
+  const P=W.ped;if(hitCircle(x,y,a,P.x,P.y,0.3))return 'crash';
+  const B=W.bike;if(B.on&&(hitCircle(x,y,a,B.x,B.y-0.8,0.3)||hitCircle(x,y,a,B.x,B.y+0.8,0.3)))return 'crash';
+  const T=trainInfo();if(T.tx!=null&&Math.abs(y-30)<7){const C=bodyPts(x,y,a);if(C.some(([px,py])=>px>T.t0&&px<T.t1&&py>28.6&&py<31.4))return 'crash';for(let px=Math.max(T.t0,x-6);px<=Math.min(T.t1,x+6);px+=0.5)for(const py of [28.6,31.4])if(hitCircle(x,y,a,px,py,0.05))return 'crash';}
+  for(const gl of gateLines())if(gl.down&&segHit(x,y,a,gl.px,gl.py,gl.ex,gl.ey))return 'touch';
+  return null;}
+
+/* ================= 採点・出来事 ================= */
+const EV={off:[20],offrun:[0,1],touch:[20],crash:[0,1],red:[0,1],nostop:[20],stoppos:[10],nolook:[10],railstop:[0,1],railin:[0,1],ped:[0,1],right:[20],speed:[10],slow:[10],sig:[10],siglate:[5],bike:[10],pb:[5],belt:[10],startlook:[10],startsig:[5],kiri:[5]};
+function ev(k){if(G.over)return;G.events.push(k);(G.evLog||(G.evLog=[])).push([k,G.leg,+G.x.toFixed(1),+G.y.toFixed(1),G.wink]);sfx('pen');const [p,stop]=EV[k];
+  if(MODE.kind==='exam'){if(stop){G.score=0;endRun('stopped',k);return;}G.score=Math.max(0,G.score-p);}
+  else if(stop&&k==='crash'){G.v=0;}
+  setSub(t('ev_'+k)+(MODE.kind==='exam'&&p?`（−${p}）`:''),true);}
+function setSub(s,warn){G.sub=s;G.subT=warn?4:3;G.subWarn=!!warn;}
+function cool(k,s){if((G.cool[k]||0)>G.time)return false;G.cool[k]=G.time+s;return true;}
+
+/* ================= 物理 ================= */
+function tick(dt){
+  if(!G||G.over){return;}
+  G.time+=dt;worldTick(dt);
+  // ペダル
+  const accK=keys.ArrowUp||keys.KeyW,brkK=keys.ArrowDown||keys.KeyS;
+  const accT=PED.acc!=null?PED.acc:(accK?1:0),brkT=PED.brk!=null?PED.brk:(brkK?1:0);
+  G.thr+=(accT>G.thr?Math.min(accT-G.thr,(PED.acc!=null?4:1.3)*dt):Math.max(accT-G.thr,-5*dt));
+  G.brk+=(brkT>G.brk?Math.min(brkT-G.brk,(PED.brk!=null?5:1.8)*dt):Math.max(brkT-G.brk,-6*dt));
+  // ハンドル
+  const stK=(keys.ArrowLeft||keys.KeyA?-1:0)+(keys.ArrowRight||keys.KeyD?1:0);
+  if(stK)G.wheel=clamp(G.wheel+stK*420*SET.sens*dt,-540,540);
+  else if(!WHEEL.held&&Math.abs(G.v)>0.3){const r=(40+Math.abs(G.v)*45)*dt;G.wheel=Math.abs(G.wheel)<r?0:G.wheel-Math.sign(G.wheel)*r;}
+  const dl=clamp(G.wheel/CAR.ratio*PI/180,-CAR.maxSt,CAR.maxSt);
+  // 前後の力
+  let acc=0;const gr=G.gear;
+  if(gr==='D'||gr==='R'){const dg=gr==='D'?1:-1,vv=G.v*dg;const drive=G.thr*(gr==='D'?3.2:2.0)*Math.max(0,1-vv/(gr==='D'?33:5.5));const creep=G.thr<0.05?Math.max(0,0.9*(1-vv/1.8)):0;acc+=dg*(drive+creep);}
+  if(Math.abs(G.v)>0.01)acc-=Math.sign(G.v)*(0.12+0.0005*G.v*G.v);
+  const bdec=G.brk*8.5+(G.pb?2.2:0)+(gr==='P'?30:0);
+  const v0=G.v;
+  if(v0===0&&bdec>=Math.abs(acc))G.v=0;
+  else{G.v+=acc*dt;const dv=bdec*dt;if(bdec>0){if(Math.abs(G.v)<=dv&&Math.sign(G.v)!==Math.sign(acc||-G.v)*-1)G.v=0;else if(Math.abs(G.v)<=dv)G.v=0;else G.v-=Math.sign(G.v)*dv;}}
+  if(Math.abs(G.v)<0.004&&bdec>0)G.v=0;
+  // 動く（後輪の中心が基準）
+  const nx=G.x+Math.cos(G.a)*G.v*dt,ny=G.y+Math.sin(G.a)*G.v*dt,na=G.a+G.v/CAR.wb*Math.tan(dl)*dt;
+  const hit=collide(nx,ny,na);
+  if(hit){if(Math.abs(G.v)>0.15&&cool('hit',1.5)){ev(hit);sfx('bump');}G.v=0;}
+  else{const ds=hyp(nx-G.x,ny-G.y);G.moved+=ds;G.x=nx;G.y=ny;G.a=na;G.trkD+=ds;
+    if(G.trkD>0.35&&SET.track){G.trkD=0;G.tracks.push(tirePts(G.x,G.y,G.a));if(G.tracks.length>900)G.tracks.shift();}}
+  // ウインカーの自動戻り
+  if(G.wink){const d=Math.abs(angDiff(G.a,G.winkA));if(d>1.05&&Math.abs(G.wheel)<80){G.wink=null;}}
+  // 視線
+  if(G.time>G.lookUntil)G.look=0;G.lookYaw+=(G.look-G.lookYaw)*Math.min(1,dt*7);
+  rules(dt);legTick(dt);
+  if(G.subT>0)G.subT-=dt;}
+function angDiff(a,b){let d=a-b;while(d>PI)d-=2*PI;while(d<-PI)d+=2*PI;return d;}
+
+/* ================= ルールの判定 ================= */
+function rules(dt){
+  const [fx,fy]=fr(G.a);const sp=Math.abs(G.v);
+  // 脱輪
+  const off=tirePts(G.x,G.y,G.a).some(([x,y])=>!inDrv(x,y));
+  if(off&&!G.offAny){G.offAny=true;ev('off');}
+  if(off){if(G.gear==='D'&&G.v>0)G.offRun+=G.v*dt;if(G.offRun>1.6&&cool('offrun',3))ev('offrun');}
+  else if(G.offAny&&!off){G.offAny=false;G.offRun=0;}
+  // シートベルト・パーキングブレーキ・発進
+  if(G.moved>0.5&&!G.started){G.started=true;
+    if(G.startCheck){if(!G.belt)ev('belt');if(!(G.wink==='R'||G.time-G.winkT<3&&G.lastWink==='R'))ev('startsig');if(G.time-Math.max(G.lookT.R,G.lookT.B)>10)ev('startlook');}
+    else if(!G.belt)ev('belt');}
+  if(G.pb&&sp>0.6&&cool('pb',8))ev('pb');
+  // 速度
+  if(sp*3.6>45&&cool('speed',8))ev('speed');
+  G.maxV=Math.max(G.maxV,sp);
+  // 停止線
+  const Fx=G.x+fx*3.5,Fy=G.y+fy*3.5;const ti=trainInfo();
+  for(const s of SL){const st=G.slState[s.id]||(G.slState[s.id]={pd:null,near:false,far:false,L:false,R:false});
+    const lat=(Fx-s.cx)*s.ux+(Fy-s.cy)*s.uy, d=(Fx-s.cx)*s.dir[0]+(Fy-s.cy)*s.dir[1], al=fx*s.dir[0]+fy*s.dir[1];
+    if(Math.abs(lat)>s.half+0.6||al<0.5||d<-14||d>4){st.pd=null;st.near=st.far=st.L=st.R=false;continue;}
+    if(d<0&&d>-3.2&&sp<0.05)st.near=true;
+    if(d<=-3.2&&d>-12&&sp<0.05)st.far=true;
+    if(d<0&&d>-6&&sp<1.5){if(G.lookT.L>G.time-6)st.L=true;if(G.lookT.R>G.time-6)st.R=true;}
+    if(st.pd!=null&&st.pd<0&&d>=0&&G.v>0){
+      if(s.type==='signal'){if(sigState(s.ph)==='R')ev('red');}
+      else if(s.type==='stop'){if(!st.near)ev(st.far?'stoppos':'nostop');else if(!(st.L&&st.R))ev('nolook');}
+      else if(s.type==='rail'){if(ti.warn)ev('railin');else if(!st.near)ev('railstop');else if(!(st.L&&st.R))ev('nolook');}}
+    st.pd=d;}
+  // 横断歩道
+  const P=W.ped;const onCW=carRectOverlap(CW.x0,CW.y0,CW.x1,CW.y1);
+  if(onCW&&!G.onCW&&(P.s==='cross'||P.s==='wait'))ev('ped');
+  G.onCW=onCW;
+  // 左側通行
+  const cx=G.x+fx*1.3,cy=G.y+fy*1.3;let wrong=false;
+  if(sp>0.5&&!nearJ(cx,cy,11)){for(const s of SEGS){if(!s.two)continue;const along=(cx-s.ax)*s.dx+(cy-s.ay)*s.dy;if(along<0||along>s.L)continue;const offn=(cx-s.ax)*(-s.dy)+(cy-s.ay)*s.dx;if(Math.abs(offn)>s.w/2)continue;
+    const al=fx*s.dx+fy*s.dy;if(Math.abs(al)<0.8)continue;const sg=al>0?1:-1;const left=-offn*sg;  // 進む向きの左側を＋に
+    if(left<-0.35)wrong=true;break;}}
+  G.rightT=wrong?G.rightT+dt:Math.max(0,G.rightT-dt*2);
+  if(G.rightT>1.3&&cool('right',6))ev('right');
+  // 自転車の横を通る
+  const B=W.bike;if(B.on){const [l,s]=toLocal(B.x,B.y,G.x,G.y,G.a);const same=Math.sin(G.a)>0.7;
+    if(same&&l>-0.9&&l<3.5&&Math.abs(s)<CAR.hw+0.3+1.0&&sp*3.6>20){if(!G.bikeFlag){G.bikeFlag=true;ev('bike');}}
+    if(l<-6||l>12)G.bikeFlag=false;}}
+
+/* ================= コース（レッスン・検定）の手順 ================= */
+const ST={x:22,y:80.6,a:0};
+const LEGS_A=[
+ {k:'go',p:[30,80.8],r:5,m:'g_start'},
+ {k:'speed',p:[63,81],r:5,m:'g_speed',min:37},
+ {k:'turn',p:[73.5,80.5],sig:'L',m:'g_left'},
+ {k:'go',p:[73.25,40],r:5,m:'g_straight'},
+ {k:'go',p:[73.25,26],r:5,m:'g_stopline'},
+ {k:'turn',p:[73,14],sig:'L',m:'g_left'},
+ {k:'go',p:[52,13.75],r:5,m:'g_cross'},
+ {k:'turn',p:[14.5,14],sig:'L',m:'g_left'},
+ {k:'turn',p:[14.5,29],sig:'L',m:'g_leftS',r:4},
+ {k:'go',p:[S_EXIT[0],40],r:4,m:'g_S',kiri:0},
+ {k:'turn',p:[S_EXIT[0]-1,49],sig:'R',m:'g_right'},
+ {k:'turn',p:[40.5,50],sig:'L',m:'g_leftGarage'},
+ {k:'garage',bay:'gW',m:'g_garage',kiri:1},
+ {k:'turn',p:[40.8,58],sig:'L',m:'g_garageOut',pre:5,r:4},
+ {k:'turn',p:[40,49],sig:'L',m:'g_left'},
+ {k:'turn',p:[13.5,49],sig:'L',m:'g_left'},
+ {k:'turn',p:[14,81],sig:'L',m:'g_left'},
+ {k:'finish',p:[24,80.8],m:'g_finish'}];
+const LEGS_B=[
+ {k:'go',p:[30,80.8],r:5,m:'g_start'},
+ {k:'turn',p:[73.5,80.5],sig:'L',m:'g_left'},
+ {k:'turn',p:[74,60.5],sig:'R',m:'g_rightPark'},
+ {k:'park',bay:'pp',m:'g_parallel',kiri:2},
+ {k:'turn',p:[113,58.6],sig:'R',m:'g_parallelOut',pre:7,r:4},
+ {k:'turn',p:[127,59.5],sig:'L',m:'g_left'},
+ {k:'turn',p:[127,46.5],sig:'R',m:'g_right'},
+ {k:'turn',p:[136.5,46],sig:'L',m:'g_left'},
+ {k:'go',p:[136.25,37],r:4,m:'g_rail'},
+ {k:'turn',p:[136,14],sig:'L',m:'g_left'},
+ {k:'turn',p:[125,14.5],sig:'L',m:'g_leftCrank',r:4},
+ {k:'go',p:[95,40],r:4,m:'g_crank',kiri:0},
+ {k:'turn',p:[94,49],sig:'R',m:'g_right'},
+ {k:'go',p:[62,49.25],r:5,m:'g_straight'},
+ {k:'turn',p:[13.5,49],sig:'L',m:'g_left'},
+ {k:'turn',p:[14,81],sig:'L',m:'g_left'},
+ {k:'finish',p:[24,80.8],m:'g_finish'}];
+const LESSONS=[
+ {id:1,spawn:{...ST,gear:'P',pb:true,belt:false,startCheck:true},legs:[
+   {k:'do',m:'l_belt',chk:()=>G.belt},{k:'do',m:'l_brakeD',chk:()=>G.gear==='D'},{k:'do',m:'l_pboff',chk:()=>!G.pb},
+   {k:'do',m:'l_sigR',chk:()=>G.wink==='R'},{k:'do',m:'l_lookR',chk:()=>G.time-Math.max(G.lookT.B,G.lookT.R)<4},
+   {k:'do',m:'l_go',chk:()=>G.moved>1},{k:'do',m:'l_20',chk:()=>Math.abs(G.v)*3.6>=18},
+   {k:'stop',p:[52,80.8],m:'l_stopmark'},{k:'do',m:'l_P',chk:()=>G.gear==='P'&&G.pb}]},
+ {id:2,spawn:{x:34,y:81.25,a:0,gear:'D',pb:false,belt:true},legs:[
+   {k:'turn',p:[73.5,80.5],sig:'L',m:'g_left'},{k:'turn',p:[74,60.5],sig:'R',m:'g_rightPark'},{k:'stop',p:[92,58.6],m:'g_end'}]},
+ {id:3,spawn:{x:73.25,y:40,a:-PI/2,gear:'D',pb:false,belt:true},legs:[
+   {k:'go',p:[73.25,26],r:5,m:'g_stopline'},{k:'turn',p:[73,14],sig:'L',m:'g_left'},{k:'stop',p:[58,13.75],m:'g_end'}]},
+ {id:4,spawn:{x:73.25,y:76,a:-PI/2,gear:'D',pb:false,belt:true},legs:[
+   {k:'go',p:[73.25,40],r:5,m:'g_straight'},{k:'go',p:[73.25,26],r:5,m:'g_stopline'},{k:'turn',p:[73,14],sig:'L',m:'g_left'},{k:'go',p:[52,13.75],r:5,m:'g_cross'},{k:'stop',p:[32,13.75],m:'g_end'}]},
+ {id:5,spawn:{x:136.25,y:62,a:-PI/2,gear:'D',pb:false,belt:true},legs:[{k:'go',p:[136.25,37],r:4,m:'g_rail'},{k:'stop',p:[136.25,20],m:'g_end'}]},
+ {id:6,spawn:{x:13.75,y:16,a:PI/2,gear:'D',pb:false,belt:true},legs:[
+   {k:'turn',p:[14.5,29],sig:'L',m:'g_leftS',r:4},{k:'go',p:[S_EXIT[0],40],r:4,m:'g_S',kiri:0},{k:'turn',p:[S_EXIT[0]-1,49],sig:'R',m:'g_right'},{k:'stop',p:[30,49.25],m:'g_end'}]},
+ {id:7,spawn:{x:136,y:13.75,a:PI,gear:'D',pb:false,belt:true},legs:[
+   {k:'turn',p:[125,14.5],sig:'L',m:'g_leftCrank',r:4},{k:'go',p:[95,40],r:4,m:'g_crank',kiri:0},{k:'turn',p:[94,49],sig:'R',m:'g_right'},{k:'stop',p:[86,49.25],m:'g_end'}]},
+ {id:8,spawn:{x:62,y:49.25,a:PI,gear:'D',pb:false,belt:true},legs:[
+   {k:'turn',p:[40.5,50],sig:'L',m:'g_leftGarage'},{k:'garage',bay:'gW',m:'g_garage',kiri:1},{k:'turn',p:[40.8,58],sig:'L',m:'g_garageOut',pre:5,r:4},{k:'turn',p:[40,49],sig:'L',m:'g_left'},{k:'stop',p:[25,49.25],m:'g_end'}]},
+ {id:9,spawn:{x:73.25,y:76,a:-PI/2,gear:'D',pb:false,belt:true},legs:[
+   {k:'turn',p:[74,60.5],sig:'R',m:'g_rightPark'},{k:'park',bay:'pp',m:'g_parallel',kiri:2},{k:'turn',p:[113,58.6],sig:'R',m:'g_parallelOut',pre:7,r:4},{k:'stop',p:[121,58.6],m:'g_end'}]},
+ {id:10,spawn:{x:13.75,y:18,a:PI/2,gear:'D',pb:false,belt:true},bike:true,legs:[{k:'go',p:[13.75,44],r:5,m:'g_bike'},{k:'stop',p:[13.75,70],m:'g_end'}]}];
+function legTick(dt){
+  const L=G.legs[G.leg];if(!L)return;const d=G.legData;const [fx,fy]=fr(G.a);const cx=G.x+fx*1.3,cy=G.y+fy*1.3;
+  if(L.kiri!=null&&G.gear==='R'&&G.prevGear!=='R'){d.rev=(d.rev||0)+1;if(d.rev>L.kiri)ev('kiri');}
+  G.prevGear=G.gear;
+  if(L.p){const dist=hyp(cx-L.p[0],cy-L.p[1]);
+    if(L.sig&&!d.sigDone){const pre=L.pre||15;if(d.startDist==null)d.startDist=dist;const lim=d.startDist<pre+2?Math.min(pre,5):pre;
+      if(dist<lim){d.sigDone=true;if(G.wink!==L.sig)ev('sig');else if(lim===pre&&G.time-G.winkT<2.0)ev('siglate');}}
+    if(L.k==='speed'){if(G.legStart==null)G.legStart=G.maxV=0;}
+    if((L.k==='go'||L.k==='turn'||L.k==='speed')&&dist<(L.r||6))return nextLeg();
+    if(L.k==='stop'&&dist<2.5&&G.v===0)return nextLeg();
+    if(L.k==='finish'&&dist<4.5&&G.v===0&&G.gear==='P'&&G.pb)return nextLeg();}
+  if(L.k==='do'&&L.chk())return nextLeg();
+  if((L.k==='garage'||L.k==='park')&&G.v===0){const b=BAYS[L.bay];const inB=bodyPts(G.x,G.y,G.a).every(([x,y])=>x>=b.x0-0.05&&x<=b.x1+0.05&&y>=b.y0-0.05&&y<=b.y1+0.05);
+    const okA=L.k==='park'?Math.abs(Math.sin(G.a))<0.17:true;if(inB&&okA){sfx('ok');return nextLeg();}}}
+function nextLeg(){const L=G.legs[G.leg];if(L&&L.k==='speed'&&G.maxV*3.6<L.min)ev('slow');
+  G.leg++;G.legData={};if(L&&L.k==='speed')G.maxV=0;sfx('ok');
+  const N=G.legs[G.leg];if(N&&N.k==='speed')G.maxV=0;
+  if(!N&&G.legs.length)endRun('done');}
+
+/* ================= 開始・終了 ================= */
+function startRun(mode){MODE=mode;let spawn,legs=[],title='';
+  if(mode.kind==='free'){spawn={...ST,gear:'P',pb:true,belt:false,startCheck:true};title=t('free');}
+  else if(mode.kind==='exam'){spawn={...ST,gear:'P',pb:true,belt:false,startCheck:true};legs=mode.id==='A'?LEGS_A:LEGS_B;title=t('exam')+' '+t(mode.id==='A'?'courseA':'courseB');}
+  else{const Ls=LESSONS.find(l=>l.id===mode.id);spawn=Ls.spawn;legs=Ls.legs;title=mode.id+'. '+t('ls'+mode.id);}
+  G=newState(spawn);G.legs=legs;G.prevGear=G.gear;
+  W.bike.on=mode.kind==='free'||(mode.kind==='lesson'&&mode.id===10);W.bike.y=mode.kind==='lesson'?spawn.y+16:30;W.bike.x=14.9;
+  if(mode.kind==='lesson'&&mode.id===5){W.train.t=-14;}
+  W.ped.s='walk';W.ped.t=0;
+  $('#dTitle').textContent=title;$('#stScoreW').hidden=mode.kind!=='exam';
+  show('scDrive');resize();syncUI();}
+function endRun(kind,reason){if(G.over)return;G.over=true;G.endKind=kind;G.endReason=reason;sfx(kind==='done'?'win':'pen');
+  let head,big='',col;
+  if(MODE.kind==='exam'){if(kind==='stopped'){head=t('stopped');col='var(--red)';big='—';}else{const ok=G.score>=70;head=t(ok?'pass':'fail');col=ok?'var(--grn)':'var(--red)';big=G.score+' '+t('pts');}}
+  else{head=t('done');col='var(--grn)';const n=G.events.length;big=n===0?'★★★':n<=2?'★★☆':'★☆☆';
+    if(MODE.kind==='lesson'){const p=PROG['L'+MODE.id]||0;const s=n===0?3:n<=2?2:1;if(s>p){PROG['L'+MODE.id]=s;store.set('jdp_prog',PROG);}}}
+  if(MODE.kind==='exam'&&kind!=='stopped'){const b=PROG['E'+MODE.id]||0;if(G.score>b){PROG['E'+MODE.id]=G.score;store.set('jdp_prog',PROG);}}
+  const cnt={};G.events.forEach(k=>cnt[k]=(cnt[k]||0)+1);
+  const items=Object.keys(cnt).map(k=>`<li>${t('ev_'+k)}${cnt[k]>1?' ×'+cnt[k]:''}${MODE.kind==='exam'&&EV[k][0]?`（−${EV[k][0]*cnt[k]}）`:''}</li>`).join('');
+  const nextBtn=MODE.kind==='lesson'&&MODE.id<10?`<button class="btn pri" id="mNext">${t('nextL')}</button>`:'';
+  openModal(`<h3 style="color:${col}">${head}</h3><div class="big">${big}</div>${reason?`<div>${t('reason',t('ev_'+reason))}</div>`:''}<b>${t('mistakes')}</b>${items?`<ul>${items}</ul>`:`<div class="muted">${t('none')}</div>`}<div class="btns">${nextBtn}<button class="btn" id="mAgain">${t('again')}</button><button class="btn" id="mMenu">${t('toMenu')}</button></div>`);
+  $('#mAgain').onclick=()=>{closeModal();startRun(MODE);};$('#mMenu').onclick=()=>{closeModal();goBack();};
+  if(nextBtn)$('#mNext').onclick=()=>{closeModal();startRun({kind:'lesson',id:MODE.id+1});};}
+
+/* ================= 入力 ================= */
+const PED={acc:null,brk:null};const WHEEL={held:false,last:0};
+function pedal(el,key){const fill=el.querySelector('i');const set=e=>{const r=el.getBoundingClientRect();const k=clamp((e.clientY-r.top)/r.height,0,1);PED[key]=0.15+0.85*k;fill.style.height=(PED[key]*100)+'%';};
+  el.addEventListener('pointerdown',e=>{e.preventDefault();el.setPointerCapture(e.pointerId);set(e);audioInit();});
+  el.addEventListener('pointermove',e=>{if(PED[key]!=null)set(e);});
+  const up=()=>{PED[key]=null;fill.style.height='0';};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);}
+pedal($('#pAcc'),'acc');pedal($('#pBrk'),'brk');
+{const c=$('#cWheel');const ang=e=>{const r=c.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/PI;};
+ c.addEventListener('pointerdown',e=>{e.preventDefault();c.setPointerCapture(e.pointerId);WHEEL.held=true;WHEEL.last=ang(e);audioInit();});
+ c.addEventListener('pointermove',e=>{if(!WHEEL.held||!G)return;const a=ang(e);let d=a-WHEEL.last;if(d>180)d-=360;if(d<-180)d+=360;WHEEL.last=a;G.wheel=clamp(G.wheel+d,-540,540);});
+ const up=()=>{WHEEL.held=false;};c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);c.addEventListener('lostpointercapture',up);}
+function shift(g){if(!G||G.over||G.gear===g)return;
+  if(g!=='N'&&Math.abs(G.v)>0.4&&(g==='P'||g==='R'||G.gear==='R')){setSub(t('needStop'),true);return;}
+  if((G.gear==='P'||g==='P'||g==='R')&&G.brk<0.25&&!(keys.ArrowDown||keys.KeyS)){setSub(t('needBrake'),true);return;}
+  G.gear=g;sfx('click');syncUI();}
+function wink(s){if(!G)return;if(G.wink===s){G.wink=null;}else{G.wink=s;G.winkT=G.time;G.winkA=G.a;G.lastWink=s;}syncUI();}
+function look(s){if(!G)return;G.look=s==='L'?-1.3:s==='R'?1.3:2.55;G.lookUntil=G.time+1.4;G.lookT[s]=G.time;sfx('click');}
+$$('#gears button').forEach(b=>b.onclick=()=>shift(b.dataset.g));
+$('#bPB').onclick=()=>{if(!G)return;G.pb=!G.pb;sfx('click');syncUI();};
+$('#bBelt').onclick=()=>{if(!G)return;G.belt=!G.belt;sfx('click');syncUI();};
+$('#bWL').onclick=()=>wink('L');$('#bWR').onclick=()=>wink('R');
+$('#bLL').onclick=()=>look('L');$('#bLR').onclick=()=>look('R');$('#bLB').onclick=()=>look('B');
+addEventListener('keydown',e=>{if($('#scDrive').hidden)return;if(e.target.tagName==='INPUT')return;audioInit();
+  const c=e.code;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c))e.preventDefault();
+  if(e.repeat){keys[c]=true;return;}keys[c]=true;
+  if(c==='Digit1')shift('P');else if(c==='Digit2')shift('R');else if(c==='Digit3')shift('N');else if(c==='Digit4')shift('D');
+  else if(c==='KeyQ')wink('L');else if(c==='KeyE')wink('R');else if(c==='KeyB'){G.pb=!G.pb;syncUI();}else if(c==='KeyV'){G.belt=!G.belt;syncUI();}
+  else if(c==='KeyZ')look('L');else if(c==='KeyX')look('B');else if(c==='KeyC')look('R');});
+addEventListener('keyup',e=>{keys[e.code]=false;});
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
+function syncUI(){if(!G)return;$$('#gears button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.g===G.gear));
+  $('#bPB').setAttribute('aria-pressed',G.pb);$('#bBelt').setAttribute('aria-pressed',G.belt);
+  $('#bWL').setAttribute('aria-pressed',G.wink==='L');$('#bWR').setAttribute('aria-pressed',G.wink==='R');}
+
+/* ================= 音 ================= */
+let AC=null;function audioInit(){if(AC||!SET.sound)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+function tone(f,d,type,vol,when){if(!AC||!SET.sound)return;const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.value=vol||0.06;o.connect(g);g.connect(AC.destination);const t0=AC.currentTime+(when||0);g.gain.setValueAtTime(vol||0.06,t0);g.gain.exponentialRampToValueAtTime(0.0001,t0+d);o.start(t0);o.stop(t0+d+0.02);}
+function sfx(k){if(k==='pen'){tone(330,0.25,'square',0.05);tone(220,0.3,'square',0.05,0.18);}else if(k==='ok')tone(880,0.12,'sine',0.06);else if(k==='win'){tone(660,.15);tone(880,.15,'sine',.06,.15);tone(1100,.3,'sine',.06,.3);}else if(k==='bump')tone(90,0.25,'sawtooth',0.08);else if(k==='click')tone(1500,0.03,'square',0.03);else if(k==='tick')tone(2200,0.02,'square',0.02);else if(k==='bell')tone(900,0.12,'triangle',0.04);}
+
+/* ================= 描画の共通 ================= */
+function shade(hex,k){const n=parseInt(hex.slice(1),16);const r=clamp(Math.round((n>>16&255)*k),0,255),g=clamp(Math.round((n>>8&255)*k),0,255),b=clamp(Math.round((n&255)*k),0,255);return '#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1);}
+function fitCanvas(c){const r=c.getBoundingClientRect();const dpr=Math.min(2,devicePixelRatio||1);const w=Math.max(10,Math.round(r.width*dpr)),h=Math.max(10,Math.round(r.height*dpr));if(c.width!==w||c.height!==h){c.width=w;c.height=h;}return [w,h,dpr];}
+function resize(){if($('#scDrive').hidden)return;fitCanvas($('#cTop'));fitCanvas($('#cCab'));}
+addEventListener('resize',()=>{resize();updViewBtn();});
+
+/* ---------- 上から見た画面 ---------- */
+let TOPZ=1;  // 1=追従、0=全体
+$('#cTop').addEventListener('click',()=>{TOPZ=TOPZ?0:1;});
+function drawTop(){const c=$('#cTop'),[W2,H2,dpr]=fitCanvas(c),x=c.getContext('2d');
+  x.setTransform(1,0,0,1,0,0);x.fillStyle='#456b37';x.fillRect(0,0,W2,H2);
+  let sc,ox,oy;if(TOPZ){sc=W2/42;ox=W2/2-(G.x+Math.cos(G.a)*1.3)*sc;oy=H2/2-(G.y+Math.sin(G.a)*1.3)*sc;}else{sc=Math.min(W2/152,H2/97);ox=(W2-150*sc)/2;oy=(H2-95*sc)/2;}
+  x.setTransform(sc,0,0,sc,ox,oy);
+  const poly=(P,col)=>{x.beginPath();x.moveTo(P[0][0],P[0][1]);for(let i=1;i<P.length;i++)x.lineTo(P[i][0],P[i][1]);x.closePath();x.fillStyle=col;x.fill();};
+  for(const g of GND)poly(g.pts,g.col);for(const m of MARK)poly(m.pts,m.col);
+  // 発着点・課題の名前
+  x.font=`bold ${(TOPZ?13:10)*dpr/sc}px sans-serif`;x.textAlign='center';x.fillStyle='rgba(255,255,255,.85)';
+  for(const [k,px,py] of [['label_S',36,38],['label_crank',112,40],['label_garage',52,68],['label_par',103.5,52.5],['label_rail',128,26],['label_start',24,77.6]])x.fillText(t(k),px,py);
+  // タイヤの跡
+  if(SET.track&&G.tracks.length){x.fillStyle='rgba(20,20,20,.45)';for(const T of G.tracks)for(const [px,py] of T)x.fillRect(px-0.08,py-0.08,0.16,0.16);}
+  // ポール
+  for(const p of POLES){x.beginPath();x.arc(p.x,p.y,0.22,0,7);x.fillStyle='#ff8a2a';x.fill();}
+  // 信号
+  for(const s of SL){if(s.type!=='signal')continue;const st=sigState(s.ph);x.beginPath();x.arc(s.cx-s.dir[0]*0.9,s.cy-s.dir[1]*0.9,0.55,0,7);x.fillStyle=st==='G'?'#3de07a':st==='Y'?'#ffd23a':'#ff4a3a';x.fill();}
+  // 止まれ
+  drawStopIcon(x,70.6,24.3,1.6);
+  // 列車・遮断機
+  const ti=trainInfo();for(const gl of gateLines()){x.strokeStyle=gl.down?'#ffd23a':'rgba(255,210,58,.4)';x.lineWidth=0.25;x.beginPath();x.moveTo(gl.px,gl.py);x.lineTo(gl.ex,gl.ey);x.stroke();}
+  if(ti.warn&&Math.floor(G.time*2)%2===0){x.fillStyle='#ff3a2a';for(const [px,py] of [[133.6,34.2],[142.4,25.8]]){x.beginPath();x.arc(px,py,0.5,0,7);x.fill();}}
+  if(ti.tx!=null){x.fillStyle='#d6dde2';x.fillRect(ti.t0,28.6,ti.t1-ti.t0,2.8);x.fillStyle='#2e7bc4';x.fillRect(ti.t0,29.7,ti.t1-ti.t0,0.5);x.strokeStyle='#333';x.lineWidth=0.1;for(let i=1;i<3;i++){const bx=ti.tx+12*i;if(bx>ti.t0&&bx<ti.t1){x.beginPath();x.moveTo(bx,28.6);x.lineTo(bx,31.4);x.stroke();}}}
+  // 歩行者・自転車
+  const P=W.ped;x.beginPath();x.arc(P.x,P.y,0.35,0,7);x.fillStyle='#ff5ca8';x.fill();x.strokeStyle='#fff';x.lineWidth=0.08;x.stroke();
+  if(W.bike.on){const B=W.bike;x.fillStyle='#2f2f2f';x.fillRect(B.x-0.15,B.y-0.85,0.3,1.7);x.beginPath();x.arc(B.x,B.y,0.3,0,7);x.fillStyle='#ffb02e';x.fill();}
+  // ルートの目印
+  const L=G.legs[G.leg];if(SET.route&&L){let tp=L.p;if(L.bay){const b=BAYS[L.bay];tp=[(b.x0+b.x1)/2,(b.y0+b.y1)/2];x.strokeStyle='#5dff9a';x.lineWidth=0.18;x.setLineDash([0.5,0.4]);x.strokeRect(b.x0,b.y0,b.x1-b.x0,b.y1-b.y0);x.setLineDash([]);}
+    if(tp){const pu=1+0.25*Math.sin(G.time*5);x.beginPath();x.arc(tp[0],tp[1],1.1*pu,0,7);x.strokeStyle='#5dff9a';x.lineWidth=0.25;x.stroke();
+      if(L.k==='stop'||L.k==='finish'){x.fillStyle='rgba(93,255,154,.35)';x.fill();}
+      const cx=G.x+Math.cos(G.a)*1.3,cy=G.y+Math.sin(G.a)*1.3;const d=hyp(tp[0]-cx,tp[1]-cy);if(d>4){const ux=(tp[0]-cx)/d,uy=(tp[1]-cy)/d;const ax=cx+ux*3.4,ay=cy+uy*3.4;x.beginPath();x.moveTo(ax+ux*1.2,ay+uy*1.2);x.lineTo(ax-uy*0.7,ay+ux*0.7);x.lineTo(ax+uy*0.7,ay-ux*0.7);x.closePath();x.fillStyle='rgba(93,255,154,.9)';x.fill();}}}
+  // 予想進路
+  if(SET.path&&(G.gear==='D'||G.gear==='R')){const dl=clamp(G.wheel/CAR.ratio*PI/180,-CAR.maxSt,CAR.maxSt);const sg=G.gear==='R'?-1:1;const lines=[[],[],[],[]];let px=G.x,py=G.y,pa=G.a;
+    for(let i=0;i<=40;i++){const T=tirePts(px,py,pa);T.forEach((p,j)=>lines[j].push(p));const st=0.3*sg;px+=Math.cos(pa)*st;py+=Math.sin(pa)*st;pa+=st/CAR.wb*Math.tan(dl);}
+    x.lineWidth=0.09;lines.forEach((Ln,j)=>{x.strokeStyle=j<2?'rgba(255,230,90,.9)':'rgba(90,200,255,.9)';x.setLineDash([0.35,0.25]);x.beginPath();Ln.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));x.stroke();});x.setLineDash([]);}
+  // 自分の車
+  drawCarTop(x,G.x,G.y,G.a,'#2f7fe0');
+  const T=tirePts(G.x,G.y,G.a);const dl=clamp(G.wheel/CAR.ratio*PI/180,-CAR.maxSt,CAR.maxSt);
+  T.forEach(([px,py],i)=>{const off=!inDrv(px,py);x.save();x.translate(px,py);x.rotate(G.a+(i<2?dl:0));x.fillStyle=off?'#ff3b30':'#111';x.fillRect(-0.33,-0.12,0.66,0.24);x.restore();});
+  // 拡大の表示
+  x.setTransform(1,0,0,1,0,0);x.font=`${12*dpr}px sans-serif`;x.textAlign='right';x.fillStyle='rgba(255,255,255,.8)';x.fillText(TOPZ?'🔍 tap: map':'🔍 tap: zoom',W2-8*dpr,H2-8*dpr);}
+function drawCarTop(x,cx,cy,a,col){x.save();x.translate(cx,cy);x.rotate(a);x.fillStyle=col;rr(x,-0.9,-0.85,4.4,1.7,0.35);x.fill();
+  x.fillStyle='rgba(20,30,45,.8)';x.fillRect(1.55,-0.72,0.75,1.44);x.fillRect(-0.45,-0.68,0.55,1.36);x.fillStyle='#ffe9a6';x.fillRect(3.35,-0.75,0.15,0.35);x.fillRect(3.35,0.4,0.15,0.35);
+  // 運転席（右）
+  x.fillStyle='rgba(255,255,255,.55)';x.beginPath();x.arc(1.05,0.38,0.18,0,7);x.fill();
+  if(G&&G.wink&&Math.floor(G.time*2.6)%2===0){x.fillStyle='#ffb000';const s=G.wink==='L'?-1:1;x.fillRect(3.2,s*0.85-0.12,0.35,0.24);x.fillRect(-0.9,s*0.85-0.12,0.35,0.24);}
+  x.restore();}
+function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
+function drawStopIcon(x,cx,cy,s){x.beginPath();x.moveTo(cx-s/2,cy-s*0.4);x.lineTo(cx+s/2,cy-s*0.4);x.lineTo(cx,cy+s*0.45);x.closePath();x.fillStyle='#d7261e';x.fill();x.strokeStyle='#fff';x.lineWidth=s*0.06;x.stroke();}
+
+/* ---------- 運転席の画面（疑似3D） ---------- */
+function camMake(ex,ey,eh,yaw,Wd,Ht,fov,hy){return {ex,ey,eh,c:Math.cos(yaw),s:Math.sin(yaw),f:(Wd/2)/Math.tan(fov/2),cx:Wd/2,hy:Ht*(hy||0.44)};}
+function toCam(C,x,y,z){const dx=x-C.ex,dy=y-C.ey;return [-dx*C.s+dy*C.c,z-C.eh,dx*C.c+dy*C.s];}
+function clipNear(P,n){const o=[];for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length],ai=a[2]>=n,bi=b[2]>=n;if(ai)o.push(a);if(ai!==bi){const k=(n-a[2])/(b[2]-a[2]);o.push([a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,n]);}}return o;}
+function fillP(x,C,P3,col,stroke){let Q=P3.map(p=>toCam(C,p[0],p[1],p[2]||0));if(Q.every(q=>q[2]<0.15))return;Q=clipNear(Q,0.15);if(Q.length<3)return;
+  x.beginPath();Q.forEach((q,i)=>{const sx=C.cx+q[0]/q[2]*C.f,sy=C.hy-q[1]/q[2]*C.f;i?x.lineTo(sx,sy):x.moveTo(sx,sy);});x.closePath();x.fillStyle=col;x.fill();if(stroke){x.strokeStyle=stroke;x.lineWidth=1;x.stroke();}}
+function boxFaces(o){const {x:cx,y:cy,hw,hh,a,z0,z1}=o;const c=Math.cos(a||0),s=Math.sin(a||0);const P=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(([u,v])=>[cx+u*c-v*s,cy+u*s+v*c]);
+  const F=[];for(let i=0;i<4;i++){const A=P[i],B=P[(i+1)%4];const nx=(B[1]-A[1]),ny=-(B[0]-A[0]);F.push({pts:[[A[0],A[1],z0],[B[0],B[1],z0],[B[0],B[1],z1],[A[0],A[1],z1]],n:[nx,ny],m:[(A[0]+B[0])/2,(A[1]+B[1])/2],shade:0.75+0.25*Math.abs(Math.cos(Math.atan2(ny,nx)-0.6))});}
+  F.push({pts:P.map(p=>[p[0],p[1],z1]),top:true});return F;}
+function drawBox(x,C,o){for(const f of boxFaces(o)){if(f.top){if(C.eh<o.z1)continue;fillP(x,C,f.pts,o.top||shade(o.col,1.12));}else{if(f.n[0]*(C.ex-f.m[0])+f.n[1]*(C.ey-f.m[1])<=0)continue;fillP(x,C,f.pts,shade(o.col,f.shade));}}}
+function sceneObjects(own){const O=[];
+  for(const s of SCN)O.push(s);
+  for(const p of POLES)O.push({t:'box',x:p.x,y:p.y,hw:0.06,hh:0.06,z0:0,z1:0.9,col:'#ff7a1a'});
+  // 信号機（横型：左から青・黄・赤）
+  for(const s of SL){if(s.type!=='signal')continue;const far={sigN:[70.6,43.2],sigS:[79.4,51.8],sigE:[79.4,43.2],sigW:[70.6,51.8]}[s.id];O.push({t:'signal',x:far[0],y:far[1],fd:[-s.dir[0],-s.dir[1]],st:sigState(s.ph)});}
+  O.push({t:'stopsign',x:70.4,y:23.6,fd:[0,1]});
+  O.push({t:'cwsign',x:49.6,y:16.6,fd:[1,0]});O.push({t:'cwsign',x:40.4,y:7.6,fd:[-1,0]});
+  const ti=trainInfo();O.push({t:'alarm',x:133.6,y:34.2,fd:[0,1],on:ti.warn});O.push({t:'alarm',x:142.4,y:25.8,fd:[0,-1],on:ti.warn});
+  for(const gl of gateLines())O.push({t:'gate',...gl});
+  if(ti.tx!=null)O.push({t:'box',x:(ti.t0+ti.t1)/2,y:30,hw:(ti.t1-ti.t0)/2,hh:1.4,z0:0.6,z1:3.8,col:'#d6dde2',top:'#c4ccd2'});
+  O.push({t:'ped',x:W.ped.x,y:W.ped.y});
+  if(W.bike.on)O.push({t:'bike',x:W.bike.x,y:W.bike.y,a:PI/2});
+  if(own)O.push({t:'box',x:G.x+Math.cos(G.a)*1.3,y:G.y+Math.sin(G.a)*1.3,hw:2.2,hh:0.85,a:G.a,z0:0.2,z1:1.45,col:'#2f7fe0'});
+  return O;}
+function drawObj(x,C,o){
+  if(o.t==='box')return drawBox(x,C,o);
+  if(o.t==='tree'){drawBox(x,C,{x:o.x,y:o.y,hw:0.18,hh:0.18,z0:0,z1:1.6,col:'#6b4a2e'});drawBox(x,C,{x:o.x,y:o.y,hw:1.3,hh:1.3,z0:1.5,z1:4.2,col:'#3f7a36'});return;}
+  if(o.t==='ped'){drawBox(x,C,{x:o.x,y:o.y,hw:0.24,hh:0.16,z0:0,z1:1.35,col:'#d6457f'});drawBox(x,C,{x:o.x,y:o.y,hw:0.13,hh:0.13,z0:1.35,z1:1.65,col:'#f0c8a0'});return;}
+  if(o.t==='bike'){drawBox(x,C,{x:o.x,y:o.y,hw:0.85,hh:0.1,a:o.a,z0:0.3,z1:0.95,col:'#333333'});drawBox(x,C,{x:o.x,y:o.y,hw:0.22,hh:0.2,a:o.a,z0:0.95,z1:1.65,col:'#ffb02e'});return;}
+  const facing=o.fd?(o.fd[0]*(C.ex-o.x)+o.fd[1]*(C.ey-o.y)>0):true;const px=o.fd?-o.fd[1]:0,py=o.fd?o.fd[0]:0;
+  if(o.t==='signal'){drawBox(x,C,{x:o.x,y:o.y,hw:0.1,hh:0.1,z0:0,z1:4.4,col:'#707a80'});const hx=o.x+o.fd[0]*0.0,hy=o.y+o.fd[1]*0.0;
+    drawBox(x,C,{x:hx,y:hy,hw:Math.abs(px)*0.7+Math.abs(o.fd[0])*0.18,hh:Math.abs(py)*0.7+Math.abs(o.fd[1])*0.18,z0:4.4,z1:4.95,col:'#3a4045'});
+    if(facing){[['G',-0.45,'#2ad06a'],['Y',0,'#ffcf2a'],['R',0.45,'#ff3a2a']].forEach(([k,off,col])=>{const cx=hx+px*off+o.fd[0]*0.2,cy=hy+py*off+o.fd[1]*0.2,r=0.17;fillP(x,C,[[cx-px*r,cy-py*r,4.5],[cx+px*r,cy+py*r,4.5],[cx+px*r,cy+py*r,4.85],[cx-px*r,cy-py*r,4.85]],o.st===k?col:'#1d2125');});}
+    return;}
+  if(o.t==='stopsign'||o.t==='cwsign'){drawBox(x,C,{x:o.x,y:o.y,hw:0.05,hh:0.05,z0:0,z1:2.3,col:'#9aa3a8'});const cx=o.x+o.fd[0]*0.06,cy=o.y+o.fd[1]*0.06;
+    if(o.t==='stopsign'){const P=[[cx-px*0.45,cy-py*0.45,2.75],[cx+px*0.45,cy+py*0.45,2.75],[cx,cy,1.95]];fillP(x,C,P,facing?'#d7261e':'#8d969b',facing?'#ffffff':null);}
+    else{const P=[[cx-px*0.35,cy-py*0.35,1.95],[cx+px*0.35,cy+py*0.35,1.95],[cx+px*0.35,cy+py*0.35,2.65],[cx-px*0.35,cy-py*0.35,2.65]];fillP(x,C,P,facing?'#2f64c8':'#8d969b');if(facing)fillP(x,C,[[cx-px*0.25,cy-py*0.25,2.05],[cx+px*0.25,cy+py*0.25,2.05],[cx,cy,2.55]],'#ffffff');}
+    return;}
+  if(o.t==='alarm'){drawBox(x,C,{x:o.x,y:o.y,hw:0.08,hh:0.08,z0:0,z1:3.2,col:'#e8c21a'});const cx=o.x+o.fd[0]*0.1,cy=o.y+o.fd[1]*0.1;
+    for(const sg of [1,-1])fillP(x,C,[[cx-px*0.55,cy-py*0.55,3.3-sg*0.3],[cx-px*0.45,cy-py*0.45,3.3-sg*0.38],[cx+px*0.55,cy+py*0.55,3.3+sg*0.3],[cx+px*0.45,cy+py*0.45,3.3+sg*0.38]],'#f2f2f2','#222');
+    const blink=o.on?Math.floor(G.time*2)%2:-1;[-1,1].forEach((sg,i)=>{const lx=cx+px*0.32*sg,ly=cy+py*0.32*sg;fillP(x,C,[[lx-px*0.14,ly-py*0.14,2.55],[lx+px*0.14,ly+py*0.14,2.55],[lx+px*0.14,ly+py*0.14,2.83],[lx-px*0.14,ly-py*0.14,2.83]],blink===i?'#ff2a1a':'#3a1212');});return;}
+  if(o.t==='gate'){const dx=o.ex-o.px,dy=o.ey-o.py;const L=hyp(dx,dy)||0.01;const nx=-dy/L*0.05,ny=dx/L*0.05;
+    fillP(x,C,[[o.px+nx,o.py+ny,1.0],[o.ex+nx,o.ey+ny,o.z],[o.ex+nx,o.ey+ny,o.z+0.12],[o.px+nx,o.py+ny,1.12]],'#f1d21a','#222');return;}}
+function objDist(C,o){return hyp((o.x||0)-C.ex,(o.y||0)-C.ey);}
+function renderScene(x,C,Wd,Ht,own,night){
+  const g=x.createLinearGradient(0,0,0,C.hy);g.addColorStop(0,'#7fb3e6');g.addColorStop(1,'#cfe2f2');x.fillStyle=g;x.fillRect(0,0,Wd,C.hy+1);
+  x.fillStyle='#4d7a3a';x.fillRect(0,C.hy,Wd,Ht-C.hy);
+  for(const p of GND)fillP(x,C,p.pts,p.col);
+  for(const m of MARK)fillP(x,C,m.pts,m.col);
+  const O=sceneObjects(own).map(o=>[objDist(C,o),o]).filter(a=>a[0]<190).sort((a,b)=>b[0]-a[0]);
+  for(const [,o] of O)drawObj(x,C,o);}
+const MIR={rm:document.createElement('canvas'),ml:document.createElement('canvas'),mr:document.createElement('canvas')};
+let frameN=0;
+function drawCab(){const c=$('#cCab'),[Wd,Ht,dpr]=fitCanvas(c),x=c.getContext('2d');x.setTransform(1,0,0,1,0,0);
+  const [fx,fy,rx,ry]=fr(G.a);const ex=G.x+fx*1.0+rx*0.36,ey=G.y+fy*1.0+ry*0.36;const yaw=G.a+G.lookYaw;
+  const C=camMake(ex,ey,1.2,yaw,Wd,Ht,74*PI/180,0.42);
+  renderScene(x,C,Wd,Ht,false);
+  // 車内（ボンネット・ダッシュボード・ピラー・ドア・屋根）
+  const at=(l,s,z)=>[G.x+fx*l+rx*s,G.y+fy*l+ry*s,z];
+  fillP(x,C,[at(3.45,-0.78,0.78),at(3.45,0.78,0.78),at(1.85,0.8,0.93),at(1.85,-0.8,0.93)],'#2a64b8');
+  fillP(x,C,[at(1.9,-0.85,0.98),at(1.9,0.85,0.98),at(1.35,0.85,0.98),at(1.35,-0.85,0.98)],'#23272b');
+  fillP(x,C,[at(1.9,-0.85,0.6),at(1.9,0.85,0.6),at(1.9,0.85,0.98),at(1.9,-0.85,0.98)],'#2b3034');
+  for(const s of [-1,1]){fillP(x,C,[at(1.9,s*0.84,0.98),at(1.86,s*0.74,0.98),at(1.2,s*0.7,1.45),at(1.28,s*0.8,1.45)],'#1b1e21');
+    fillP(x,C,[at(1.9,s*0.86,0.3),at(-0.6,s*0.86,0.3),at(-0.6,s*0.86,0.97),at(1.9,s*0.86,0.97)],'#30353a');
+    fillP(x,C,[at(0.2,s*0.8,0.97),at(0.05,s*0.75,0.97),at(-0.1,s*0.72,1.45),at(0.08,s*0.78,1.45)],'#1b1e21');}
+  fillP(x,C,[at(1.25,-0.82,1.46),at(1.25,0.82,1.46),at(-1.0,0.82,1.46),at(-1.0,-0.82,1.46)],'#3b4046');
+  fillP(x,C,[at(-0.9,-0.84,0.3),at(-0.9,0.84,0.3),at(-0.9,0.84,0.95),at(-0.9,-0.84,0.95)],'#30353a');
+  fillP(x,C,[at(-1.0,-0.8,1.45),at(-1.0,0.8,1.45),at(-0.7,0.8,1.0),at(-0.7,-0.8,1.0)],'rgba(20,24,28,0)');
+  // ミラー（2フレームに1回描き直す）
+  const fw=Math.abs(G.lookYaw)<0.35;
+  if(SET.mirror){frameN++;const mw=Math.round(Wd*0.26),mh=Math.round(mw*0.36);
+    if(frameN%2===0){const fill=(cv,cex,cey,yaw2,fov)=>{cv.width=mw;cv.height=mh;const mx=cv.getContext('2d');const C2=camMake(cex,cey,1.15,yaw2,mw,mh,fov,0.5);renderScene(mx,C2,mw,mh,true);};
+      fill(MIR.rm,ex-fx*0.4,ey-fy*0.4,G.a+PI,52*PI/180);fill(MIR.ml,G.x+fx*1.75-rx*1.05,G.y+fy*1.75-ry*1.05,G.a+PI+0.22,38*PI/180);fill(MIR.mr,G.x+fx*1.75+rx*1.05,G.y+fy*1.75+ry*1.05,G.a+PI-0.22,38*PI/180);}
+    if(fw){const flip=(cv,dx,dy,dw,dh,r)=>{x.save();rr(x,dx,dy,dw,dh,r);x.clip();x.translate(dx+dw,dy);x.scale(-1,1);x.drawImage(cv,0,0,dw,dh);x.restore();x.strokeStyle='#111';x.lineWidth=3*dpr;rr(x,dx,dy,dw,dh,r);x.stroke();};
+      flip(MIR.rm,Wd*0.37,Ht*0.02,Wd*0.26,Wd*0.26*0.33,6*dpr);
+      flip(MIR.ml,Wd*0.005,Ht*0.47,Wd*0.15,Wd*0.15*0.62,10*dpr);flip(MIR.mr,Wd*0.845,Ht*0.47,Wd*0.15,Wd*0.15*0.62,10*dpr);}}
+  // 計器・ハンドル（正面を見ているとき）
+  if(fw){const cx=Wd*0.5,cy=Ht*1.02,R=Ht*0.36;x.save();x.translate(cx,cy);x.rotate(G.wheel*PI/180);x.strokeStyle='#15181a';x.lineWidth=R*0.14;x.beginPath();x.arc(0,0,R,0,7);x.stroke();
+    x.lineWidth=R*0.12;x.beginPath();x.moveTo(-R,0);x.lineTo(R,0);x.moveTo(0,0);x.lineTo(0,R*0.9);x.stroke();x.fillStyle='#2a2e31';x.beginPath();x.arc(0,0,R*0.24,0,7);x.fill();x.fillStyle='#f4c430';x.fillRect(-R*0.03,-R*1.07,R*0.06,R*0.14);x.restore();
+    const bx=Wd*0.5,by=Ht*0.8;x.fillStyle='rgba(10,12,14,.82)';rr(x,bx-Wd*0.16,by-Ht*0.075,Wd*0.32,Ht*0.15,8*dpr);x.fill();
+    x.textAlign='center';x.fillStyle='#e9f4ff';x.font=`bold ${Math.round(Ht*0.085)}px ui-monospace,monospace`;x.fillText(Math.round(Math.abs(G.v)*3.6),bx,by+Ht*0.03);
+    x.font=`${Math.round(Ht*0.03)}px sans-serif`;x.fillStyle='#9fb4c4';x.fillText('km/h',bx,by+Ht*0.065);
+    const gx=bx+Wd*0.115;x.font=`bold ${Math.round(Ht*0.045)}px ui-monospace,monospace`;['P','R','N','D'].forEach((g,i)=>{x.fillStyle=G.gear===g?'#ffd23a':'#4f5a62';x.fillText(g,gx,by-Ht*0.045+i*Ht*0.034);});
+    const bl=Math.floor(G.time*2.6)%2===0;x.font=`bold ${Math.round(Ht*0.06)}px sans-serif`;
+    x.fillStyle=G.wink==='L'&&bl?'#3df07a':'#24302a';x.fillText('◀',bx-Wd*0.125,by);x.fillStyle=G.wink==='R'&&bl?'#3df07a':'#24302a';x.fillText('▶',bx+Wd*0.05,by-Ht*0.02);
+    x.font=`bold ${Math.round(Ht*0.032)}px sans-serif`;x.fillStyle=G.pb?'#ff4a3a':'#3a2424';x.fillText('(P)',bx-Wd*0.125,by+Ht*0.05);
+    x.fillStyle=G.belt?'#2b3036':'#ff4a3a';x.fillText('🔔',bx-Wd*0.085,by+Ht*0.05);}
+  else{x.font=`bold ${Math.round(Ht*0.05)}px sans-serif`;x.textAlign='center';x.fillStyle='rgba(0,0,0,.55)';x.fillRect(Wd*0.3,Ht*0.86,Wd*0.4,Ht*0.09);x.fillStyle='#fff';x.fillText(G.look<-0.5?t('lookL'):G.look>2?t('lookB'):G.look>0.5?t('lookR'):'',Wd/2,Ht*0.925);}
+  // 警報音
+  const ti=trainInfo();if(ti.warn&&hyp(G.x-138,G.y-30)<60&&Math.floor(G.time*2.2)!==G._bell){G._bell=Math.floor(G.time*2.2);sfx('bell');}
+  if(G.wink&&Math.floor(G.time*2.6)!==G._tk){G._tk=Math.floor(G.time*2.6);sfx('tick');}}
+function drawWheel(){const c=$('#cWheel'),x=c.getContext('2d');const s=c.width;x.clearRect(0,0,s,s);x.save();x.translate(s/2,s/2);x.rotate((G?G.wheel:0)*PI/180);
+  x.strokeStyle='#cfd6da';x.lineWidth=s*0.08;x.beginPath();x.arc(0,0,s*0.4,0,7);x.stroke();x.lineWidth=s*0.07;x.beginPath();x.moveTo(-s*0.4,0);x.lineTo(s*0.4,0);x.moveTo(0,0);x.lineTo(0,s*0.38);x.stroke();
+  x.fillStyle='#4a545b';x.beginPath();x.arc(0,0,s*0.11,0,7);x.fill();x.fillStyle='#f4c430';x.fillRect(-s*0.025,-s*0.46,s*0.05,s*0.1);x.restore();
+  x.fillStyle='#9aa5ad';x.font=`${s*0.1}px sans-serif`;x.textAlign='center';x.fillText((G?Math.round(G.wheel):0)+'°',s/2,s*0.98);}
+function hud(){const L=G.legs[G.leg];const icon=L?({turn:L.sig==='L'?'↰':'↱',stop:'■',finish:'🏁',garage:'⇩',park:'⇩',speed:'40',do:'✓'}[L.k]||'↑'):'↑';
+  $('#gIcon').textContent=icon;$('#gMain').textContent=L?t(L.m):(MODE.kind==='free'?t('g_free'):'');
+  const sb=$('#gSub');if(G.subT>0){sb.textContent=G.sub;sb.className='gSub'+(G.subWarn?' warn':'');$('#guide').dataset.tone=G.subWarn?'warn':'';}else{sb.textContent=G.pb&&(G.gear==='D'||G.gear==='R')?t('pbHold'):(MODE.kind==='free'&&W.bike.on&&hyp(G.x-W.bike.x,G.y-W.bike.y)<25?t('g_bike'):'');sb.className='gSub';$('#guide').dataset.tone='';}
+  $('#stSpeed').textContent=Math.round(Math.abs(G.v)*3.6);$('#stGear').textContent=G.gear;const so=$('#stScore');so.textContent=G.score;so.classList.toggle('bad',G.score<70);}
+
+/* ================= ループ ================= */
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(G&&!$('#scDrive').hidden){if(!G.over&&$('#modal').hidden){const n=2;for(let i=0;i<n;i++)tick(dt/n);}drawTop();drawCab();drawWheel();hud();if((frameN&7)===0)syncUI();}
+  requestAnimationFrame(loop);}
+
+/* ================= 標識の絵 ================= */
+function drawSign(x,id,cx,cy,s){x.save();x.translate(cx,cy);x.lineJoin='round';
+  const disc=(r,fill,ring,ringW)=>{x.beginPath();x.arc(0,0,r,0,7);x.fillStyle=fill;x.fill();if(ring){x.lineWidth=ringW;x.strokeStyle=ring;x.stroke();}};
+  const txt=(s2,y,size,col)=>{x.fillStyle=col;x.font=`bold ${size}px "Hiragino Sans","Noto Sans JP",sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText(s2,0,y);};
+  const R=s*0.42;
+  if(id==='stop'||id==='jokou'){x.beginPath();x.moveTo(-R*1.1,-R*0.75);x.lineTo(R*1.1,-R*0.75);x.lineTo(0,R*1.05);x.closePath();x.fillStyle='#d7261e';x.fill();x.lineWidth=s*0.035;x.strokeStyle='#fff';x.stroke();
+    txt(id==='stop'?'止まれ':'徐行',-R*0.38,s*0.17,'#fff');txt(id==='stop'?'STOP':'SLOW',-R*0.02,s*0.1,'#fff');}
+  else if(id==='noentry'){disc(R,'#d7261e');x.fillStyle='#fff';x.fillRect(-R*0.72,-R*0.16,R*1.44,R*0.32);}
+  else if(id==='oneway'){x.fillStyle='#2457b8';rr(x,-s*0.45,-s*0.24,s*0.9,s*0.48,s*0.04);x.fill();x.fillStyle='#fff';x.beginPath();x.moveTo(-s*0.36,-s*0.06);x.lineTo(s*0.12,-s*0.06);x.lineTo(s*0.12,-s*0.15);x.lineTo(s*0.38,0);x.lineTo(s*0.12,s*0.15);x.lineTo(s*0.12,s*0.06);x.lineTo(-s*0.36,s*0.06);x.closePath();x.fill();}
+  else if(id==='nopark'||id==='nostop'){disc(R,'#2457b8','#d7261e',s*0.07);x.strokeStyle='#d7261e';x.lineWidth=s*0.07;x.beginPath();x.moveTo(-R*0.66,-R*0.66);x.lineTo(R*0.66,R*0.66);if(id==='nostop'){x.moveTo(R*0.66,-R*0.66);x.lineTo(-R*0.66,R*0.66);}x.stroke();}
+  else if(id==='speed'){disc(R,'#fff','#d7261e',s*0.07);txt('30',R*0.05,s*0.34,'#1f4ea8');}
+  else if(id==='closed'){disc(R,'#fff','#d7261e',s*0.08);}
+  else if(id==='crosswalk'){x.fillStyle='#2457b8';x.fillRect(-s*0.42,-s*0.42,s*0.84,s*0.84);x.fillStyle='#fff';x.beginPath();x.moveTo(0,-s*0.36);x.lineTo(s*0.36,s*0.3);x.lineTo(-s*0.36,s*0.3);x.closePath();x.fill();
+    x.fillStyle='#1d1d1d';for(let i=0;i<4;i++)x.fillRect(-s*0.22+i*s*0.12,s*0.2,s*0.07,s*0.06);x.beginPath();x.arc(0,-s*0.13,s*0.04,0,7);x.fill();x.lineWidth=s*0.04;x.strokeStyle='#1d1d1d';x.beginPath();x.moveTo(0,-s*0.08);x.lineTo(0,s*0.04);x.lineTo(-s*0.06,s*0.15);x.moveTo(0,s*0.04);x.lineTo(s*0.06,s*0.15);x.moveTo(-s*0.07,-s*0.03);x.lineTo(s*0.07,-s*0.03);x.stroke();}
+  else if(id==='rail'||id==='school'){x.rotate(PI/4);x.fillStyle='#f6c51b';x.fillRect(-s*0.31,-s*0.31,s*0.62,s*0.62);x.lineWidth=s*0.025;x.strokeStyle='#111';x.strokeRect(-s*0.28,-s*0.28,s*0.56,s*0.56);x.rotate(-PI/4);x.fillStyle='#111';
+    if(id==='rail'){x.fillRect(-s*0.2,-s*0.02,s*0.36,s*0.12);x.fillRect(s*0.04,-s*0.13,s*0.12,s*0.12);x.fillRect(-s*0.15,-s*0.11,s*0.05,s*0.09);for(const wx of [-s*0.14,-s*0.02,s*0.1]){x.beginPath();x.arc(wx,s*0.13,s*0.04,0,7);x.fill();}}
+    else{for(const [ox,h] of [[-s*0.08,1],[s*0.08,0.82]]){x.beginPath();x.arc(ox,-s*0.13*h,s*0.04,0,7);x.fill();x.fillRect(ox-s*0.035,-s*0.08*h,s*0.07,s*0.17*h);x.fillRect(ox-s*0.035,s*0.09*h-s*0.0,s*0.025,s*0.08);x.fillRect(ox+s*0.01,s*0.09*h,s*0.025,s*0.08);}}}
+  else if(id==='pedonly'){disc(R,'#2457b8');x.fillStyle='#fff';for(const [ox,h] of [[-s*0.08,1],[s*0.1,0.7]]){x.beginPath();x.arc(ox,-s*0.17*h,s*0.045*h,0,7);x.fill();x.fillRect(ox-s*0.04*h,-s*0.11*h,s*0.08*h,s*0.17*h);x.fillRect(ox-s*0.035*h,s*0.06*h,s*0.03*h,s*0.13*h);x.fillRect(ox+s*0.005*h,s*0.06*h,s*0.03*h,s*0.13*h);}}
+  else if(id==='dir'){disc(R,'#2457b8');x.strokeStyle='#fff';x.fillStyle='#fff';x.lineWidth=s*0.07;x.beginPath();x.moveTo(s*0.05,s*0.28);x.lineTo(s*0.05,-s*0.18);x.moveTo(s*0.05,s*0.06);x.lineTo(-s*0.16,s*0.06);x.stroke();
+    x.beginPath();x.moveTo(s*0.05,-s*0.3);x.lineTo(s*0.15,-s*0.16);x.lineTo(-s*0.05,-s*0.16);x.closePath();x.fill();x.beginPath();x.moveTo(-s*0.28,s*0.06);x.lineTo(-s*0.14,-s*0.04);x.lineTo(-s*0.14,s*0.16);x.closePath();x.fill();}
+  else if(id==='beginner'){x.beginPath();x.moveTo(0,-s*0.2);x.lineTo(-s*0.26,-s*0.38);x.lineTo(-s*0.26,s*0.12);x.lineTo(0,s*0.38);x.closePath();x.fillStyle='#f6c51b';x.fill();x.beginPath();x.moveTo(0,-s*0.2);x.lineTo(s*0.26,-s*0.38);x.lineTo(s*0.26,s*0.12);x.lineTo(0,s*0.38);x.closePath();x.fillStyle='#22a04a';x.fill();}
+  else if(id==='uturn'){disc(R,'#fff','#d7261e',s*0.07);x.strokeStyle='#1d1d1d';x.lineWidth=s*0.06;x.beginPath();x.moveTo(s*0.1,s*0.22);x.lineTo(s*0.1,-s*0.05);x.arc(-s*0.02,-s*0.05,s*0.12,0,PI,true);x.lineTo(-s*0.14,s*0.12);x.stroke();x.fillStyle='#1d1d1d';x.beginPath();x.moveTo(-s*0.23,s*0.08);x.lineTo(-s*0.05,s*0.08);x.lineTo(-s*0.14,s*0.22);x.closePath();x.fill();
+    x.strokeStyle='#d7261e';x.lineWidth=s*0.06;x.beginPath();x.moveTo(-R*0.66,-R*0.66);x.lineTo(R*0.66,R*0.66);x.stroke();}
+  x.restore();}
+
+/* ================= 問題 ================= */
+// o(ja,en,vi,zh,id)
+const o=(ja,en,vi,zh,id)=>({ja,en,vi,zh,id});
+const QS=[ // 標識
+ {sign:'stop',c:[o('一時停止。停止線の直前で完全に止まり、左右を確かめる','Stop. Come to a complete stop just before the line and check left and right','Dừng lại. Dừng hẳn sát vạch và quan sát trái phải','停车。在停止线前完全停下并确认左右','Berhenti. Berhenti total tepat sebelum garis dan cek kiri-kanan'),o('徐行（すぐ止まれる速さで進む）','Go slowly (slow enough to stop at once)','Đi chậm (đủ chậm để dừng ngay)','慢行（可立即停车的速度）','Jalan pelan (bisa langsung berhenti)'),o('通行止め','Road closed','Cấm đi','禁止通行','Jalan ditutup')],
+  e:o('日本の一時停止の標識は赤い逆三角形（八角形ではない）。「止まれ」の下に STOP と書かれたものもある。','Japan\'s stop sign is a red inverted triangle, not an octagon. Many also show "STOP" under 止まれ.','Biển dừng ở Nhật là tam giác ngược màu đỏ, không phải hình bát giác. Nhiều biển có chữ "STOP".','日本的停车标志是红色倒三角形，不是八角形。很多标志下方写有"STOP"。','Rambu stop Jepang berbentuk segitiga terbalik merah, bukan segi delapan. Banyak yang bertuliskan "STOP".')},
+ {sign:'jokou',c:[o('徐行（すぐに止まれる速さで進む）','Go slowly — slow enough to stop immediately','Đi chậm — đủ để dừng ngay','慢行——能立即停车的速度','Jalan pelan — bisa berhenti seketika'),o('一時停止','Stop','Dừng lại','停车','Berhenti'),o('追い越し禁止','No overtaking','Cấm vượt','禁止超车','Dilarang menyalip')],
+  e:o('徐行の目安は時速10km以下。「SLOW」と書かれたものもある。','A guideline is 10 km/h or less. Some also show "SLOW".','Mức tham khảo là 10 km/h trở xuống.','慢行的参考速度为10km/h以下。','Acuan: 10 km/jam atau kurang.')},
+ {sign:'noentry',c:[o('車両進入禁止（この方向から車は入れない）','No entry for vehicles from this direction','Cấm xe đi vào từ hướng này','车辆禁止驶入（此方向不能进入）','Kendaraan dilarang masuk dari arah ini'),o('駐車禁止','No parking','Cấm đỗ xe','禁止停车','Dilarang parkir'),o('一時停止','Stop','Dừng lại','停车','Berhenti')],
+  e:o('一方通行の出口などにある。反対側（入口）からは入れる。','Found at the exit end of one-way streets; you may enter from the other end.','Thường ở lối ra của đường một chiều.','常见于单行道出口，另一端可以进入。','Biasanya di ujung keluar jalan satu arah.')},
+ {sign:'oneway',c:[o('一方通行（矢印の方向にだけ進める）','One way — traffic only in the arrow\'s direction','Đường một chiều — chỉ theo hướng mũi tên','单行道——只能按箭头方向行驶','Satu arah — hanya searah panah'),o('この先 右へ曲がる道','Road bends right ahead','Đường cong phải phía trước','前方道路右弯','Jalan menikung ke kanan'),o('優先道路','Priority road','Đường ưu tiên','优先道路','Jalan prioritas')],
+  e:o('青い長方形に白い矢印。カーナビの案内より標識を優先する。','Blue rectangle with a white arrow. Follow the sign rather than your navigation.','Hình chữ nhật xanh, mũi tên trắng. Ưu tiên biển báo hơn GPS.','蓝色长方形配白色箭头。以标志为准，不要只听导航。','Persegi biru panah putih. Ikuti rambu, bukan navigasi.')},
+ {sign:'nopark',c:[o('駐車禁止（短い停車はできる）','No parking (brief stopping allowed)','Cấm đỗ (được dừng ngắn)','禁止停车（可短暂停车上下客）','Dilarang parkir (berhenti sebentar boleh)'),o('駐停車禁止','No stopping or parking','Cấm dừng và đỗ','禁止停车和临时停车','Dilarang berhenti dan parkir'),o('通行止め','Road closed','Cấm đi','禁止通行','Jalan ditutup')],
+  e:o('斜線1本＝駐車禁止。人の乗り降りや5分以内の荷物の積み下ろしなどの「停車」はできる。','One slash = no parking. "Stopping" such as letting people in/out or loading for up to 5 minutes is allowed.','Một vạch chéo = cấm đỗ. Được dừng để đón trả khách hoặc bốc dỡ hàng dưới 5 phút.','一条斜线＝禁止停车。上下客、5分钟以内装卸货等"临时停车"可以。','Satu garis = dilarang parkir. Berhenti untuk naik-turun penumpang atau bongkar muat ≤5 menit boleh.')},
+ {sign:'nostop',c:[o('駐停車禁止（止まって待つのもだめ）','No stopping or parking','Cấm dừng và đỗ xe','禁止停车和临时停车','Dilarang berhenti dan parkir'),o('駐車禁止','No parking only','Chỉ cấm đỗ','只禁止长时间停车','Hanya dilarang parkir'),o('一時停止','Stop','Dừng lại','停车','Berhenti')],
+  e:o('×（バツ）＝駐停車禁止。信号待ちや渋滞で止まるのは問題ない。','An X means no stopping or parking. Stopping for traffic lights or congestion is fine.','Dấu X = cấm dừng và đỗ. Dừng chờ đèn hoặc kẹt xe thì được.','X表示禁止停车和临时停车。等红灯或堵车停下没问题。','Tanda X = dilarang berhenti/parkir. Berhenti karena lampu merah atau macet tidak apa.')},
+ {sign:'speed',c:[o('最高速度 30km/h','Maximum speed 30 km/h','Tốc độ tối đa 30 km/h','最高限速30km/h','Kecepatan maksimum 30 km/jam'),o('最低速度 30km/h','Minimum speed 30 km/h','Tốc độ tối thiểu 30 km/h','最低限速30km/h','Kecepatan minimum 30 km/jam'),o('30m 先に工事','Roadworks 30 m ahead','Công trường cách 30 m','前方30米施工','Perbaikan jalan 30 m lagi')],
+  e:o('赤い丸に青い数字＝最高速度。最低速度は青い丸に白い数字と下線。','Red ring with a blue number = maximum speed. Minimum speed is a blue disc with a white underlined number.','Vòng đỏ số xanh = tốc độ tối đa. Tối thiểu là tròn xanh số trắng có gạch dưới.','红圈蓝字＝最高速度。最低速度是蓝底白字加下划线。','Lingkar merah angka biru = maksimum. Minimum: lingkaran biru angka putih bergaris bawah.')},
+ {sign:'closed',c:[o('車両通行止め（車は通れない）','No vehicles','Cấm xe cộ','车辆禁止通行','Kendaraan dilarang lewat'),o('この先 自由に通れる','End of restrictions','Hết hạn chế','解除限制','Akhir larangan'),o('駐車場','Parking','Bãi đỗ xe','停车场','Tempat parkir')],
+  e:o('赤い輪だけで中が白い標識は、車（自動車・バイク・自転車など）が通れない。','A plain white disc with a red ring means no vehicles (cars, motorbikes, bicycles).','Vòng đỏ, nền trắng trơn = cấm mọi xe.','红圈白底无图案＝车辆禁止通行。','Lingkar merah polos = semua kendaraan dilarang.')},
+ {sign:'crosswalk',c:[o('横断歩道（歩行者が渡る場所）','Pedestrian crossing','Vạch sang đường cho người đi bộ','人行横道','Penyeberangan pejalan kaki'),o('歩行者専用道路','Pedestrians only','Đường dành riêng người đi bộ','行人专用道路','Khusus pejalan kaki'),o('学校あり','School ahead','Có trường học','前方学校','Ada sekolah')],
+  e:o('渡ろうとしている人がいたら、横断歩道の手前で一時停止する。','If someone is about to cross, stop before the crossing.','Có người sắp qua đường thì dừng trước vạch.','有人要过马路时，在人行横道前停车。','Jika ada yang akan menyeberang, berhenti sebelum penyeberangan.')},
+ {sign:'rail',c:[o('踏切あり（この先に踏切）','Railroad crossing ahead','Phía trước có đường ray','前方有铁路道口','Ada perlintasan kereta di depan'),o('駅が近い','Station nearby','Gần ga tàu','车站附近','Dekat stasiun'),o('路面電車の停留所','Tram stop','Trạm tàu điện','有轨电车站','Halte trem')],
+  e:o('黄色いひし形は「警戒標識」。この先に注意するものがある。','Yellow diamonds are warning signs: something to watch for ahead.','Hình thoi vàng là biển cảnh báo.','黄色菱形是警告标志。','Belah ketupat kuning = rambu peringatan.')},
+ {sign:'school',c:[o('学校・幼稚園・保育所などあり','School / kindergarten / nursery ahead','Có trường học / nhà trẻ','前方有学校、幼儿园、托儿所','Ada sekolah / TK di depan'),o('歩行者専用','Pedestrians only','Dành cho người đi bộ','行人专用','Khusus pejalan kaki'),o('横断歩道','Pedestrian crossing','Vạch sang đường','人行横道','Penyeberangan')],
+  e:o('子どもが急に飛び出すことがある。速度を落とす。','Children may run out suddenly — slow down.','Trẻ em có thể chạy ra bất ngờ — giảm tốc.','孩子可能突然冲出，请减速。','Anak-anak bisa tiba-tiba keluar — pelankan.')},
+ {sign:'pedonly',c:[o('歩行者専用（車は原則通れない）','Pedestrians only (no vehicles in principle)','Chỉ dành cho người đi bộ','行人专用（原则上车辆不能通行）','Khusus pejalan kaki'),o('横断歩道','Pedestrian crossing','Vạch sang đường','人行横道','Penyeberangan'),o('公園あり','Park ahead','Có công viên','前方有公园','Ada taman')],
+  e:o('時間帯で決められていることも多い（通学路など）。許可された車も歩行者に注意して徐行。','Often applies at set times (e.g. school routes). Permitted vehicles must go slowly.','Thường áp dụng theo giờ (đường đi học).','常按时间段限制（如上学路线），获准车辆须慢行。','Sering berlaku pada jam tertentu (rute sekolah).')},
+ {sign:'dir',c:[o('指定方向外進行禁止（矢印の方向にだけ進める）','Only the directions shown are allowed','Chỉ được đi theo hướng mũi tên','只能按箭头方向行驶','Hanya boleh ke arah panah'),o('一方通行','One way','Một chiều','单行道','Satu arah'),o('右折優先','Right turn has priority','Ưu tiên rẽ phải','右转优先','Belok kanan prioritas')],
+  e:o('この例では「直進と左折だけ」。右折はできない。','In this example only straight and left are allowed — no right turn.','Ở ví dụ này chỉ được đi thẳng và rẽ trái.','此例只能直行和左转，不能右转。','Contoh ini: hanya lurus dan belok kiri.')},
+ {sign:'beginner',c:[o('初心運転者標識（免許を取って1年未満）','Beginner driver mark (licence held less than 1 year)','Dấu người mới lái (có bằng dưới 1 năm)','新手驾驶标志（取得驾照未满1年）','Tanda pengemudi pemula (SIM < 1 tahun)'),o('高齢運転者標識','Elderly driver mark','Dấu người lái cao tuổi','高龄驾驶标志','Tanda pengemudi lansia'),o('仮免許練習中','Learner on a provisional licence','Đang tập lái','临时驾照练习中','Sedang latihan SIM sementara')],
+  e:o('免許取得1年未満は表示する決まり。この車への幅寄せや無理な割り込みは違反。','Required for the first year. Squeezing or cutting in front of these cars is an offence.','Bắt buộc trong năm đầu. Ép sát hoặc chen ngang xe này là vi phạm.','取得驾照第一年必须张贴。对其挤靠或强行加塞属违法。','Wajib di tahun pertama. Memepet atau memotong mobil ini melanggar.')},
+ {sign:'uturn',c:[o('転回禁止（Uターン禁止）','No U-turn','Cấm quay đầu','禁止掉头','Dilarang putar balik'),o('右折禁止','No right turn','Cấm rẽ phải','禁止右转','Dilarang belok kanan'),o('回り道','Detour','Đường vòng','绕行','Jalan memutar')],
+  e:o('白い丸に赤い輪と斜線。矢印の形をよく見る。','White disc, red ring and slash — look carefully at the arrow shape.','Nhìn kỹ hình mũi tên.','仔细看箭头形状。','Perhatikan bentuk panahnya.')}];
+const QR=[ // 交通ルール
+ {q:o('日本では、車は道路のどちら側を走りますか？','Which side of the road do cars drive on in Japan?','Ở Nhật, ô tô đi bên nào của đường?','在日本，汽车行驶在道路的哪一侧？','Di Jepang, mobil berjalan di sisi mana?'),
+  c:[o('左側','Left','Bên trái','左侧','Kiri'),o('右側','Right','Bên phải','右侧','Kanan'),o('どちらでもよい','Either','Bên nào cũng được','都可以','Bebas')],
+  e:o('日本は左側通行。右ハンドルの車が多い。右折は交差点の中心のすぐ内側を通って小回りに、左折は道路の左端に寄って徐行。','Japan drives on the left; most cars are right-hand drive. Turn right tightly just inside the junction centre; turn left from the left edge, slowly.','Nhật đi bên trái, xe tay lái phải. Rẽ phải gọn sát tâm giao lộ, rẽ trái sát mép trái và chậm.','日本靠左行驶，多为右舵车。右转时紧贴路口中心内侧小转弯，左转时靠左侧路边慢行。','Jepang lajur kiri, setir kanan. Belok kanan rapat di sisi dalam titik tengah persimpangan; belok kiri dari tepi kiri, pelan.')},
+ {q:o('赤信号のとき、左折してもよいですか？','Can you turn left on a red light?','Đèn đỏ có được rẽ trái không?','红灯时可以左转吗？','Bolehkah belok kiri saat lampu merah?'),
+  c:[o('できない（青い矢印が出ているときだけ曲がれる）','No — only when a green arrow is shown','Không — chỉ khi có mũi tên xanh','不可以——只有亮绿色箭头时才可以','Tidak — hanya saat ada panah hijau'),o('安全なら左折してよい','Yes, if it is safe','Được nếu an toàn','安全的话可以','Boleh jika aman'),o('一度止まれば左折してよい','Yes, after stopping once','Được sau khi dừng lại','停一下就可以','Boleh setelah berhenti')],
+  e:o('日本には「赤信号でも曲がってよい」ルールはない。青の矢印が出ている方向だけ進める。','Japan has no "turn on red" rule. You may only go in the direction of a green arrow.','Nhật không có luật "rẽ khi đèn đỏ". Chỉ đi theo mũi tên xanh.','日本没有"红灯可转弯"的规则，只能按绿色箭头方向行驶。','Jepang tidak punya aturan "belok saat merah". Hanya ikuti panah hijau.')},
+ {q:o('「止まれ」の標識があるとき、正しいのは？','What must you do at a 止まれ (STOP) sign?','Gặp biển 止まれ (STOP) phải làm gì?','遇到"止まれ"（停车）标志时，正确的是？','Apa yang harus dilakukan di rambu 止まれ (STOP)?'),
+  c:[o('停止線の直前で完全に止まり、左右を確かめる','Stop completely just before the line and look both ways','Dừng hẳn sát vạch, nhìn hai bên','在停止线前完全停下，确认左右','Berhenti total tepat sebelum garis, lihat kedua arah'),o('速度を落とせば止まらなくてよい','Slowing down is enough','Chỉ cần giảm tốc','减速就可以，不必停车','Cukup memperlambat'),o('他の車がいなければ止まらなくてよい','No need to stop if no other cars','Không có xe khác thì không cần dừng','没有其他车辆就不必停','Tak perlu berhenti jika sepi')],
+  e:o('タイヤが完全に止まるまで止まる。止まったあと、見えにくいところは少しずつ前に出て確かめる。','Stop until the wheels stop turning, then creep forward to see if your view is blocked.','Dừng đến khi bánh xe ngừng hẳn, sau đó nhích dần để quan sát.','要停到车轮完全不动，再慢慢前移确认看不到的地方。','Berhenti sampai roda benar-benar diam, lalu maju sedikit untuk melihat.')},
+ {q:o('踏切を渡るとき、正しいのは？','What is correct at a railroad crossing?','Khi qua đường ray, điều nào đúng?','通过铁路道口时，正确的是？','Apa yang benar di perlintasan kereta?'),
+  c:[o('直前で一時停止し、目と耳で左右を確かめる','Stop just before it and check both ways with eyes and ears','Dừng sát trước, quan sát bằng mắt và tai','在道口前停车，用眼和耳确认左右','Berhenti tepat sebelumnya, cek dengan mata dan telinga'),o('遮断機が上がっていれば止まらずに渡る','If the barrier is up, cross without stopping','Thanh chắn đã nâng thì cứ qua','栏杆抬起就不停车直接过','Jika palang terangkat, langsung lewat'),o('早く渡るため、加速して近づく','Speed up to get across quickly','Tăng tốc để qua nhanh','加速快速通过','Percepat agar cepat lewat')],
+  e:o('踏切の信号が青のときは止まらずに通れる。先が混んでいて踏切の向こうに入る余地がないときは渡らない。','At crossings with a green signal you may go without stopping. Never enter if there is no room on the other side.','Có đèn xanh tại đường ray thì được đi không cần dừng. Không vào nếu phía bên kia không còn chỗ.','道口信号灯为绿灯时可以不停车通过。对面没有空间时不要进入。','Jika ada lampu hijau di perlintasan boleh lewat tanpa berhenti. Jangan masuk jika tidak ada ruang di seberang.')},
+ {q:o('標識がなく、中央線もない住宅街の道（生活道路）の最高速度は？（2026年9月から）','Max speed on a residential street with no signs and no centre line? (since Sept 2026)','Tốc độ tối đa trên đường khu dân cư không biển, không vạch giữa? (từ 9/2026)','没有标志也没有中心线的居民区道路，最高速度是？（2026年9月起）','Kecepatan maksimum di jalan permukiman tanpa rambu dan tanpa garis tengah? (sejak Sept 2026)'),
+  c:[o('30km/h','30 km/h','30 km/h','30km/h','30 km/jam'),o('60km/h','60 km/h','60 km/h','60km/h','60 km/jam'),o('40km/h','40 km/h','40 km/h','40km/h','40 km/jam')],
+  e:o('2026年9月1日から、中央線や中央分離帯などがない一般道路の法定速度が60km/hから30km/hになった。標識がある道は標識の速度。中央線などがある一般道路は60km/h。','From 1 Sept 2026 the legal limit on ordinary roads without a centre line or median dropped from 60 to 30 km/h. Signed limits still apply; roads with a centre line stay at 60 km/h.','Từ 1/9/2026, đường không có vạch giữa/dải phân cách giảm từ 60 xuống 30 km/h. Có biển thì theo biển; đường có vạch giữa vẫn 60 km/h.','自2026年9月1日起，没有中心线或中央分隔带的一般道路法定速度由60km/h降为30km/h。有标志按标志；有中心线的道路仍为60km/h。','Sejak 1 Sept 2026 batas jalan tanpa garis tengah/median turun dari 60 ke 30 km/jam. Jika ada rambu ikuti rambu; jalan bergaris tengah tetap 60 km/jam.')},
+ {q:o('高速道路での普通乗用車の最高速度は、標識がなければ？','On expressways, the max speed for a car with no sign is?','Trên đường cao tốc, xe con không có biển thì tối đa?','高速公路上无标志时，普通轿车的最高速度是？','Di jalan tol tanpa rambu, kecepatan maks mobil?'),
+  c:[o('100km/h','100 km/h','100 km/h','100km/h','100 km/jam'),o('80km/h','80 km/h','80 km/h','80km/h','80 km/jam'),o('130km/h','130 km/h','130 km/h','130km/h','130 km/jam')],
+  e:o('一部の区間は標識で120km/hまで。最低速度は50km/h。','Some sections are signed up to 120 km/h. Minimum speed is 50 km/h.','Một số đoạn có biển tới 120 km/h. Tối thiểu 50 km/h.','部分路段标志限速可达120km/h，最低速度50km/h。','Beberapa ruas hingga 120 km/jam. Minimum 50 km/jam.')},
+ {q:o('お酒を飲んだあとの運転について、正しいのは？','Which is correct about alcohol and driving?','Điều nào đúng về rượu bia và lái xe?','关于饮酒后驾驶，正确的是？','Mana yang benar soal alkohol dan menyetir?'),
+  c:[o('少しでも飲んだら運転しない','If you drink anything, do not drive','Uống dù chỉ một chút cũng không lái','只要喝了酒就不开车','Minum sedikit pun, jangan menyetir'),o('ビール1杯なら大丈夫','One beer is fine','Một ly bia thì không sao','一杯啤酒没关系','Satu gelas bir tidak apa'),o('少し休めば必ず大丈夫','A short rest always makes it OK','Nghỉ một chút là được','稍微休息一下就肯定没问题','Istirahat sebentar pasti aman')],
+  e:o('酒気帯び運転（呼気1リットル中0.15mg以上）は重い罰。お酒を出した人、車を貸した人、乗せてもらった人も罰せられることがある。','Drink-driving (0.15 mg/L breath or more) is heavily punished. People who served the alcohol, lent the car or rode along can also be punished.','Lái xe khi có cồn (≥0,15 mg/L hơi thở) bị phạt nặng. Người mời rượu, cho mượn xe, đi cùng cũng có thể bị phạt.','酒驾（呼气每升0.15mg以上）处罚很重。提供酒的人、借车的人、同乘者也可能受罚。','Mengemudi mabuk (≥0,15 mg/L napas) dihukum berat. Pemberi minuman, peminjam mobil, dan penumpang juga bisa dihukum.')},
+ {q:o('シートベルトをしめるのは？','Who must wear a seat belt?','Ai phải thắt dây an toàn?','谁必须系安全带？','Siapa yang wajib memakai sabuk pengaman?'),
+  c:[o('全員（後ろの席も）。6歳未満はチャイルドシート','Everyone, including rear seats. Child seat under age 6','Tất cả kể cả ghế sau. Dưới 6 tuổi dùng ghế trẻ em','所有人（包括后排）。6岁以下用儿童座椅','Semua termasuk kursi belakang. Di bawah 6 tahun pakai kursi anak'),o('運転席と助手席だけ','Only driver and front passenger','Chỉ ghế lái và ghế phụ','只有驾驶座和副驾驶','Hanya pengemudi dan depan'),o('高速道路を走るときだけ','Only on expressways','Chỉ trên cao tốc','只在高速公路上','Hanya di jalan tol')],
+  e:o('運転者は同乗者にもシートベルトをさせる義務がある。','The driver must make sure passengers wear belts too.','Người lái phải bảo đảm hành khách thắt dây.','驾驶员有义务让同乘者也系好安全带。','Pengemudi wajib memastikan penumpang memakai sabuk.')},
+ {q:o('運転中、スマートフォンを手に持って通話・画面を見るのは？','Holding a phone to talk or look at the screen while driving is…','Cầm điện thoại nói chuyện / xem màn hình khi lái là…','驾驶时手持手机通话或看屏幕是……','Memegang ponsel untuk bicara/melihat layar saat menyetir adalah…'),
+  c:[o('違反。使うときは安全な場所に止めてから','An offence — stop somewhere safe first','Vi phạm — dừng nơi an toàn rồi mới dùng','违法。要先停在安全的地方再用','Pelanggaran — berhenti di tempat aman dulu'),o('短い時間なら問題ない','Fine if it is short','Ngắn thì không sao','时间短就没问题','Tidak apa jika sebentar'),o('ゆっくり走っていれば問題ない','Fine if driving slowly','Đi chậm thì không sao','开得慢就没问题','Tidak apa jika pelan')],
+  e:o('事故を起こしたときなどは、さらに重い罰になる。','Penalties are heavier if it causes danger or an accident.','Gây nguy hiểm hoặc tai nạn thì bị phạt nặng hơn.','造成危险或事故时处罚更重。','Hukuman lebih berat jika menimbulkan bahaya/kecelakaan.')},
+ {q:o('横断歩道を渡ろうとしている人がいます。どうしますか？','Someone is about to use a pedestrian crossing. What do you do?','Có người sắp qua vạch sang đường. Bạn làm gì?','有人准备通过人行横道，你怎么做？','Ada orang akan menyeberang di zebra cross. Apa yang dilakukan?'),
+  c:[o('手前で一時停止して、先に渡らせる','Stop before the crossing and let them cross','Dừng trước vạch, để họ đi trước','在前面停车，让对方先过','Berhenti sebelum zebra cross, biarkan menyeberang'),o('クラクションで知らせて通る','Honk and go','Bấm còi rồi đi','按喇叭提醒后通过','Bunyikan klakson lalu jalan'),o('速度を落とさず先に通る','Go first without slowing','Không giảm tốc, đi trước','不减速先通过','Jalan duluan tanpa melambat')],
+  e:o('横断歩道では歩行者が優先。人がいるかどうか分からないときも、止まれる速さで近づく。','Pedestrians have priority at crossings. If unsure whether anyone is there, approach slowly enough to stop.','Người đi bộ được ưu tiên. Không chắc có người hay không thì cũng tiến tới đủ chậm để dừng.','人行横道行人优先。不确定有没有人时，也要以能停下的速度接近。','Pejalan kaki prioritas. Jika ragu, dekati dengan kecepatan yang bisa berhenti.')},
+ {q:o('交差点で右折しようとしたら、対向から直進車が来ました。','You are turning right and an oncoming car is going straight.','Bạn rẽ phải, xe đối diện đi thẳng tới.','你要右转，对面有直行车开来。','Anda belok kanan dan mobil dari depan lurus.'),
+  c:[o('直進車が先。通り過ぎるまで待つ','The straight-going car goes first — wait','Xe đi thẳng được đi trước — chờ','直行车优先，等它通过','Mobil lurus duluan — tunggu'),o('先に曲がってよい','You may turn first','Bạn được rẽ trước','可以先转弯','Anda boleh belok duluan'),o('ライトを点滅させて先に曲がる','Flash your lights and turn first','Nháy đèn rồi rẽ trước','闪灯后先转','Kedipkan lampu lalu belok')],
+  e:o('右折車は、直進車や左折車の進行を妨げてはいけない。','A right-turning car must not obstruct straight-going or left-turning traffic.','Xe rẽ phải không được cản trở xe đi thẳng hoặc rẽ trái.','右转车不得妨碍直行车和左转车。','Mobil belok kanan tidak boleh menghalangi yang lurus/belok kiri.')},
+ {q:o('救急車がサイレンを鳴らして近づいてきました。交差点の近くではどうしますか？','An ambulance with its siren on approaches. Near a junction you should…','Xe cứu thương hú còi đến gần. Gần giao lộ bạn nên…','救护车鸣笛驶近。在路口附近应该……','Ambulans bersirene mendekat. Di dekat persimpangan Anda harus…'),
+  c:[o('交差点を避け、道路の左に寄って一時停止','Clear the junction, pull to the left and stop','Tránh khỏi giao lộ, tấp vào bên trái và dừng','避开路口，靠道路左侧停车','Keluar dari persimpangan, menepi ke kiri dan berhenti'),o('その場で急停止','Brake hard where you are','Phanh gấp tại chỗ','原地急刹车','Rem mendadak di tempat'),o('加速して先に行く','Speed up and go ahead','Tăng tốc chạy trước','加速先走','Percepat dan jalan duluan')],
+  e:o('交差点以外では、道路の左に寄って進路を譲る。','Away from junctions, keep left and give way.','Ngoài giao lộ, đi sát trái để nhường đường.','不在路口时，靠左让路。','Di luar persimpangan, menepi ke kiri dan beri jalan.')},
+ {q:o('自転車の右側を通るとき（2026年4月から）、正しいのは？','Passing a cyclist on its right (since April 2026), which is correct?','Khi vượt bên phải xe đạp (từ 4/2026), điều nào đúng?','从自行车右侧通过时（2026年4月起），正确的是？','Melewati sepeda di sisi kanannya (sejak April 2026), mana yang benar?'),
+  c:[o('十分な間隔（目安1m）をあけるか、間隔に合った安全な速度で','Leave enough space (about 1 m) or go at a speed safe for the gap','Giữ khoảng cách đủ (~1 m) hoặc đi tốc độ an toàn','保持足够间隔（约1米），或以与间隔相符的安全速度通过','Beri jarak cukup (±1 m) atau pelan sesuai jaraknya'),o('クラクションで左に寄せてから通る','Honk to make it move left, then pass','Bấm còi bắt xe đạp tránh sang trái','按喇叭让其靠左再通过','Klakson agar sepeda minggir'),o('間隔は気にしなくてよい','The gap does not matter','Không cần quan tâm khoảng cách','不用在意间隔','Jarak tidak penting')],
+  e:o('2026年4月1日施行。間隔が十分でないときの速度の目安は時速20〜30km程度。自転車もできるだけ左端に寄る。','In force since 1 April 2026. Without enough space, about 20–30 km/h is a guide. Cyclists must keep as far left as possible.','Có hiệu lực từ 1/4/2026. Khi không đủ khoảng cách, tham khảo 20–30 km/h. Xe đạp phải đi sát lề trái.','2026年4月1日施行。间隔不够时速度参考约20～30km/h。自行车也要尽量靠左。','Berlaku 1 April 2026. Jika jarak kurang, acuan sekitar 20–30 km/jam. Sepeda harus sekiri mungkin.')},
+ {q:o('黄色の信号の意味は？','What does a yellow (amber) light mean?','Đèn vàng có nghĩa là gì?','黄灯的意思是？','Apa arti lampu kuning?'),
+  c:[o('停止位置で安全に止まれないとき以外は止まる','Stop, unless you cannot stop safely at the stop position','Dừng lại, trừ khi không thể dừng an toàn','除非无法在停止位置安全停车，否则要停','Berhenti, kecuali tidak bisa berhenti dengan aman'),o('急いで通る合図','Hurry through','Tín hiệu đi nhanh qua','赶快通过的信号','Tanda untuk buru-buru lewat'),o('注意すれば進んでよい','Go if careful','Cẩn thận thì được đi','注意的话可以前进','Boleh jalan jika hati-hati')],
+  e:o('黄色の点滅は「他の交通に注意して進める」、赤の点滅は「一時停止して安全を確かめる」。','Flashing yellow: proceed with care. Flashing red: stop, then proceed when safe.','Vàng nhấp nháy: đi cẩn thận. Đỏ nhấp nháy: dừng rồi đi khi an toàn.','黄灯闪烁：注意其他交通后可通行；红灯闪烁：停车确认安全。','Kuning berkedip: jalan hati-hati. Merah berkedip: berhenti dulu.')},
+ {q:o('外国の免許で日本を運転するには？','How can you drive in Japan with a foreign licence?','Muốn lái ở Nhật bằng bằng lái nước ngoài thì?','持外国驾照如何在日本驾驶？','Bagaimana mengemudi di Jepang dengan SIM asing?'),
+  c:[o('1949年ジュネーブ条約の国際運転免許証（日本に来て1年以内）など、決められた免許が必要','You need a permitted licence, e.g. an International Driving Permit under the 1949 Geneva Convention (within 1 year of arrival)','Cần giấy phép hợp lệ, ví dụ bằng lái quốc tế theo Công ước Geneva 1949 (trong 1 năm từ khi đến)','需要规定的驾照，例如1949年日内瓦公约的国际驾照（入境1年内）','Perlu izin yang sah, mis. SIM Internasional Konvensi Jenewa 1949 (dalam 1 tahun sejak tiba)'),o('自分の国の免許だけでよい','Your home licence alone is enough','Chỉ cần bằng lái nước mình','只用本国驾照就可以','Cukup SIM negara sendiri'),o('レンタカーなら免許はいらない','No licence needed for rental cars','Thuê xe thì không cần bằng','租车不需要驾照','Mobil sewa tidak perlu SIM')],
+  e:o('エストニア、スイス、ドイツ、フランス、ベルギー、モナコ、台湾は、免許と日本語の翻訳文で運転できる。日本に住む人は「外免切替」で日本の免許にする（2025年10月から知識確認が50問・90%以上になるなど厳しくなった）。','Estonia, Switzerland, Germany, France, Belgium, Monaco and Taiwan licences can be used with an official Japanese translation. Residents convert via "gaimen kirikae" (stricter since Oct 2025: 50-question test, 90% to pass).','Bằng của Estonia, Thụy Sĩ, Đức, Pháp, Bỉ, Monaco, Đài Loan dùng được kèm bản dịch tiếng Nhật. Người cư trú đổi bằng (từ 10/2025 khó hơn: 50 câu, đạt 90%).','爱沙尼亚、瑞士、德国、法国、比利时、摩纳哥、台湾的驾照附日文译本可驾驶。居住者需"外免切替"（2025年10月起更严格：50题需答对90%）。','SIM Estonia, Swiss, Jerman, Prancis, Belgia, Monako, Taiwan bisa dipakai dengan terjemahan Jepang. Penduduk menukar SIM (sejak Okt 2025 lebih ketat: 50 soal, lulus 90%).')},
+ {q:o('事故を起こしてしまったら、最初にすることは？','If you have an accident, what do you do first?','Nếu gây tai nạn, việc đầu tiên là?','发生事故后，首先要做的是？','Jika terjadi kecelakaan, apa yang pertama dilakukan?'),
+  c:[o('すぐ止まり、けが人を助け、110番・119番に連絡','Stop, help the injured, call 110 (police) / 119 (ambulance)','Dừng ngay, cứu người bị thương, gọi 110 / 119','立即停车，救助伤者，拨打110/119','Berhenti, tolong korban, hubungi 110 / 119'),o('その場を離れて、あとで連絡','Leave and report later','Rời đi rồi báo sau','离开现场，之后再联系','Pergi dan lapor nanti'),o('相手と話して終わりにする','Settle it with the other person only','Chỉ thỏa thuận với người kia','和对方谈好就结束','Selesaikan dengan pihak lain saja')],
+  e:o('けが人の救護と警察への報告は運転者の義務。2次事故を防ぐため、ハザードランプや発炎筒も使う。','Helping the injured and reporting to police are legal duties. Use hazard lights and flares to prevent a second crash.','Cứu người và báo cảnh sát là nghĩa vụ. Bật đèn khẩn cấp, dùng pháo sáng.','救护伤者和向警察报告是驾驶员的义务。使用双闪和信号弹防止二次事故。','Menolong korban dan lapor polisi adalah kewajiban. Pakai lampu hazard dan suar.')},
+ {q:o('日本で「ありがとう」の意味でクラクションを鳴らしてもよい？','Can you honk to say "thank you" in Japan?','Ở Nhật có được bấm còi để "cảm ơn" không?','在日本可以按喇叭表示"谢谢"吗？','Bolehkah klakson untuk "terima kasih" di Jepang?'),
+  c:[o('鳴らさない（危険を防ぐときや「警笛鳴らせ」の場所だけ）','No — only to prevent danger or where a "sound horn" sign is shown','Không — chỉ khi tránh nguy hiểm hoặc có biển yêu cầu','不可以——只在防止危险或有"鸣笛"标志处','Tidak — hanya untuk mencegah bahaya atau ada rambu klakson'),o('鳴らしてよい','Yes','Được','可以','Boleh'),o('夜だけ鳴らしてよい','Only at night','Chỉ ban đêm','只有晚上可以','Hanya malam hari')],
+  e:o('お礼はハザードランプを短く点滅させる人が多い（法律で決まった合図ではない）。','Many drivers flash their hazard lights briefly as thanks (a custom, not a legal signal).','Nhiều người nháy đèn khẩn cấp ngắn để cảm ơn (thói quen, không phải luật).','很多人短暂打双闪表示感谢（习惯，不是法定信号）。','Banyak orang menyalakan hazard sebentar sebagai terima kasih (kebiasaan).')}];
+const QH=[ // 危険予測
+ {sc:{road:'v',objs:[['bus',0.36,0.38]],hide:[['ped',0.47,0.27]]},
+  c:[o('バスの前から人が出てくるかも。速度を落とし、間隔をあける','Someone may step out in front of the bus — slow down and give space','Có người bước ra từ trước xe buýt — giảm tốc, giữ khoảng cách','可能有人从公交车前面走出来——减速并拉开距离','Bisa ada orang muncul dari depan bus — pelan dan beri jarak'),o('バスが発進する前に急いで追い越す','Overtake quickly before the bus moves off','Vượt nhanh trước khi xe buýt chạy','趁公交车起步前赶快超车','Cepat salip sebelum bus jalan'),o('クラクションを鳴らしながら通る','Pass while sounding the horn','Vừa bấm còi vừa đi qua','边按喇叭边通过','Lewat sambil klakson')]},
+ {sc:{road:'x',objs:[['car',0.6,0.33,PI/2],['arrowR',0.42,0.76]],hide:[['moto',0.68,0.22,PI/2]],light:'G'},
+  c:[o('止まってくれた対向車のかげからバイクが来るかも。少しずつ進んで確かめる','A motorbike may come past the car that stopped for you — creep forward and check','Xe máy có thể lao ra từ sau xe đối diện đã dừng — nhích dần và quan sát','可能有摩托车从让路的对向车旁边驶出——慢慢前进确认','Motor bisa muncul di samping mobil yang berhenti — maju pelan dan cek'),o('ゆずってくれたので、すぐに曲がる','They let you go, so turn right away','Họ nhường rồi nên rẽ ngay','对方让了，马上转弯','Sudah diberi jalan, langsung belok'),o('パッシングでお礼をしてすぐ曲がる','Flash thanks and turn immediately','Nháy đèn cảm ơn rồi rẽ ngay','闪灯致谢后马上转弯','Kedip lampu terima kasih lalu belok')]},
+ {sc:{road:'x',objs:[['arrowL',0.41,0.76]],hide:[['bike',0.345,0.84,-PI/2]],light:'G'},
+  c:[o('左後ろの自転車を巻き込むかも。ミラーと目で確かめ、先に行かせる','You could hit a cyclist on your left rear — check mirror and over your shoulder, let it go first','Có thể cuốn xe đạp bên trái phía sau — nhìn gương và ngoái lại, để họ đi trước','可能卷入左后方的自行车——用后视镜和眼睛确认，让其先走','Bisa menyerempet sepeda di kiri belakang — cek spion dan toleh, biarkan lewat dulu'),o('自転車より先に急いで曲がる','Turn quickly before the cyclist','Rẽ nhanh trước xe đạp','抢在自行车前赶快转弯','Belok cepat sebelum sepeda'),o('右に大きくふくらんでから曲がる','Swing wide to the right first','Đánh rộng sang phải rồi rẽ','先向右大幅绕出再转','Melebar ke kanan dulu lalu belok')]},
+ {sc:{road:'n',objs:[['car',0.36,0.33,-PI/2],['car',0.36,0.6,-PI/2],['ball',0.43,0.47]],hide:[['child',0.355,0.47]]},
+  c:[o('ボールを追って子どもが飛び出すかも。すぐ止まれるよう減速・停止','A child may run out after the ball — slow down, ready to stop','Trẻ em có thể chạy theo quả bóng — giảm tốc, sẵn sàng dừng','孩子可能追着球冲出来——减速，随时准备停车','Anak bisa mengejar bola — pelan, siap berhenti'),o('ボールをよけて進む','Steer around the ball','Lách qua quả bóng','绕开球继续走','Hindari bolanya dan lanjut'),o('クラクションを鳴らして進む','Sound the horn and keep going','Bấm còi rồi đi tiếp','按喇叭继续前进','Klakson dan terus jalan')]},
+ {sc:{road:'v',objs:[['car',0.62,0.15,PI/2],['car',0.62,0.32,PI/2],['car',0.62,0.62,PI/2],['car',0.62,0.8,PI/2],['zebra',0.5,0.47]],hide:[['ped',0.6,0.47]]},
+  c:[o('止まっている車の間から人や自転車が渡ってくるかも。速度を落とす','People or bikes may cross through the gap in the queue — slow down','Người hoặc xe đạp có thể băng qua khe giữa các xe — giảm tốc','可能有人或自行车从车流空隙穿过——减速','Orang/sepeda bisa menyeberang lewat celah — pelankan'),o('対向車線は止まっているので関係ない','The other lane is stopped, so no problem','Làn đối diện đang dừng nên không sao','对向车道停着，所以没关系','Lajur lawan berhenti, jadi aman'),o('速度を上げて早く通り過ぎる','Speed up and get past quickly','Tăng tốc qua nhanh','加速快速通过','Percepat agar cepat lewat')]},
+ {sc:{road:'v',objs:[['car',0.36,0.38,-PI/2]],hide:[['door',0.42,0.36]]},
+  c:[o('急にドアが開いたり人が出てきたりするかも。間隔をあけ、速度を落とす','A door may open or someone may get out — give space and slow down','Cửa xe có thể mở hoặc người bước ra — giữ khoảng cách, giảm tốc','车门可能突然打开或有人下车——拉开距离并减速','Pintu bisa tiba-tiba terbuka — beri jarak dan pelan'),o('駐車車両のすぐ横を同じ速度で通る','Pass right beside it at the same speed','Đi sát bên với cùng tốc độ','以同样速度紧贴着通过','Lewat rapat dengan kecepatan sama'),o('後ろでクラクションを鳴らして知らせる','Honk from behind to warn them','Bấm còi từ phía sau','在后面按喇叭提醒','Klakson dari belakang')]},
+ {sc:{road:'r',objs:[['car',0.4,0.12,-PI/2],['car',0.4,0.28,-PI/2]],hide:[]},
+  c:[o('踏切の先に、自分の車が入れる余地があるか確かめてから渡る','Only cross when there is room for your car on the far side','Chỉ qua khi phía bên kia còn đủ chỗ cho xe mình','确认道口对面有容纳自己车的空间后再通过','Menyeberang hanya jika ada ruang di seberang'),o('遮断機が上がっているので、すぐ渡る','The barrier is up, so cross now','Thanh chắn đang nâng nên qua ngay','栏杆抬着，马上通过','Palang terangkat, langsung lewat'),o('踏切の中で止まって待つ','Wait on the tracks','Dừng chờ trên đường ray','在道口内停车等待','Tunggu di atas rel')]},
+ {sc:{road:'v',night:true,objs:[],hide:[['ped',0.55,0.25]]},
+  c:[o('暗い服の歩行者は見えにくい。前や対向に車がいなければハイビーム（上向き）で早く見つける','Pedestrians in dark clothes are hard to see — use high beam when no vehicles ahead or oncoming','Người mặc đồ tối khó thấy — bật đèn pha khi không có xe phía trước/đối diện','穿深色衣服的行人很难看清——前方和对向无车时用远光灯尽早发现','Pejalan berbaju gelap sulit terlihat — pakai lampu jauh bila tak ada kendaraan di depan'),o('ライトを消して目を慣らす','Turn lights off to let your eyes adjust','Tắt đèn cho mắt quen','关灯让眼睛适应','Matikan lampu agar mata terbiasa'),o('速度を上げて早く通り過ぎる','Speed up to pass quickly','Tăng tốc qua nhanh','加速快速通过','Percepat agar cepat lewat')]}];
+QH.forEach(q=>{q.e=q.c[0];});
+// 危険予測の絵
+function drawScene(x,sc,W2,H2,reveal){x.save();x.fillStyle=sc.night?'#141a22':'#5f8f4a';x.fillRect(0,0,W2,H2);const rw=W2*0.36,cx=W2/2;
+  const road=sc.night?'#2a2e33':'#6a6f73';x.fillStyle=road;x.fillRect(cx-rw/2,0,rw,H2);
+  if(sc.road==='x'){x.fillRect(0,H2*0.4,W2,H2*0.22);}
+  if(sc.road==='r'){x.fillStyle='#6e6152';x.fillRect(0,H2*0.45,W2,H2*0.1);x.fillStyle='#bbb';x.fillRect(0,H2*0.47,W2,3);x.fillRect(0,H2*0.52,W2,3);x.fillStyle='#ffd23a';x.fillRect(cx-rw/2-28,H2*0.58,28,6);x.fillRect(cx+rw/2,H2*0.4,28,6);}
+  x.strokeStyle=sc.night?'#777':'#eee';x.setLineDash(sc.road==='n'?[]:[12,10]);x.lineWidth=2;if(sc.road!=='n'){x.beginPath();x.moveTo(cx,0);x.lineTo(cx,H2);x.stroke();}x.setLineDash([]);
+  if(sc.light){x.fillStyle='#222';x.fillRect(cx-rw/2-34,H2*0.3,30,12);x.fillStyle='#2ad06a';x.beginPath();x.arc(cx-rw/2-28,H2*0.3+6,4,0,7);x.fill();}
+  const put=(it,hl)=>{const [k,u,v,a]=it;const px=u*W2,py=v*H2;x.save();x.translate(px,py);
+    if(k==='car'||k==='bus'){x.rotate(a||-PI/2);const L=k==='bus'?W2*0.16:W2*0.1,Wd=k==='bus'?W2*0.055:W2*0.05;x.fillStyle=k==='bus'?'#e6a23c':'#c8ced3';rr(x,-L/2,-Wd/2,L,Wd,4);x.fill();x.fillStyle='rgba(30,40,55,.8)';x.fillRect(L*0.12,-Wd*0.38,L*0.16,Wd*0.76);}
+    else if(k==='ped'||k==='child'){const r=k==='child'?5:6;x.fillStyle=sc.night?'#3a3a48':'#d6457f';x.beginPath();x.arc(0,0,r,0,7);x.fill();x.fillStyle='#f0c8a0';x.beginPath();x.arc(0,0,r*0.5,0,7);x.fill();}
+    else if(k==='bike'||k==='moto'){x.rotate(a||0);x.fillStyle=k==='moto'?'#c0392b':'#333';x.fillRect(-12,-3,24,6);x.fillStyle='#ffb02e';x.beginPath();x.arc(0,0,4,0,7);x.fill();}
+    else if(k==='ball'){x.fillStyle='#ff7a1a';x.beginPath();x.arc(0,0,4,0,7);x.fill();}
+    else if(k==='door'){x.fillStyle='#c8ced3';x.fillRect(0,-2,14,4);}
+    else if(k==='zebra'){x.fillStyle='#eee';for(let i=0;i<6;i++)x.fillRect(-rw/2+6+i*rw/6.3,-8,rw/12,16);}
+    else if(k==='arrowL'||k==='arrowR'){x.strokeStyle='rgba(93,255,154,.9)';x.lineWidth=4;x.beginPath();x.moveTo(0,30);x.lineTo(0,0);x.quadraticCurveTo(0,-14,k==='arrowL'?-26:26,-14);x.stroke();}
+    if(hl){x.strokeStyle='#ff3b30';x.lineWidth=3;x.beginPath();x.arc(0,0,18,0,7);x.stroke();}
+    x.restore();};
+  sc.objs.forEach(it=>put(it,false));if(reveal)sc.hide.forEach(it=>put(it,true));
+  // 自分の車（下から上へ・左側通行）
+  x.save();x.translate(cx-rw/4,H2*0.86);x.fillStyle='#2f7fe0';rr(x,-W2*0.025,-W2*0.05,W2*0.05,W2*0.1,4);x.fill();x.fillStyle='rgba(20,30,45,.8)';x.fillRect(-W2*0.019,-W2*0.03,W2*0.038,W2*0.02);
+  if(sc.night){x.fillStyle='rgba(255,240,170,.18)';x.beginPath();x.moveTo(-10,-W2*0.05);x.lineTo(-60,-H2*0.7);x.lineTo(60,-H2*0.7);x.lineTo(10,-W2*0.05);x.fill();}x.restore();
+  x.restore();}
+
+/* ================= クイズの進行 ================= */
+let QZ=null;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function startQuiz(kind){const src=kind==='sign'?QS:kind==='rule'?QR:QH;QZ={kind,list:shuffle(src).slice(0,Math.min(10,src.length)),i:0,ok:0};$('#quizT').textContent=t(kind==='sign'?'quizSign':kind==='rule'?'quizRule':'quizHaz');show('scQuiz');renderQ();}
+function renderQ(){const B=$('#quizB');const q=QZ.list[QZ.i];if(!q){B.innerHTML=`<div class="qq">${t('result',QZ.list.length,QZ.ok)}</div><div class="big" style="font-size:42px;font-family:var(--num)">${Math.round(QZ.ok/QZ.list.length*100)}%</div><div class="btns" style="display:flex;gap:8px"><button class="btn pri" id="qAgain">${t('again')}</button><button class="btn" id="qMenu">${t('toMenu')}</button></div>`;$('#qAgain').onclick=()=>startQuiz(QZ.kind);$('#qMenu').onclick=()=>goBack();return;}
+  const ch=shuffle(q.c.map((c,i)=>({c,ok:i===0})));const qtext=QZ.kind==='sign'?t('signQ'):QZ.kind==='haz'?t('hazQ'):tq(q.q);
+  B.innerHTML=`<div class="qmeta"><span>${t('qn',QZ.i+1,QZ.list.length)}</span><span>✓ ${QZ.ok}</span></div>${QZ.kind!=='rule'?`<div class="qfig${QZ.kind==='haz'?' dark':''}"><canvas id="qCv" width="${QZ.kind==='haz'?720:360}" height="${QZ.kind==='haz'?480:300}"></canvas></div>`:''}<div class="qq">${qtext}</div><div class="choices">${ch.map((c,i)=>`<button data-k="${i}">${tq(c.c)}</button>`).join('')}</div><div id="qFb"></div>`;
+  const draw=(rev)=>{const cv=$('#qCv');if(!cv)return;const x=cv.getContext('2d');if(QZ.kind==='sign'){x.clearRect(0,0,cv.width,cv.height);drawSign(x,q.sign,cv.width/2,cv.height/2,cv.height*0.9);}else drawScene(x,q.sc,cv.width,cv.height,rev);};draw(false);
+  $$('#quizB .choices button').forEach(b=>b.onclick=()=>{if(b.parentNode.dataset.done)return;b.parentNode.dataset.done=1;const k=+b.dataset.k,ok=ch[k].ok;if(ok)QZ.ok++;sfx(ok?'ok':'pen');
+    $$('#quizB .choices button').forEach((bb,i)=>{if(ch[i].ok)bb.classList.add('ok');else if(i===k)bb.classList.add('ng');});
+    if(QZ.kind==='haz')draw(true);
+    const ex=QZ.kind==='haz'?(q.sc.hide.length?`<div class="muted">🔴 ${t('hidden')}</div>`:'')+tq(q.c[0]):tq(q.e);
+    $('#qFb').innerHTML=`<div class="fb${ok?'':' ng'}"><b>${t(ok?'correct':'wrong')}</b>${ex}</div><div style="margin-top:8px"><button class="btn pri" id="qNext">${t('nextQ')}</button></div>`;
+    $('#qNext').onclick=()=>{QZ.i++;renderQ();};});}
+
+/* ================= ルールブック ================= */
+let BOOKTAB='rule';
+function renderBook(){const B=$('#bookB');$('#tbRule').setAttribute('aria-pressed',BOOKTAB==='rule');$('#tbSign').setAttribute('aria-pressed',BOOKTAB==='sign');
+  if(BOOKTAB==='rule'){B.innerHTML=QR.map(q=>`<div class="bk"><b>${tq(q.q)}</b><p>✅ ${tq(q.c[0])}</p><p class="muted">${tq(q.e)}</p></div>`).join('');}
+  else{B.innerHTML=QS.map((q,i)=>`<div class="bk"><canvas width="168" height="168" data-s="${i}"></canvas><b>${tq(q.c[0])}</b><p class="muted">${tq(q.e)}</p></div>`).join('');
+    $$('#bookB canvas').forEach(cv=>{const q=QS[+cv.dataset.s];drawSign(cv.getContext('2d'),q.sign,84,84,150);});}}
+$('#tbRule').onclick=()=>{BOOKTAB='rule';renderBook();};$('#tbSign').onclick=()=>{BOOKTAB='sign';renderBook();};
+
+/* ================= 画面の切り替え ================= */
+const SCREENS=['scTitle','scList','scDrive','scQuiz','scBook'];let STACK=['scTitle'];
+function show(id){SCREENS.forEach(s=>$('#'+s).hidden=s!==id);if(STACK[STACK.length-1]!==id)STACK.push(id);scrollTo(0,0);}
+function goBack(){if(STACK.length>1)STACK.pop();const id=STACK[STACK.length-1];SCREENS.forEach(s=>$('#'+s).hidden=s!==id);if(id==='scList')renderList(LISTKIND);for(const k in keys)keys[k]=false;}
+$$('[data-back]').forEach(b=>b.onclick=goBack);$('#dBack').onclick=goBack;
+$('#dRestart').onclick=()=>startRun(MODE);
+let VIEW=store.get('jdp_view','both');const isLand=()=>matchMedia('(orientation:landscape) and (max-height:540px)').matches;
+function updViewBtn(){$('#stage').dataset.view=VIEW;const v=isLand()&&VIEW==='both'?'cab':VIEW;$('#dView').textContent=t(v==='both'?'vBoth':v==='cab'?'vCab':'vTop');}
+$('#dView').onclick=()=>{const L=isLand()?['cab','top']:['both','cab','top'];VIEW=L[(L.indexOf(VIEW)+1)%L.length];store.set('jdp_view',VIEW);updViewBtn();resize();};
+let LISTKIND='lessons';
+function renderList(kind){LISTKIND=kind;$('#listT').textContent=t(kind);const B=$('#listB');
+  if(kind==='lessons'){B.innerHTML=LESSONS.map(l=>`<button class="item" data-l="${l.id}"><span class="no">${l.id}</span><span class="tx"><b>${t('ls'+l.id)}</b></span><span class="st">${'★'.repeat(PROG['L'+l.id]||0)}${'☆'.repeat(3-(PROG['L'+l.id]||0))}</span></button>`).join('');
+    $$('#listB [data-l]').forEach(b=>b.onclick=()=>startRun({kind:'lesson',id:+b.dataset.l}));}
+  else{B.innerHTML=['A','B'].map(k=>`<button class="item" data-e="${k}"><span class="no">${k}</span><span class="tx"><b>${t('course'+k)}</b><span>${t('course'+k+'D')}</span></span><span class="st">${PROG['E'+k]!=null?PROG['E'+k]+t('pts'):''}</span></button>`).join('');
+    $$('#listB [data-e]').forEach(b=>b.onclick=()=>startRun({kind:'exam',id:b.dataset.e}));}}
+$$('[data-go]').forEach(b=>b.onclick=()=>{audioInit();const g=b.dataset.go;if(g==='lessons'||g==='exams'){renderList(g);show('scList');}else if(g==='free')startRun({kind:'free'});else if(g==='book'){renderBook();show('scBook');}else startQuiz(g.slice(2));});
+function renderLangs(){$('#langs').innerHTML=LANGS.map(([k,n])=>`<button data-lg="${k}" aria-pressed="${k===LANG}">${n}</button>`).join('');$$('#langs [data-lg]').forEach(b=>b.onclick=()=>{LANG=b.dataset.lg;store.set('jdp_lang',LANG);applyI18n();});}
+let VEH='car';
+function renderVehicles(){const V=[['car',1],['truck',0],['taxi',0],['moto',0],['tractor',0],['excav',0]];
+  $('#vehicles').innerHTML=V.map(([k,on])=>`<button class="veh" ${on?'':'disabled'} aria-pressed="${k===VEH}">${{car:'🚗',truck:'🚚',taxi:'🚕',moto:'🏍️',tractor:'🚜',excav:'🏗️'}[k]} ${t(k)}${on?'':` <small>${t('soon')}</small>`}</button>`).join('');}
+function openModal(h){$('#mbox').innerHTML=h;$('#modal').hidden=false;}
+function closeModal(){$('#modal').hidden=true;}
+$('#bSet').onclick=()=>{const ck=(k,l)=>`<label><input type="checkbox" data-set="${k}" ${SET[k]?'checked':''}> ${t(l)}</label>`;
+  openModal(`<h3>${t('settings')}</h3><div class="set"><b>${t('assist')}</b>${ck('path','aPath')}${ck('route','aRoute')}${ck('track','aTrack')}${ck('mirror','aMirror')}${ck('sound','sound')}<label>${t('sens')} <input type="range" min="0.5" max="2" step="0.1" value="${SET.sens}" id="sSens"></label></div><div class="btns"><button class="btn pri" id="mClose">${t('close')}</button></div>`);
+  $$('[data-set]').forEach(c=>c.onchange=()=>{SET[c.dataset.set]=c.checked;store.set('jdp_set',SET);});$('#sSens').oninput=e=>{SET.sens=+e.target.value;store.set('jdp_set',SET);};$('#mClose').onclick=closeModal;};
+
+/* テスト用の窓口（ブラウザの開発者ツールから確認できる） */
+window.__jdp={S:S_PTS,get G(){return G;},W,startRun,inDrv,SL,tick,shift,wink,look,LESSONS,LEGS_A,LEGS_B,BAYS,trainInfo,sigState,keys,PED,endRun,QS,QR,QH,setLang:l=>{LANG=l;applyI18n();}};
+
+applyI18n();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
