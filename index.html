@@ -276,7 +276,7 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
 
 <script>
 (()=>{'use strict';
-const VER='Ver.1.1';
+const VER='Ver.1.2';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a,b)=>v<a?a:v>b?b:v, hyp=Math.hypot, PI=Math.PI;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
@@ -372,6 +372,7 @@ signQ:['この標識・マークの意味は？','この ひょうしきの い�
 hazQ:['このあと、何に一番気をつけますか？','このあと、なにに いちばん きを つけますか？','What should you watch out for most?','Bạn cần chú ý điều gì nhất?','接下来最需要注意什么？','Apa yang paling harus diwaspadai?'],
 hidden:['見えにくい危険','みえにくい きけん','Hidden danger','Nguy hiểm khó thấy','隐藏的危险','Bahaya tersembunyi'],
 needBrake:['ブレーキを踏みながらシフトしよう','ブレーキを ふみながら ギアを かえよう','Hold the brake while shifting','Đạp phanh khi chuyển số','换挡时请踩住刹车','Injak rem saat memindah gigi'],
+tipBrake:['ヒント：実際の車では、ブレーキを踏みながらシフトします','ヒント：ほんとうの くるまは ブレーキを ふみながら ギアを かえます','Tip: in a real car, hold the brake while shifting','Mẹo: xe thật phải đạp phanh khi chuyển số','提示：真实车辆换挡时要踩住刹车','Tips: di mobil sungguhan, injak rem saat memindah gigi'],
 needStop:['止まってからシフトしよう','とまってから ギアを かえよう','Stop before shifting','Dừng hẳn rồi mới chuyển số','停稳后再换挡','Berhenti dulu sebelum memindah gigi'],
 pbHold:['パーキングブレーキがかかっています','パーキングブレーキが かかって います','Parking brake is on','Phanh tay đang kéo','驻车制动未松开','Rem parkir masih aktif'],
 label_S:['S字','Sじ','S-curve','Đường S','S弯','S'],
@@ -612,6 +613,7 @@ function tick(dt){
   if(v0===0&&bdec>=Math.abs(acc))G.v=0;
   else{G.v+=acc*dt;const dv=bdec*dt;if(bdec>0){if(Math.abs(G.v)<=dv&&Math.sign(G.v)!==Math.sign(acc||-G.v)*-1)G.v=0;else if(Math.abs(G.v)<=dv)G.v=0;else G.v-=Math.sign(G.v)*dv;}}
   if(Math.abs(G.v)<0.004&&bdec>0)G.v=0;
+  if(G.brk>0.05)G.brkT=G.time;
   // 動く（後輪の中心が基準）
   const nx=G.x+Math.cos(G.a)*G.v*dt,ny=G.y+Math.sin(G.a)*G.v*dt,na=G.a+G.v/CAR.wb*Math.tan(dl)*dt;
   const hit=collide(nx,ny,na);
@@ -778,17 +780,19 @@ function endRun(kind,reason){if(G.over)return;G.over=true;G.endKind=kind;G.endRe
 /* ================= 入力 ================= */
 const PED={acc:null,brk:null};const WHEEL={held:false,last:0};
 function pedal(el,key){const fill=el.querySelector('i');const set=e=>{const r=el.getBoundingClientRect();const k=clamp((e.clientY-r.top)/r.height,0,1);PED[key]=0.15+0.85*k;fill.style.height=(PED[key]*100)+'%';};
-  el.addEventListener('pointerdown',e=>{e.preventDefault();el.setPointerCapture(e.pointerId);set(e);audioInit();});
+  el.addEventListener('pointerdown',e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId);}catch(_){}set(e);audioInit();});
   el.addEventListener('pointermove',e=>{if(PED[key]!=null)set(e);});
   const up=()=>{PED[key]=null;fill.style.height='0';};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);}
 pedal($('#pAcc'),'acc');pedal($('#pBrk'),'brk');
 {const c=$('#cWheel');const ang=e=>{const r=c.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/PI;};
- c.addEventListener('pointerdown',e=>{e.preventDefault();c.setPointerCapture(e.pointerId);WHEEL.held=true;WHEEL.last=ang(e);audioInit();});
+ c.addEventListener('pointerdown',e=>{e.preventDefault();try{c.setPointerCapture(e.pointerId);}catch(_){}WHEEL.held=true;WHEEL.last=ang(e);audioInit();});
  c.addEventListener('pointermove',e=>{if(!WHEEL.held||!G)return;const a=ang(e);let d=a-WHEEL.last;if(d>180)d-=360;if(d<-180)d+=360;WHEEL.last=a;G.wheel=clamp(G.wheel+d,-540,540);});
  const up=()=>{WHEEL.held=false;};c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);c.addEventListener('lostpointercapture',up);}
 function shift(g){if(!G||G.over||G.gear===g)return;
   if(g!=='N'&&Math.abs(G.v)>0.4&&(g==='P'||g==='R'||G.gear==='R')){setSub(t('needStop'),true);return;}
-  if((G.gear==='P'||g==='P'||g==='R')&&G.brk<0.25&&!(keys.ArrowDown||keys.KeyS)){setSub(t('needBrake'),true);return;}
+  // ブレーキを踏んでいる（または直前3秒以内に踏んだ）ならそのまま。踏んでいなくても止まっていればシフトでき、アドバイスだけ出す
+  const braked=G.brk>0.05||PED.brk!=null||keys.ArrowDown||keys.KeyS||G.time-(G.brkT||-99)<3;
+  if((G.gear==='P'||g==='P'||g==='R'||g==='D')&&!braked){G.brk=Math.max(G.brk,1);setSub(t('tipBrake'),false);}
   G.gear=g;sfx('click');syncUI();}
 function wink(s){if(!G)return;if(G.wink===s){G.wink=null;}else{G.wink=s;G.winkT=G.time;G.winkA=G.a;G.lastWink=s;}syncUI();}
 function look(s){if(!G)return;G.look=s==='L'?-1.3:s==='R'?1.3:2.55;G.lookUntil=G.time+1.4;G.lookT[s]=G.time;sfx('click');}
