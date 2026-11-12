@@ -176,6 +176,33 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
 .set{display:grid;gap:8px}
 .set label{display:flex;gap:8px;align-items:center;font-size:14px}
 .set input[type=range]{flex:1}
+/* ---------- 教習所モード ---------- */
+.card.c-school{border-left-color:#e05a8a;background:linear-gradient(100deg,#2a1f28,#1d2329 60%)}
+.card.c-school b{font-size:19px}
+.schTop{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+.schTop svg{flex:none}
+.schTop p{margin:2px 0 0}
+.bubble{position:relative;background:#f6f3ea;color:#1d1d1d;border-radius:10px;padding:8px 12px;font-weight:600}
+.schName{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap;font-size:14px}
+.schName input{background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:6px 10px;font-size:15px;min-width:0;flex:1 1 160px;max-width:280px}
+.genbo{display:grid;gap:12px}
+.genbo h3{font-size:14px;color:var(--mute);margin:4px 0 6px;letter-spacing:.06em}
+.cells{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.cell{position:relative;text-align:left;background:#efe9da;color:#2a2620;border:1px solid #cdbf9f;border-radius:6px;padding:8px 56px 8px 10px;min-height:78px;display:grid;align-content:start;gap:2px}
+.cell .n{font-family:var(--num);font-size:12px;color:#7a6d55}
+.cell b{font-size:13.5px;line-height:1.3}
+.cell[disabled]{opacity:.45;cursor:not-allowed}
+.cell .sub{font-size:12px;color:#6b5d3e;line-height:1.35}.cell .lock{font-size:12px;color:#7a6d55}
+.stamp{position:absolute;right:6px;bottom:6px;width:46px;height:46px;border:2.5px solid #c8231b;border-radius:50%;color:#c8231b;display:grid;place-items:center;font-size:11px;font-weight:800;line-height:1.05;text-align:center;transform:rotate(-12deg);background:rgba(255,255,255,.25)}
+.stamp.big{position:static;width:88px;height:88px;font-size:18px;border-width:4px;margin:4px auto;animation:stampIn .45s ease-out}
+@keyframes stampIn{0%{transform:scale(2.2) rotate(-30deg);opacity:0}70%{transform:scale(.92) rotate(-10deg);opacity:1}100%{transform:scale(1) rotate(-12deg)}}
+.cert{background:linear-gradient(135deg,#fdf8e8,#efe3c1);color:#2a2620;border:2px solid #b89a52;border-radius:12px;padding:16px;display:grid;gap:6px;max-width:420px}
+.cert h4{margin:0;font-size:20px;display:flex;gap:8px;align-items:center}
+.cert small{color:#6b5d3e}
+.inst{display:flex;gap:8px;align-items:center;margin-top:6px}
+.inst .bubble{font-size:14px;padding:5px 10px;flex:1}
+.mInst{display:flex;gap:10px;align-items:center}
+.mInst .bubble{flex:1}
 </style>
 </head>
 <body>
@@ -191,6 +218,7 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
   <div class="sec"><h2 data-i="vehicle"></h2><div class="vehicles" id="vehicles"></div></div>
   <div class="sec"><h2 data-i="drive"></h2>
     <div class="cards">
+      <button class="card c-school" data-go="school"><b data-i="school"></b><span data-i="schoolD"></span></button>
       <button class="card c-learn" data-go="lessons"><b data-i="learn"></b><span data-i="learnD"></span></button>
       <button class="card c-exam" data-go="exams"><b data-i="exam"></b><span data-i="examD"></span></button>
       <button class="card c-free" data-go="free"><b data-i="free"></b><span data-i="freeD"></span></button>
@@ -215,6 +243,12 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
   <div class="list" id="listB"></div>
 </section>
 
+<!-- ===== 教習所 ===== -->
+<section id="scSchool" hidden>
+  <div class="head"><button class="btn" data-back data-i="back"></button><h2 data-i="genbo"></h2></div>
+  <div id="schoolB"></div>
+</section>
+
 <!-- ===== 運転 ===== -->
 <section id="scDrive" class="drv" hidden>
   <header class="bar">
@@ -233,7 +267,7 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
       <figure class="view" id="fCab"><figcaption data-i="viewCab"></figcaption><canvas id="cCab"></canvas></figure>
       <figure class="view" id="fTop"><figcaption data-i="viewTop"></figcaption><canvas id="cTop"></canvas></figure>
     </div>
-    <div class="guide" id="guide"><div class="gIcon" id="gIcon">↑</div><div><div class="gMain" id="gMain"></div><div class="gSub" id="gSub"></div></div></div>
+    <div class="guide" id="guide"><div class="gIcon" id="gIcon">↑</div><div><div class="gMain" id="gMain"></div><div class="gSub" id="gSub"></div><div class="inst" id="inst" hidden><span id="instFace"></span><div class="bubble" id="instTx"></div></div></div></div>
   </div>
   <div class="deck">
     <div class="cl">
@@ -276,7 +310,7 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
 
 <script>
 (()=>{'use strict';
-const VER='Ver.1.2';
+const VER='Ver.2.0';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a,b)=>v<a?a:v>b?b:v, hyp=Math.hypot, PI=Math.PI;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
@@ -372,6 +406,76 @@ signQ:['この標識・マークの意味は？','この ひょうしきの い�
 hazQ:['このあと、何に一番気をつけますか？','このあと、なにに いちばん きを つけますか？','What should you watch out for most?','Bạn cần chú ý điều gì nhất?','接下来最需要注意什么？','Apa yang paling harus diwaspadai?'],
 hidden:['見えにくい危険','みえにくい きけん','Hidden danger','Nguy hiểm khó thấy','隐藏的危险','Bahaya tersembunyi'],
 needBrake:['ブレーキを踏みながらシフトしよう','ブレーキを ふみながら ギアを かえよう','Hold the brake while shifting','Đạp phanh khi chuyển số','换挡时请踩住刹车','Injak rem saat memindah gigi'],
+school:['教習所に入校する（免許をとろう）','きょうしゅうじょに にゅうこう する','Enrol at the driving school','Nhập học trường lái xe','入学驾校（考驾照）','Masuk sekolah mengemudi'],
+schoolD:['助手席の教官と、技能教習・学科・修了検定・仮免学科試験に挑戦。合格するとハンコがもらえます','きょうかんと いっしょに れんしゅう。ごうかくで ハンコ','Train with an instructor beside you: lessons, theory, the stage test and the provisional-licence test. Pass to earn stamps','Học cùng giáo viên: thực hành, lý thuyết, kiểm tra giai đoạn, thi bằng tạm. Đạt sẽ được đóng dấu','和副驾驶的教练一起挑战技能课、理论课、结业考试和临时驾照考试，合格就盖章','Berlatih bersama instruktur: praktik, teori, ujian tahap, ujian SIM sementara. Lulus dapat stempel'],
+genbo:['教習原簿','きょうしゅう げんぼ','Training record','Sổ học lái','教习记录本','Buku catatan latihan'],
+stage1:['第1段階（場内）技能教習','だい1だんかい（コースの なか）','Stage 1 (on-course) driving lessons','Giai đoạn 1 (trong sân) — thực hành','第1阶段（场内）技能课','Tahap 1 (di lintasan) — praktik'],
+gakka:['学科教習','がっか','Classroom (theory)','Lý thuyết','理论课','Kelas teori'],
+g1:['学科1 標識とマーク','がっか1 ひょうしき','Theory 1: signs and marks','Lý thuyết 1: biển báo','理论1 标志','Teori 1: rambu'],
+g2:['学科2 交通ルール','がっか2 ルール','Theory 2: traffic rules','Lý thuyết 2: luật giao thông','理论2 交通规则','Teori 2: aturan lalu lintas'],
+g3:['学科3 危険予測','がっか3 きけん よそく','Theory 3: hazard prediction','Lý thuyết 3: dự đoán nguy hiểm','理论3 危险预测','Teori 3: prediksi bahaya'],
+gakkaD:['10問中8問以上で合格','10もん ちゅう 8もんで ごうかく','8 of 10 to pass','Đúng 8/10 là đạt','10题答对8题合格','Lulus 8 dari 10'],
+shuryo:['修了検定','しゅうりょう けんてい','Stage test (shūryō kentei)','Kiểm tra kết thúc giai đoạn','结业考试','Ujian tahap'],
+shuryoD:['コースAかBを走ります。70点以上で合格','コースAかBで 70てん いじょう','Course A or B; 70+ to pass','Lộ trình A hoặc B; 70 điểm là đạt','路线A或B，70分以上合格','Lintasan A atau B; lulus 70+'],
+kari:['仮免学科試験','かりめん がっか しけん','Provisional licence theory test','Thi lý thuyết bằng tạm','临时驾照理论考试','Ujian teori SIM sementara'],
+kariD:['アプリ版：20問中18問以上（90%）で合格。本物の仮免学科試験は文章問題50問で90%以上','20もん ちゅう 18もんで ごうかく','App version: 18 of 20 (90%) to pass. The real test has 50 questions, 90% to pass','Bản ứng dụng: 18/20 (90%) là đạt. Thi thật có 50 câu, cần 90%','本应用：20题答对18题（90%）合格。实际考试为50题，需90%以上','Versi aplikasi: 18 dari 20 (90%). Ujian asli 50 soal, lulus 90%'],
+kariCard:['仮免許（このアプリの修了証）','かりめんきょ（アプリの しゅうりょうしょう）','Provisional licence (app certificate)','Bằng tạm (chứng nhận của ứng dụng)','临时驾照（本应用结业证）','SIM sementara (sertifikat aplikasi)'],
+certNote:['このアプリの修了証です。公的な免許・証明書ではありません。実際に運転するには教習所や試験場で免許を取ってください','アプリの しょうめいしょです。ほんものの めんきょでは ありません','This is a certificate from this app, not an official licence. Get a real licence at a driving school or test centre','Đây là chứng nhận của ứng dụng, không phải bằng lái chính thức','这是本应用的结业证，不是正式驾照','Ini sertifikat aplikasi, bukan SIM resmi'],
+schName:['名前（ニックネーム）','なまえ','Name (nickname)','Tên (biệt danh)','姓名（昵称）','Nama (panggilan)'],
+schReset:['原簿を最初からやり直す','さいしょから やりなおす','Start the record again','Làm lại từ đầu','从头开始','Mulai ulang catatan'],
+schResetQ:['ハンコをすべて消します。よろしいですか？','ハンコを ぜんぶ けします。いいですか？','All stamps will be cleared. OK?','Xóa tất cả con dấu. Đồng ý?','将清除所有印章，确定吗？','Semua stempel akan dihapus. Lanjut?'],
+yes:['はい','はい','Yes','Có','是','Ya'],
+no:['いいえ','いいえ','No','Không','否','Tidak'],
+locked:['🔒 まだ受けられません','🔒 まだ','🔒 Locked','🔒 Chưa mở','🔒 未解锁','🔒 Terkunci'],
+lockShuryo:['第1段階の技能教習10個と学科3個のハンコがそろうと受けられます','ハンコが ぜんぶ そろうと うけられます','Unlocks when all 10 lessons and 3 theory classes are stamped','Mở khi đủ dấu 10 bài thực hành và 3 bài lý thuyết','集齐10个技能课和3个理论课印章后解锁','Terbuka setelah 10 praktik dan 3 teori distempel'],
+lockKari:['修了検定に合格すると受けられます','しゅうりょう けんていに ごうかく してから','Unlocks after passing the stage test','Mở sau khi đạt kiểm tra giai đoạn','通过结业考试后解锁','Terbuka setelah lulus ujian tahap'],
+toGenbo:['原簿へもどる','げんぼへ もどる','Back to record','Về sổ học','回到记录本','Kembali ke catatan'],
+passed:['合格','ごうかく','Passed','Đạt','合格','Lulus'],
+hosyu:['補習','ほしゅう','Retake','Học lại','补课','Ulang'],
+inst:['教官（助手席）','きょうかん','Instructor (passenger seat)','Giáo viên (ghế phụ)','教练（副驾驶）','Instruktur (kursi depan)'],
+voice:['教官の声（読み上げ）','きょうかんの こえ','Instructor voice (speech)','Giọng giáo viên (đọc)','教练语音（朗读）','Suara instruktur'],
+instName:['桜井教官','さくらい きょうかん','Instructor Sakurai','Thầy Sakurai','樱井教练','Instruktur Sakurai'],
+s_welcome:['ようこそ、教官の桜井だ。まずは技能教習1から始めよう。学科はいつでも受けられるぞ','ようこそ。まず 1から はじめよう','Welcome — I\'m Sakurai, your instructor. Start with lesson 1. Theory classes are open any time','Chào mừng, tôi là Sakurai. Hãy bắt đầu từ bài 1. Lý thuyết học lúc nào cũng được','欢迎，我是樱井教练。先从技能课1开始，理论课随时可以上','Selamat datang, saya Sakurai. Mulai dari pelajaran 1. Kelas teori bisa kapan saja'],
+s_going:['いい調子だ。次の教習に進もう','いい ちょうしだ','Good progress. On to the next one','Tiến bộ tốt. Sang bài tiếp','进展不错，继续下一课','Bagus. Lanjut ke berikutnya'],
+s_ready:['ハンコがそろったな。修了検定を受けられるぞ','しゅうりょう けんていを うけられるぞ','All stamps collected — you can take the stage test','Đủ dấu rồi — có thể thi kiểm tra giai đoạn','印章集齐了，可以参加结业考试了','Stempel lengkap — boleh ikut ujian tahap'],
+s_kari:['修了検定、合格おめでとう。あとは仮免学科試験だ','あとは かりめんの しけんだ','Congratulations on the stage test. Now the provisional theory test','Chúc mừng! Giờ là thi lý thuyết bằng tạm','恭喜通过结业考试，接下来是临时驾照理论考试','Selamat! Sekarang ujian teori SIM sementara'],
+s_done:['仮免許おめでとう！ 路上教習は次の版で用意するぞ','かりめんきょ おめでとう！','Provisional licence — well done! Road lessons are coming in the next version','Chúc mừng có bằng tạm! Bài trên đường sẽ có ở bản sau','恭喜拿到临时驾照！路上课将在下个版本推出','Selamat SIM sementara! Latihan di jalan raya di versi berikut'],
+i_hello:['教官の桜井だ。落ち着いていこう','きょうかんの さくらいだ。おちついて いこう','I\'m Sakurai, your instructor. Stay calm','Tôi là Sakurai. Bình tĩnh nhé','我是樱井教练，别紧张','Saya Sakurai. Tenang saja'],
+i_examStart:['これから修了検定を始めます。指示どおりに走ってください','けんていを はじめます','The stage test starts now. Follow my directions','Bắt đầu kiểm tra. Hãy chạy theo chỉ dẫn','现在开始结业考试，请按指示行驶','Ujian dimulai. Ikuti arahan saya'],
+i_good1:['よし、いいぞ','よし、いいぞ','Good','Tốt lắm','好，不错','Bagus'],
+i_good2:['うまいじゃないか','うまいね','Nicely done','Giỏi lắm','开得不错嘛','Hebat'],
+i_good3:['その調子だ','その ちょうし','Keep it up','Cứ thế nhé','保持这样','Pertahankan'],
+i_assist:['危ない！ 補助ブレーキを踏んだぞ','あぶない！ ブレーキを ふんだ','Watch out! I hit the instructor brake','Nguy hiểm! Tôi đã đạp phanh phụ','危险！我踩了副刹车','Awas! Saya injak rem instruktur'],
+i_hintSig:['そろそろウインカーを出そう','そろそろ ウインカー','Time to signal','Bật xi nhan đi','该打转向灯了','Saatnya menyalakan sein'],
+i_off:['脱輪だ！ 止まって、バックで戻そう','タイヤが でた！ とまって もどそう','Wheel off! Stop and reverse back','Bánh ra ngoài! Dừng lại và lùi về','车轮出界！停下倒回去','Roda keluar! Berhenti dan mundur'],
+i_offrun:['脱輪したまま進んじゃだめだ','そのまま すすんだら だめ','Don\'t keep going with a wheel off','Đừng chạy tiếp khi bánh ra ngoài','车轮出界不能继续开','Jangan lanjut dengan roda di luar'],
+i_touch:['ポールに当たったぞ。もっとゆっくり','ポールに あたった。ゆっくり','You hit a pole. Slower','Chạm cọc rồi. Chậm lại','碰到标杆了，慢一点','Kena tiang. Lebih pelan'],
+i_crash:['ぶつかった…！ まわりをよく見よう','ぶつかった！','Collision! Look around more','Va chạm! Quan sát kỹ hơn','撞到了！多看周围','Tabrakan! Perhatikan sekitar'],
+i_red:['赤信号だ！','あか しんごう！','Red light!','Đèn đỏ!','红灯！','Lampu merah!'],
+i_nostop:['「止まれ」だ。完全に止めるんだ','とまれ だよ','That was a STOP sign — stop completely','Biển dừng — phải dừng hẳn','是"停车"标志，要完全停下','Rambu STOP — berhenti total'],
+i_stoppos:['もっと停止線の近くで止めよう','せんの ちかくで とまろう','Stop closer to the line','Dừng gần vạch hơn','停得离停止线近一点','Berhenti lebih dekat garis'],
+i_nolook:['止まったら左右を見る。顔を動かして','ひだりと みぎを みよう','When stopped, look left and right — turn your head','Khi dừng, nhìn trái phải — quay đầu','停下后看左右，要转头','Saat berhenti, toleh kiri dan kanan'],
+i_railstop:['踏切の前では必ず止まる！','ふみきりの まえで とまる！','Always stop before a rail crossing!','Luôn dừng trước đường ray!','道口前必须停车！','Selalu berhenti sebelum perlintasan!'],
+i_railin:['警報が鳴っている！ 入っちゃだめだ','けいほうが なって いる！','The alarm is ringing — don\'t enter!','Chuông đang kêu — không được vào!','警报在响，不能进！','Alarm berbunyi — jangan masuk!'],
+i_ped:['歩行者がいるぞ！ 止まれ！','ひとが いる！ とまって！','Pedestrian! Stop!','Có người đi bộ! Dừng!','有行人！停车！','Ada pejalan kaki! Berhenti!'],
+i_right:['右に寄りすぎだ。日本は左側通行！','みぎに よりすぎ。ひだりがわ！','Too far right — Japan drives on the LEFT!','Lệch phải quá — Nhật đi bên TRÁI!','太靠右了，日本靠左行驶！','Terlalu kanan — Jepang lajur KIRI!'],
+i_speed:['スピードを落として','スピードを おとして','Slow down','Giảm tốc','减速','Pelankan'],
+i_slow:['もう少し加速していいぞ','もうすこし はやく','You can speed up a bit more','Có thể tăng tốc thêm','可以再加点速','Boleh lebih cepat sedikit'],
+i_sig:['ウインカーはどうした？','ウインカーは？','Where\'s your signal?','Xi nhan đâu?','转向灯呢？','Mana seinnya?'],
+i_siglate:['ウインカーは早めに、30m手前から','ウインカーは はやめに','Signal earlier — from 30 m before','Bật xi nhan sớm hơn — trước 30 m','转向灯要早打，提前30米','Sein lebih awal — 30 m sebelumnya'],
+i_bike:['自転車に近い！ 1mあけるか、ゆっくり','じてんしゃに ちかい！','Too close to the cyclist — 1 m or slow down','Gần xe đạp quá — cách 1 m hoặc chậm lại','离自行车太近！保持1米或减速','Terlalu dekat sepeda — 1 m atau pelan'],
+i_pb:['パーキングブレーキがかかったままだぞ','パーキングブレーキが かかって いる','The parking brake is still on','Phanh tay vẫn đang kéo','驻车制动还没松','Rem parkir masih aktif'],
+i_belt:['シートベルト！','シートベルト！','Seat belt!','Dây an toàn!','安全带！','Sabuk pengaman!'],
+i_startlook:['出る前に、右後ろを見る','でる まえに みぎうしろを みる','Look back right before moving off','Nhìn sau phải trước khi đi','起步前看右后方','Lihat kanan belakang sebelum jalan'],
+i_startsig:['道の端から出るときは右ウインカー','でる ときは みぎウインカー','Signal right when pulling out from the kerb','Rời lề thì bật xi nhan phải','从路边起步要打右转向灯','Keluar dari tepi: sein kanan'],
+i_kiri:['落ち着いて。切り返してもいいんだ','おちついて','Stay calm — it\'s OK to correct','Bình tĩnh — đánh lại cũng được','别慌，可以倒车修正','Tenang — boleh koreksi'],
+i_passL:['合格だ。ハンコを押しておくぞ','ごうかく！ ハンコを おすよ','You pass — here\'s your stamp','Đạt rồi — đóng dấu nhé','合格，给你盖章','Lulus — ini stempelnya'],
+i_failL:['今日は補習だ。もう一度やってみよう','もういちど やって みよう','Let\'s do a retake — try once more','Học lại nhé — thử lần nữa','今天补课，再来一次吧','Ulang lagi — coba sekali lagi'],
+i_examPass:['修了検定、合格です。おめでとう','ごうかく です。おめでとう','You passed the stage test. Congratulations','Đạt kiểm tra giai đoạn. Chúc mừng','结业考试合格，恭喜','Lulus ujian tahap. Selamat'],
+i_examFail:['残念だが不合格だ。また挑戦しよう','ざんねん。また ちょうせん しよう','Not a pass this time. Try again','Chưa đạt. Thử lại nhé','很遗憾不合格，再挑战吧','Belum lulus. Coba lagi'],
+i_quizPass:['よく勉強しているな。合格だ','よく べんきょう したね','You\'ve studied well — pass','Học tốt lắm — đạt','学得不错，合格','Belajar dengan baik — lulus'],
+i_quizFail:['もう少しだ。ルールブックで復習しよう','ルールブックで ふくしゅう しよう','Almost — review with the rule book','Gần được rồi — ôn lại sổ tay','差一点，用规则手册复习吧','Hampir — ulangi dengan buku aturan'],
+i_kariPass:['仮免許だ！ よくがんばったな','かりめんきょ だ！','Provisional licence — great work!','Có bằng tạm rồi — giỏi lắm!','拿到临时驾照了，辛苦了！','SIM sementara — kerja bagus!'],
 tipBrake:['ヒント：実際の車では、ブレーキを踏みながらシフトします','ヒント：ほんとうの くるまは ブレーキを ふみながら ギアを かえます','Tip: in a real car, hold the brake while shifting','Mẹo: xe thật phải đạp phanh khi chuyển số','提示：真实车辆换挡时要踩住刹车','Tips: di mobil sungguhan, injak rem saat memindah gigi'],
 needStop:['止まってからシフトしよう','とまってから ギアを かえよう','Stop before shifting','Dừng hẳn rồi mới chuyển số','停稳后再换挡','Berhenti dulu sebelum memindah gigi'],
 pbHold:['パーキングブレーキがかかっています','パーキングブレーキが かかって います','Parking brake is on','Phanh tay đang kéo','驻车制动未松开','Rem parkir masih aktif'],
@@ -403,6 +507,7 @@ ev_pb:['パーキングブレーキをかけたまま走った','パーキング
 ev_belt:['シートベルトをしていない','シートベルトを して いない','Seat belt not fastened','Chưa thắt dây an toàn','未系安全带','Sabuk pengaman belum dipasang'],
 ev_startlook:['発進前に右後ろを確認していない','うごく まえに みぎうしろを みて いない','Did not check behind right before moving off','Không nhìn sau bên phải trước khi xuất phát','起步前未确认右后方','Tidak cek kanan belakang sebelum berangkat'],
 ev_startsig:['発進の合図（右ウインカー）がない','うごく ときに みぎウインカーが ない','No right signal when moving off','Không bật xi nhan phải khi xuất phát','起步时未打右转向灯','Tidak menyalakan sein kanan saat berangkat'],
+ev_assist:['教官が補助ブレーキを踏んだ','きょうかんが ブレーキを ふんだ','The instructor had to use the brake','Giáo viên phải đạp phanh phụ','教练踩了副刹车','Instruktur menginjak rem'],
 ev_kiri:['切り返し（前後の動きなおし）','きりかえし','Extra back-and-forth correction','Đánh lái lại','多次前后修正','Koreksi maju-mundur'],
 /* 案内 */
 g_start:['発進：シートベルト → ブレーキを踏んで D → パーキングブレーキ解除 → 右ウインカー → 右後ろを確認 → 発進','シートベルト → ブレーキ → D → パーキングブレーキ → みぎウインカー → みぎうしろ → すすむ','Start: seat belt → hold brake, D → release parking brake → right signal → look back right → go','Xuất phát: dây an toàn → đạp phanh, số D → nhả phanh tay → xi nhan phải → nhìn sau phải → đi','起步：系安全带 → 踩刹车挂D → 松驻车制动 → 右转向灯 → 看右后方 → 起步','Berangkat: sabuk → injak rem, D → lepas rem parkir → sein kanan → lihat kanan belakang → jalan'],
@@ -454,7 +559,7 @@ function tq(o){if(o==null)return '';if(typeof o==='string')return o;return o[LAN
 function applyI18n(){document.documentElement.lang=LANG==='easy'?'ja':LANG;$$('[data-i]').forEach(el=>{el.textContent=t(el.dataset.i);});$('#keysHelp').innerHTML=t('keys');document.title=t('title');renderLangs();renderVehicles();$('#verT').textContent=VER+' © 合同会社アップテック';updViewBtn();}
 
 /* ================= 設定 ================= */
-const SET=Object.assign({path:true,route:true,track:false,mirror:true,sound:true,sens:1},store.get('jdp_set',{}));
+const SET=Object.assign({path:true,route:true,track:false,mirror:true,sound:true,sens:1,inst:true,voice:true},store.get('jdp_set',{}));
 const PROG=store.get('jdp_prog',{});
 
 /* ================= コース（単位：m、x右・y下＝北が上） ================= */
@@ -573,6 +678,9 @@ function toLocal(px,py,x,y,a){const [fx,fy,rx,ry]=fr(a);const dx=px-x,dy=py-y;re
 function hitCircle(x,y,a,cx,cy,r){const [l,s]=toLocal(cx,cy,x,y,a);return l>-0.9-r&&l<3.5+r&&Math.abs(s)<CAR.hw+r;}
 function segHit(x,y,a,x1,y1,x2,y2){for(let i=0;i<=8;i++){const k=i/8;if(hitCircle(x,y,a,x1+(x2-x1)*k,y1+(y2-y1)*k,0.06))return true;}return false;}
 function gateLines(){const g=trainInfo().gate,L=4.3,ph=(1-g)*PI/2*0.95;const c=Math.cos(ph);return [{px:133.9,py:33.6,ex:133.9+L*c,ey:33.6,z:1.0+L*Math.sin(ph),down:g>0.65},{px:142.1,py:26.4,ex:142.1-L*c,ey:26.4,z:1.0+L*Math.sin(ph),down:g>0.65}];}
+// 補助ブレーキ用：道路の上にいる人・自転車・列車だけを見る（歩道の歩行者には反応しない）
+function crashAhead(x,y,a){const P=W.ped;if(inDrv(P.x,P.y)&&hitCircle(x,y,a,P.x,P.y,0.35))return true;const B=W.bike;if(B.on&&(hitCircle(x,y,a,B.x,B.y-0.8,0.35)||hitCircle(x,y,a,B.x,B.y+0.8,0.35)))return true;
+  const T=trainInfo();if(T.tx!=null&&Math.abs(y-30)<7){const C=bodyPts(x,y,a);if(C.some(([px,py])=>px>T.t0-0.5&&px<T.t1+0.5&&py>28.4&&py<31.6))return true;}return false;}
 function collide(x,y,a){
   for(const p of POLES)if(hitCircle(x,y,a,p.x,p.y,p.r))return 'touch';
   const P=W.ped;if(hitCircle(x,y,a,P.x,P.y,0.3))return 'crash';
@@ -582,13 +690,22 @@ function collide(x,y,a){
   return null;}
 
 /* ================= 採点・出来事 ================= */
-const EV={off:[20],offrun:[0,1],touch:[20],crash:[0,1],red:[0,1],nostop:[20],stoppos:[10],nolook:[10],railstop:[0,1],railin:[0,1],ped:[0,1],right:[20],speed:[10],slow:[10],sig:[10],siglate:[5],bike:[10],pb:[5],belt:[10],startlook:[10],startsig:[5],kiri:[5]};
+const EV={assist:[10,1],off:[20],offrun:[0,1],touch:[20],crash:[0,1],red:[0,1],nostop:[20],stoppos:[10],nolook:[10],railstop:[0,1],railin:[0,1],ped:[0,1],right:[20],speed:[10],slow:[10],sig:[10],siglate:[5],bike:[10],pb:[5],belt:[10],startlook:[10],startsig:[5],kiri:[5]};
 function ev(k){if(G.over)return;G.events.push(k);(G.evLog||(G.evLog=[])).push([k,G.leg,+G.x.toFixed(1),+G.y.toFixed(1),G.wink]);sfx('pen');const [p,stop]=EV[k];
   if(MODE.kind==='exam'){if(stop){G.score=0;endRun('stopped',k);return;}G.score=Math.max(0,G.score-p);}
   else if(stop&&k==='crash'){G.v=0;}
-  setSub(t('ev_'+k)+(MODE.kind==='exam'&&p?`（−${p}）`:''),true);}
+  setSub(t('ev_'+k)+(MODE.kind==='exam'&&p?`（−${p}）`:''),true);if(k!=='assist')say('i_'+k,true);else say('i_assist',true);}
 function setSub(s,warn){G.sub=s;G.subT=warn?4:3;G.subWarn=!!warn;}
 function cool(k,s){if((G.cool[k]||0)>G.time)return false;G.cool[k]=G.time+s;return true;}
+
+/* ================= 教官（助手席） ================= */
+const INST={line:'',until:0};
+function instOn(){return !!(SET.inst&&MODE&&(MODE.kind==='lesson'||MODE.kind==='exam'));}
+function instSVG(sz){return `<svg width="${sz}" height="${sz}" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="38" r="20" fill="#f1c9a0"/><path d="M12 26c2-12 12-17 20-17s18 5 20 17z" fill="#24365e"/><rect x="10" y="24" width="44" height="6" rx="3" fill="#1a2747"/><rect x="26" y="13" width="12" height="7" rx="2" fill="#f4c430"/><path d="M19 34h9M36 34h9" stroke="#2a2a2a" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="40" r="5" fill="none" stroke="#2a2a2a" stroke-width="2"/><circle cx="40" cy="40" r="5" fill="none" stroke="#2a2a2a" stroke-width="2"/><path d="M29 40h6" stroke="#2a2a2a" stroke-width="2"/><path d="M25 50q7 4 14 0" stroke="#8a4a3a" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`;}
+function say(k,urgent,voiceOnly){if(!instOn())return;const s=S[k]?t(k):k;if(!voiceOnly){INST.line=s;INST.until=performance.now()+(urgent?3800:5200);}speak(s,urgent);}
+function speak(s,urgent){if(!SET.voice||!('speechSynthesis' in window))return;try{const sy=window.speechSynthesis;if(urgent)sy.cancel();else if(sy.pending)return;
+  const u=new SpeechSynthesisUtterance(s.replace(/（[^）]*）|\([^)]*\)/g,'').replace(/[「」]/g,''));u.lang={ja:'ja-JP',easy:'ja-JP',en:'en-US',vi:'vi-VN',zh:'zh-CN',id:'id-ID'}[LANG];u.rate=LANG==='easy'?0.9:1.05;sy.speak(u);}catch(e){}}
+function stopSpeak(){try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}}
 
 /* ================= 物理 ================= */
 function tick(dt){
@@ -604,6 +721,10 @@ function tick(dt){
   if(stK)G.wheel=clamp(G.wheel+stK*420*SET.sens*dt,-540,540);
   else if(!WHEEL.held&&Math.abs(G.v)>0.3){const r=(40+Math.abs(G.v)*45)*dt;G.wheel=Math.abs(G.wheel)<r?0:G.wheel-Math.sign(G.wheel)*r;}
   const dl=clamp(G.wheel/CAR.ratio*PI/180,-CAR.maxSt,CAR.maxSt);
+  if(instOn()&&Math.abs(G.v)>0.6){const sg=Math.sign(G.v),look=G.v*G.v/(2*6)+Math.abs(G.v)*0.35+0.4;let px=G.x,py=G.y,pa=G.a,hitA=false;
+    for(let d=0.4;d<=look;d+=0.4){px+=Math.cos(pa)*0.4*sg;py+=Math.sin(pa)*0.4*sg;pa+=0.4*sg/CAR.wb*Math.tan(dl);if(crashAhead(px,py,pa)){hitA=true;break;}}
+    if(hitA){G.assistT=G.time+0.8;if(cool('assist',3))ev('assist');}}
+  if(G.assistT>G.time){G.brk=1;G.thr=0;}
   // 前後の力
   let acc=0;const gr=G.gear;
   if(gr==='D'||gr==='R'){const dg=gr==='D'?1:-1,vv=G.v*dg;const drive=G.thr*(gr==='D'?3.2:2.0)*Math.max(0,1-vv/(gr==='D'?33:5.5));const creep=G.thr<0.05?Math.max(0,0.9*(1-vv/1.8)):0;acc+=dg*(drive+creep);}
@@ -739,6 +860,7 @@ function legTick(dt){
   if(L.kiri!=null&&G.gear==='R'&&G.prevGear!=='R'){d.rev=(d.rev||0)+1;if(d.rev>L.kiri)ev('kiri');}
   G.prevGear=G.gear;
   if(L.p){const dist=hyp(cx-L.p[0],cy-L.p[1]);
+    if(L.sig&&!d.hinted&&MODE.kind==='lesson'&&dist<28&&dist>12&&G.wink!==L.sig){d.hinted=true;say('i_hintSig');}
     if(L.sig&&!d.sigDone){const pre=L.pre||15;if(d.startDist==null)d.startDist=dist;const lim=d.startDist<pre+2?Math.min(pre,5):pre;
       if(dist<lim){d.sigDone=true;if(G.wink!==L.sig)ev('sig');else if(lim===pre&&G.time-G.winkT<2.0)ev('siglate');}}
     if(L.k==='speed'){if(G.legStart==null)G.legStart=G.maxV=0;}
@@ -751,6 +873,8 @@ function legTick(dt){
 function nextLeg(){const L=G.legs[G.leg];if(L&&L.k==='speed'&&G.maxV*3.6<L.min)ev('slow');
   G.leg++;G.legData={};if(L&&L.k==='speed')G.maxV=0;sfx('ok');
   const N=G.legs[G.leg];if(N&&N.k==='speed')G.maxV=0;
+  const clean=G.events.length===(G.evAtLeg||0);G.evAtLeg=G.events.length;
+  if(N){if(clean&&MODE.kind==='lesson'&&L&&L.k!=='do'&&Math.random()<0.5)say('i_good'+(1+Math.floor(Math.random()*3)));setTimeout(()=>{if(G&&!G.over&&G.legs[G.leg]===N)say(N.m,false,true);},MODE.kind==='lesson'&&clean?1400:200);}
   if(!N&&G.legs.length)endRun('done');}
 
 /* ================= 開始・終了 ================= */
@@ -763,8 +887,10 @@ function startRun(mode){MODE=mode;let spawn,legs=[],title='';
   if(mode.kind==='lesson'&&mode.id===5){W.train.t=-14;}
   W.ped.s='walk';W.ped.t=0;
   $('#dTitle').textContent=title;$('#stScoreW').hidden=mode.kind!=='exam';
-  show('scDrive');resize();syncUI();}
+  show('scDrive');resize();syncUI();INST.until=0;stopSpeak();
+  if(instOn()){say(mode.kind==='exam'?'i_examStart':'i_hello');const L0=G.legs[0];if(L0)setTimeout(()=>{if(G&&G.leg===0&&!G.over)say(L0.m,false,true);},1600);}}
 function endRun(kind,reason){if(G.over)return;G.over=true;G.endKind=kind;G.endReason=reason;sfx(kind==='done'?'win':'pen');
+  if(MODE.school)return schoolEnd(kind,reason);
   let head,big='',col;
   if(MODE.kind==='exam'){if(kind==='stopped'){head=t('stopped');col='var(--red)';big='—';}else{const ok=G.score>=70;head=t(ok?'pass':'fail');col=ok?'var(--grn)':'var(--red)';big=G.score+' '+t('pts');}}
   else{head=t('done');col='var(--grn)';const n=G.events.length;big=n===0?'★★★':n<=2?'★★☆':'★☆☆';
@@ -776,6 +902,48 @@ function endRun(kind,reason){if(G.over)return;G.over=true;G.endKind=kind;G.endRe
   openModal(`<h3 style="color:${col}">${head}</h3><div class="big">${big}</div>${reason?`<div>${t('reason',t('ev_'+reason))}</div>`:''}<b>${t('mistakes')}</b>${items?`<ul>${items}</ul>`:`<div class="muted">${t('none')}</div>`}<div class="btns">${nextBtn}<button class="btn" id="mAgain">${t('again')}</button><button class="btn" id="mMenu">${t('toMenu')}</button></div>`);
   $('#mAgain').onclick=()=>{closeModal();startRun(MODE);};$('#mMenu').onclick=()=>{closeModal();goBack();};
   if(nextBtn)$('#mNext').onclick=()=>{closeModal();startRun({kind:'lesson',id:MODE.id+1});};}
+
+/* ================= 教習所モード ================= */
+const SCH=Object.assign({name:'',stamps:{}},store.get('jdp_school',{}));
+function schSave(){store.set('jdp_school',SCH);}
+const today=()=>{const d=new Date();return (d.getMonth()+1)+'/'+d.getDate();};
+const stampHTML=(big)=>`<span class="stamp${big?' big':''}">${t('passed')}<br>${LANG==='ja'||LANG==='easy'||LANG==='zh'?'桜井':'S.'}</span>`;
+function schUnlocked(id){if(id==='t1'||id[0]==='g')return true;if(id[0]==='t')return !!SCH.stamps['t'+(+id.slice(1)-1)];
+  if(id==='shuryo')return [1,2,3,4,5,6,7,8,9,10].every(i=>SCH.stamps['t'+i])&&['g1','g2','g3'].every(g=>SCH.stamps[g]);
+  if(id==='kari')return !!SCH.stamps.shuryo;return false;}
+function schLine(){const st=SCH.stamps;if(st.kari)return 's_done';if(st.shuryo)return 's_kari';if(schUnlocked('shuryo'))return 's_ready';return Object.keys(st).length?'s_going':'s_welcome';}
+function renderSchool(){const B=$('#schoolB');const st=SCH.stamps;
+  const cell=(id,no,title,sub)=>{const ok=schUnlocked(id),done=st[id];return `<button class="cell" data-sch="${id}" ${ok?'':'disabled'}><span class="n">${no}</span><b>${title}</b>${sub?`<span class="sub">${sub}</span>`:''}${!ok?`<span class="lock">${t('locked')}</span>`:''}${done?stampHTML(false):''}${done?`<span class="n">${done.d}</span>`:''}</button>`;};
+  let h=`<div class="schTop">${instSVG(56)}<div><b>${t('instName')}</b><p class="bubble">${t(schLine())}</p></div></div>
+  <label class="schName">${t('schName')} <input id="schNameI" maxlength="20" value="${(SCH.name||'').replace(/[<>"&]/g,'')}"></label>
+  <div class="genbo"><section><h3>${t('stage1')}</h3><div class="cells">${LESSONS.map(l=>cell('t'+l.id,'No.'+l.id,t('ls'+l.id))).join('')}</div></section>
+  <section><h3>${t('gakka')}</h3><div class="cells">${['g1','g2','g3'].map((g,i)=>cell(g,'No.'+(i+1),t(g),t('gakkaD'))).join('')}</div></section>
+  <section><h3>${t('shuryo')}</h3><div class="cells">${cell('shuryo','—',t('shuryo'),schUnlocked('shuryo')?t('shuryoD'):t('lockShuryo'))}</div></section>
+  <section><h3>${t('kari')}</h3><div class="cells">${cell('kari','—',t('kari'),schUnlocked('kari')?t('kariD'):t('lockKari'))}</div></section>
+  ${st.kari?`<section>${certHTML()}</section>`:''}
+  <div><button class="btn" id="schReset">${t('schReset')}</button></div></div>`;
+  B.innerHTML=h;
+  $('#schNameI').oninput=e=>{SCH.name=e.target.value.slice(0,20);schSave();};
+  $$('#schoolB [data-sch]').forEach(b=>b.onclick=()=>{audioInit();const id=b.dataset.sch;
+    if(id[0]==='t')startRun({kind:'lesson',id:+id.slice(1),school:id});
+    else if(id[0]==='g')startQuiz(id==='g1'?'sign':id==='g2'?'rule':'haz',{school:id,n:10,need:8});
+    else if(id==='shuryo')startRun({kind:'exam',id:Math.random()<0.5?'A':'B',school:'shuryo'});
+    else if(id==='kari')startQuiz('kari',{school:'kari',n:20,need:18});});
+  $('#schReset').onclick=()=>{openModal(`<p>${t('schResetQ')}</p><div class="btns"><button class="btn" id="rY">${t('yes')}</button><button class="btn pri" id="rN">${t('no')}</button></div>`);
+    $('#rY').onclick=()=>{SCH.stamps={};schSave();closeModal();renderSchool();};$('#rN').onclick=closeModal;};}
+function certHTML(){const st=SCH.stamps.kari;return `<div class="cert"><h4><svg width="22" height="28" viewBox="0 0 30 38"><path d="M15 38 0 26V0l15 12z" fill="#f4c430"/><path d="M15 38l15-12V0L15 12z" fill="#3fb36b"/></svg>${t('kariCard')}</h4>
+  <div style="font-size:22px;font-weight:800">${(SCH.name||'—').replace(/[<>"&]/g,'')}</div><div>${t('title')} · ${st?st.d:''}</div><div style="display:flex;align-items:center;gap:10px">${stampHTML(false).replace('class="stamp"','class="stamp" style="position:static;flex:none"')}<small>${t('certNote')}</small></div><small>© 合同会社アップテック</small></div>`;}
+function schStamp(id,extra){SCH.stamps[id]=Object.assign({d:today()},extra||{});schSave();}
+function schModal(pass,lineK,body){openModal(`<div class="mInst">${instSVG(56)}<div class="bubble">${t(lineK)}</div></div>${body||''}${pass?stampHTML(true):`<h3 style="color:var(--red)">${t('hosyu')}</h3>`}<div class="btns"><button class="btn pri" id="mGenbo">${t('toGenbo')}</button>${pass?'':`<button class="btn" id="mAgain">${t('again')}</button>`}</div>`);
+  INST.line=t(lineK);speak(t(lineK),true);
+  $('#mGenbo').onclick=()=>{closeModal();stopSpeak();goBack();};const a=$('#mAgain');if(a)a.onclick=()=>{closeModal();if(QZ&&QZ.opts&&!$('#scQuiz').hidden)startQuiz(QZ.kind,QZ.opts);else startRun(MODE);};}
+function schoolEnd(kind,reason){const id=MODE.school;const cnt={};G.events.forEach(k=>cnt[k]=(cnt[k]||0)+1);
+  const items=Object.keys(cnt).map(k=>`<li>${t('ev_'+k)}${cnt[k]>1?' ×'+cnt[k]:''}${MODE.kind==='exam'&&EV[k][0]?`（−${EV[k][0]*cnt[k]}）`:''}</li>`).join('');
+  const list=`<b>${t('mistakes')}</b>${items?`<ul>${items}</ul>`:`<div class="muted">${t('none')}</div>`}`;
+  if(MODE.kind==='exam'){const pass=kind!=='stopped'&&G.score>=70;if(pass)schStamp(id,{score:G.score});
+    schModal(pass,pass?'i_examPass':'i_examFail',`<div class="big">${kind==='stopped'?t('stopped'):G.score+' '+t('pts')}</div>${reason?`<div>${t('reason',t('ev_'+reason))}</div>`:''}${list}`);return;}
+  const stopKind=G.events.some(k=>EV[k][1]);const pass=kind==='done'&&!stopKind&&G.events.length<=2;if(pass)schStamp(id);
+  schModal(pass,pass?'i_passL':'i_failL',list);}
 
 /* ================= 入力 ================= */
 const PED={acc:null,brk:null};const WHEEL={held:false,last:0};
@@ -973,6 +1141,7 @@ function drawWheel(){const c=$('#cWheel'),x=c.getContext('2d');const s=c.width;x
 function hud(){const L=G.legs[G.leg];const icon=L?({turn:L.sig==='L'?'↰':'↱',stop:'■',finish:'🏁',garage:'⇩',park:'⇩',speed:'40',do:'✓'}[L.k]||'↑'):'↑';
   $('#gIcon').textContent=icon;$('#gMain').textContent=L?t(L.m):(MODE.kind==='free'?t('g_free'):'');
   const sb=$('#gSub');if(G.subT>0){sb.textContent=G.sub;sb.className='gSub'+(G.subWarn?' warn':'');$('#guide').dataset.tone=G.subWarn?'warn':'';}else{sb.textContent=G.pb&&(G.gear==='D'||G.gear==='R')?t('pbHold'):(MODE.kind==='free'&&W.bike.on&&hyp(G.x-W.bike.x,G.y-W.bike.y)<25?t('g_bike'):'');sb.className='gSub';$('#guide').dataset.tone='';}
+  const ib=$('#inst');const on=instOn()&&performance.now()<INST.until;ib.hidden=!on;if(on){if(!$('#instFace').firstChild)$('#instFace').innerHTML=instSVG(34);$('#instTx').textContent=t('instName')+'：「'+INST.line+'」';}
   $('#stSpeed').textContent=Math.round(Math.abs(G.v)*3.6);$('#stGear').textContent=G.gear;const so=$('#stScore');so.textContent=G.score;so.classList.toggle('bad',G.score<70);}
 
 /* ================= ループ ================= */
@@ -1136,15 +1305,18 @@ function drawScene(x,sc,W2,H2,reveal){x.save();x.fillStyle=sc.night?'#141a22':'#
 /* ================= クイズの進行 ================= */
 let QZ=null;
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function startQuiz(kind){const src=kind==='sign'?QS:kind==='rule'?QR:QH;QZ={kind,list:shuffle(src).slice(0,Math.min(10,src.length)),i:0,ok:0};$('#quizT').textContent=t(kind==='sign'?'quizSign':kind==='rule'?'quizRule':'quizHaz');show('scQuiz');renderQ();}
-function renderQ(){const B=$('#quizB');const q=QZ.list[QZ.i];if(!q){B.innerHTML=`<div class="qq">${t('result',QZ.list.length,QZ.ok)}</div><div class="big" style="font-size:42px;font-family:var(--num)">${Math.round(QZ.ok/QZ.list.length*100)}%</div><div class="btns" style="display:flex;gap:8px"><button class="btn pri" id="qAgain">${t('again')}</button><button class="btn" id="qMenu">${t('toMenu')}</button></div>`;$('#qAgain').onclick=()=>startQuiz(QZ.kind);$('#qMenu').onclick=()=>goBack();return;}
-  const ch=shuffle(q.c.map((c,i)=>({c,ok:i===0})));const qtext=QZ.kind==='sign'?t('signQ'):QZ.kind==='haz'?t('hazQ'):tq(q.q);
-  B.innerHTML=`<div class="qmeta"><span>${t('qn',QZ.i+1,QZ.list.length)}</span><span>✓ ${QZ.ok}</span></div>${QZ.kind!=='rule'?`<div class="qfig${QZ.kind==='haz'?' dark':''}"><canvas id="qCv" width="${QZ.kind==='haz'?720:360}" height="${QZ.kind==='haz'?480:300}"></canvas></div>`:''}<div class="qq">${qtext}</div><div class="choices">${ch.map((c,i)=>`<button data-k="${i}">${tq(c.c)}</button>`).join('')}</div><div id="qFb"></div>`;
-  const draw=(rev)=>{const cv=$('#qCv');if(!cv)return;const x=cv.getContext('2d');if(QZ.kind==='sign'){x.clearRect(0,0,cv.width,cv.height);drawSign(x,q.sign,cv.width/2,cv.height/2,cv.height*0.9);}else drawScene(x,q.sc,cv.width,cv.height,rev);};draw(false);
+function startQuiz(kind,opts){opts=opts||{};const src=kind==='sign'?QS:kind==='rule'?QR:kind==='haz'?QH:QS.concat(QR);const n=opts.n||10;QZ={kind,opts,list:shuffle(src).slice(0,Math.min(n,src.length)),i:0,ok:0};$('#quizT').textContent=opts.school?t(opts.school):t(kind==='sign'?'quizSign':kind==='rule'?'quizRule':'quizHaz');show('scQuiz');renderQ();}
+function renderQ(){const B=$('#quizB');const q=QZ.list[QZ.i];if(!q&&QZ.opts&&QZ.opts.school){const O=QZ.opts,pass=QZ.ok>=O.need;if(pass)schStamp(O.school,{score:QZ.ok+'/'+QZ.list.length});
+    B.innerHTML=`<div class="qq">${t('result',QZ.list.length,QZ.ok)}</div>`;
+    schModal(pass,pass?(O.school==='kari'?'i_kariPass':'i_quizPass'):'i_quizFail',`<div class="big">${QZ.ok} / ${QZ.list.length}</div>${pass&&O.school==='kari'?certHTML():''}`);return;}
+  if(!q){B.innerHTML=`<div class="qq">${t('result',QZ.list.length,QZ.ok)}</div><div class="big" style="font-size:42px;font-family:var(--num)">${Math.round(QZ.ok/QZ.list.length*100)}%</div><div class="btns" style="display:flex;gap:8px"><button class="btn pri" id="qAgain">${t('again')}</button><button class="btn" id="qMenu">${t('toMenu')}</button></div>`;$('#qAgain').onclick=()=>startQuiz(QZ.kind);$('#qMenu').onclick=()=>goBack();return;}
+  const typ=q.sign?'sign':q.sc?'haz':'rule';const ch=shuffle(q.c.map((c,i)=>({c,ok:i===0})));const qtext=typ==='sign'?t('signQ'):typ==='haz'?t('hazQ'):tq(q.q);
+  B.innerHTML=`<div class="qmeta"><span>${t('qn',QZ.i+1,QZ.list.length)}</span><span>✓ ${QZ.ok}</span></div>${typ!=='rule'?`<div class="qfig${typ==='haz'?' dark':''}"><canvas id="qCv" width="${typ==='haz'?720:360}" height="${typ==='haz'?480:300}"></canvas></div>`:''}<div class="qq">${qtext}</div><div class="choices">${ch.map((c,i)=>`<button data-k="${i}">${tq(c.c)}</button>`).join('')}</div><div id="qFb"></div>`;
+  const draw=(rev)=>{const cv=$('#qCv');if(!cv)return;const x=cv.getContext('2d');if(typ==='sign'){x.clearRect(0,0,cv.width,cv.height);drawSign(x,q.sign,cv.width/2,cv.height/2,cv.height*0.9);}else drawScene(x,q.sc,cv.width,cv.height,rev);};draw(false);
   $$('#quizB .choices button').forEach(b=>b.onclick=()=>{if(b.parentNode.dataset.done)return;b.parentNode.dataset.done=1;const k=+b.dataset.k,ok=ch[k].ok;if(ok)QZ.ok++;sfx(ok?'ok':'pen');
     $$('#quizB .choices button').forEach((bb,i)=>{if(ch[i].ok)bb.classList.add('ok');else if(i===k)bb.classList.add('ng');});
-    if(QZ.kind==='haz')draw(true);
-    const ex=QZ.kind==='haz'?(q.sc.hide.length?`<div class="muted">🔴 ${t('hidden')}</div>`:'')+tq(q.c[0]):tq(q.e);
+    if(typ==='haz')draw(true);
+    const ex=typ==='haz'?(q.sc.hide.length?`<div class="muted">🔴 ${t('hidden')}</div>`:'')+tq(q.c[0]):tq(q.e);
     $('#qFb').innerHTML=`<div class="fb${ok?'':' ng'}"><b>${t(ok?'correct':'wrong')}</b>${ex}</div><div style="margin-top:8px"><button class="btn pri" id="qNext">${t('nextQ')}</button></div>`;
     $('#qNext').onclick=()=>{QZ.i++;renderQ();};});}
 
@@ -1157,9 +1329,9 @@ function renderBook(){const B=$('#bookB');$('#tbRule').setAttribute('aria-presse
 $('#tbRule').onclick=()=>{BOOKTAB='rule';renderBook();};$('#tbSign').onclick=()=>{BOOKTAB='sign';renderBook();};
 
 /* ================= 画面の切り替え ================= */
-const SCREENS=['scTitle','scList','scDrive','scQuiz','scBook'];let STACK=['scTitle'];
+const SCREENS=['scTitle','scList','scDrive','scQuiz','scBook','scSchool'];let STACK=['scTitle'];
 function show(id){SCREENS.forEach(s=>$('#'+s).hidden=s!==id);if(STACK[STACK.length-1]!==id)STACK.push(id);scrollTo(0,0);}
-function goBack(){if(STACK.length>1)STACK.pop();const id=STACK[STACK.length-1];SCREENS.forEach(s=>$('#'+s).hidden=s!==id);if(id==='scList')renderList(LISTKIND);for(const k in keys)keys[k]=false;}
+function goBack(){if(STACK.length>1)STACK.pop();const id=STACK[STACK.length-1];SCREENS.forEach(s=>$('#'+s).hidden=s!==id);if(id==='scList')renderList(LISTKIND);if(id==='scSchool')renderSchool();stopSpeak();INST.until=0;for(const k in keys)keys[k]=false;}
 $$('[data-back]').forEach(b=>b.onclick=goBack);$('#dBack').onclick=goBack;
 $('#dRestart').onclick=()=>startRun(MODE);
 let VIEW=store.get('jdp_view','both');const isLand=()=>matchMedia('(orientation:landscape) and (max-height:540px)').matches;
@@ -1171,7 +1343,7 @@ function renderList(kind){LISTKIND=kind;$('#listT').textContent=t(kind);const B=
     $$('#listB [data-l]').forEach(b=>b.onclick=()=>startRun({kind:'lesson',id:+b.dataset.l}));}
   else{B.innerHTML=['A','B'].map(k=>`<button class="item" data-e="${k}"><span class="no">${k}</span><span class="tx"><b>${t('course'+k)}</b><span>${t('course'+k+'D')}</span></span><span class="st">${PROG['E'+k]!=null?PROG['E'+k]+t('pts'):''}</span></button>`).join('');
     $$('#listB [data-e]').forEach(b=>b.onclick=()=>startRun({kind:'exam',id:b.dataset.e}));}}
-$$('[data-go]').forEach(b=>b.onclick=()=>{audioInit();const g=b.dataset.go;if(g==='lessons'||g==='exams'){renderList(g);show('scList');}else if(g==='free')startRun({kind:'free'});else if(g==='book'){renderBook();show('scBook');}else startQuiz(g.slice(2));});
+$$('[data-go]').forEach(b=>b.onclick=()=>{audioInit();const g=b.dataset.go;if(g==='school'){renderSchool();show('scSchool');}else if(g==='lessons'||g==='exams'){renderList(g);show('scList');}else if(g==='free')startRun({kind:'free'});else if(g==='book'){renderBook();show('scBook');}else startQuiz(g.slice(2));});
 function renderLangs(){$('#langs').innerHTML=LANGS.map(([k,n])=>`<button data-lg="${k}" aria-pressed="${k===LANG}">${n}</button>`).join('');$$('#langs [data-lg]').forEach(b=>b.onclick=()=>{LANG=b.dataset.lg;store.set('jdp_lang',LANG);applyI18n();});}
 let VEH='car';
 function renderVehicles(){const V=[['car',1],['truck',0],['taxi',0],['moto',0],['tractor',0],['excav',0]];
@@ -1179,11 +1351,11 @@ function renderVehicles(){const V=[['car',1],['truck',0],['taxi',0],['moto',0],[
 function openModal(h){$('#mbox').innerHTML=h;$('#modal').hidden=false;}
 function closeModal(){$('#modal').hidden=true;}
 $('#bSet').onclick=()=>{const ck=(k,l)=>`<label><input type="checkbox" data-set="${k}" ${SET[k]?'checked':''}> ${t(l)}</label>`;
-  openModal(`<h3>${t('settings')}</h3><div class="set"><b>${t('assist')}</b>${ck('path','aPath')}${ck('route','aRoute')}${ck('track','aTrack')}${ck('mirror','aMirror')}${ck('sound','sound')}<label>${t('sens')} <input type="range" min="0.5" max="2" step="0.1" value="${SET.sens}" id="sSens"></label></div><div class="btns"><button class="btn pri" id="mClose">${t('close')}</button></div>`);
+  openModal(`<h3>${t('settings')}</h3><div class="set"><b>${t('assist')}</b>${ck('path','aPath')}${ck('route','aRoute')}${ck('track','aTrack')}${ck('mirror','aMirror')}${ck('sound','sound')}${ck('inst','inst')}${ck('voice','voice')}<label>${t('sens')} <input type="range" min="0.5" max="2" step="0.1" value="${SET.sens}" id="sSens"></label></div><div class="btns"><button class="btn pri" id="mClose">${t('close')}</button></div>`);
   $$('[data-set]').forEach(c=>c.onchange=()=>{SET[c.dataset.set]=c.checked;store.set('jdp_set',SET);});$('#sSens').oninput=e=>{SET.sens=+e.target.value;store.set('jdp_set',SET);};$('#mClose').onclick=closeModal;};
 
 /* テスト用の窓口（ブラウザの開発者ツールから確認できる） */
-window.__jdp={S:S_PTS,get G(){return G;},W,startRun,inDrv,SL,tick,shift,wink,look,LESSONS,LEGS_A,LEGS_B,BAYS,trainInfo,sigState,keys,PED,endRun,QS,QR,QH,setLang:l=>{LANG=l;applyI18n();}};
+window.__jdp={SCH,renderSchool,startQuiz,get QZ(){return QZ;},S:S_PTS,get G(){return G;},W,startRun,inDrv,SL,tick,shift,wink,look,LESSONS,LEGS_A,LEGS_B,BAYS,trainInfo,sigState,keys,PED,endRun,QS,QR,QH,setLang:l=>{LANG=l;applyI18n();}};
 
 applyI18n();requestAnimationFrame(loop);
 })();
