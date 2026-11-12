@@ -176,6 +176,33 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
 .set{display:grid;gap:8px}
 .set label{display:flex;gap:8px;align-items:center;font-size:14px}
 .set input[type=range]{flex:1}
+/* ---------- キー操作 ---------- */
+.keyBar{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px}
+.kg{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.kg>b{font-size:11px;color:var(--mute);letter-spacing:.06em;margin-right:2px}
+.ki{display:inline-flex;gap:3px;align-items:center;font-size:12.5px;white-space:nowrap}
+.cap{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 5px;background:#e9edf0;color:#15191c;border-radius:4px;border-bottom:3px solid #9aa5ad;font-family:var(--num);font-size:12.5px;font-weight:700}
+.cap.on{background:var(--yel)}
+.keyTbl{width:100%;border-collapse:collapse;font-size:14px}
+.keyTbl td{padding:5px 4px;border-bottom:1px solid var(--line)}
+.keyTbl td:first-child{white-space:nowrap}
+.keyTbl button.slot{min-width:72px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:var(--num);font-weight:700}
+.keyTbl button.slot.wait{border-color:var(--yel);color:var(--yel);animation:hlp 1s infinite}
+@keyframes hlp{50%{opacity:.4}}
+.keyTbl tr.grp td{color:var(--mute);font-size:12px;padding-top:10px;border-bottom:none}
+.kmsg{min-height:1.4em;font-size:13px;color:var(--yel)}
+@media (max-width:760px),(orientation:landscape) and (max-height:540px){.keyBar{display:none}}
+[data-kk]{position:relative}
+@media (hover:hover) and (pointer:fine){[data-kk]:not([data-kk=""])::after{content:attr(data-kk);position:absolute;right:4px;top:3px;font-family:var(--num);font-size:10px;font-weight:700;color:#15191c;background:#cfd6da;border-radius:3px;padding:0 4px;line-height:1.5}}
+/* ---------- 公道 ---------- */
+.card.c-road{border-left-color:#3fb3a6}
+.rwrap{display:grid;gap:10px}
+.rbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:8px}
+.rrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.rrow input{flex:1 1 200px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:7px 10px;font-size:15px;min-width:0}
+.rlist{display:grid;gap:6px;max-height:300px;overflow:auto}
+#rMap{width:100%;aspect-ratio:4/3;max-height:70svh;border-radius:8px;touch-action:none;background:#2c3e27;cursor:crosshair}
+.kmsg.warn{color:#ff8a7e}
 /* ---------- 教習所モード ---------- */
 .card.c-school{border-left-color:#e05a8a;background:linear-gradient(100deg,#2a1f28,#1d2329 60%)}
 .card.c-school b{font-size:19px}
@@ -219,6 +246,7 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
   <div class="sec"><h2 data-i="drive"></h2>
     <div class="cards">
       <button class="card c-school" data-go="school"><b data-i="school"></b><span data-i="schoolD"></span></button>
+      <button class="card c-road" data-go="road"><b data-i="road"></b><span data-i="roadD"></span></button>
       <button class="card c-learn" data-go="lessons"><b data-i="learn"></b><span data-i="learnD"></span></button>
       <button class="card c-exam" data-go="exams"><b data-i="exam"></b><span data-i="examD"></span></button>
       <button class="card c-free" data-go="free"><b data-i="free"></b><span data-i="freeD"></span></button>
@@ -247,6 +275,12 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
 <section id="scSchool" hidden>
   <div class="head"><button class="btn" data-back data-i="back"></button><h2 data-i="genbo"></h2></div>
   <div id="schoolB"></div>
+</section>
+
+<!-- ===== 公道 ===== -->
+<section id="scRoad" hidden>
+  <div class="head"><button class="btn" data-back data-i="back"></button><h2 data-i="road"></h2></div>
+  <div id="roadB" class="rwrap"></div>
 </section>
 
 <!-- ===== 運転 ===== -->
@@ -289,7 +323,7 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
       <div class="pedals"><button class="ped brake" id="pBrk"><i></i><span data-i="brake"></span></button><button class="ped acc" id="pAcc"><i></i><span data-i="accel"></span></button></div>
     </div>
   </div>
-  <div class="keys" id="keysHelp"></div>
+  <div class="keyBar" id="keyBar"></div>
 </section>
 
 <!-- ===== クイズ ===== -->
@@ -310,7 +344,7 @@ kbd{font-family:var(--num);background:var(--panel2);border:1px solid var(--line)
 
 <script>
 (()=>{'use strict';
-const VER='Ver.2.0';
+const VER='Ver.3.0';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a,b)=>v<a?a:v>b?b:v, hyp=Math.hypot, PI=Math.PI;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
@@ -476,6 +510,77 @@ i_examFail:['残念だが不合格だ。また挑戦しよう','ざんねん。�
 i_quizPass:['よく勉強しているな。合格だ','よく べんきょう したね','You\'ve studied well — pass','Học tốt lắm — đạt','学得不错，合格','Belajar dengan baik — lulus'],
 i_quizFail:['もう少しだ。ルールブックで復習しよう','ルールブックで ふくしゅう しよう','Almost — review with the rule book','Gần được rồi — ôn lại sổ tay','差一点，用规则手册复习吧','Hampir — ulangi dengan buku aturan'],
 i_kariPass:['仮免許だ！ よくがんばったな','かりめんきょ だ！','Provisional licence — great work!','Có bằng tạm rồi — giỏi lắm!','拿到临时驾照了，辛苦了！','SIM sementara — kerja bagus!'],
+k_title:['キー操作の設定','キーの せってい','Keyboard controls','Cài đặt phím','按键设置','Pengaturan tombol'],
+k_open:['⌨ キー操作の設定','⌨ キーの せってい','⌨ Keyboard settings','⌨ Cài đặt phím','⌨ 按键设置','⌨ Atur tombol'],
+k_help:['変えたいところを押してから、使いたいキーを押してください。Esc でやめる、Delete / Backspace で消す。1つの動きに2つまでキーを決められます','かえたい ところを おして、キーを おします','Click a slot, then press the key you want. Esc cancels, Delete/Backspace clears. Up to 2 keys per action','Bấm ô cần đổi rồi nhấn phím muốn dùng. Esc để hủy, Delete/Backspace để xóa. Mỗi thao tác tối đa 2 phím','点击要更改的位置，然后按下想用的键。Esc取消，Delete/Backspace清除。每个动作最多2个键','Klik slot, lalu tekan tombol yang diinginkan. Esc batal, Delete/Backspace hapus. Maks 2 tombol per aksi'],
+k_wait:['キーを押してください…','キーを おして…','Press a key…','Nhấn một phím…','请按键…','Tekan tombol…'],
+k_moved:['「{0}」は「{1}」から外しました','{0} を {1} から はずしました','"{0}" was removed from "{1}"','Đã gỡ "{0}" khỏi "{1}"','已将"{0}"从"{1}"中移除','"{0}" dilepas dari "{1}"'],
+k_preset:['おすすめの割り当て','おすすめ','Presets','Mẫu có sẵn','预设','Preset'],
+k_p1:['標準（矢印キー＋WASD）','ひょうじゅん','Standard (arrows + WASD)','Chuẩn (mũi tên + WASD)','标准（方向键＋WASD）','Standar (panah + WASD)'],
+k_p2:['わかりやすい（矢印で運転、P・R・N・D はその文字）','わかりやすい','Easy (arrows to drive, P/R/N/D letters for gears)','Dễ hiểu (mũi tên để lái, chữ P/R/N/D để chuyển số)','易懂（方向键驾驶，P/R/N/D字母换挡）','Mudah (panah untuk menyetir, huruf P/R/N/D untuk gigi)'],
+k_p3:['左手だけ（WASD で運転、近くのキーで操作）','ひだりてだけ','Left hand only (WASD and nearby keys)','Chỉ tay trái (WASD và phím gần)','只用左手（WASD和附近的键）','Tangan kiri saja (WASD dan tombol dekat)'],
+k_hold:['キーをはなしてもハンドルを戻さない（まっすぐキーで戻す）','ハンドルを もどさない','Keep the wheel turned when keys are released (use the Straighten key)','Giữ vô lăng khi thả phím (dùng phím Thẳng lái)','松开按键方向盘不回正（用回正键）','Setir tetap saat tombol dilepas (pakai tombol Lurus)'],
+k_g1:['走る','はしる','Drive','Lái','行驶','Menyetir'],
+k_g2:['ギア','ギア','Gear','Số','档位','Gigi'],
+k_g3:['合図・確認','あいず・かくにん','Signals & checks','Tín hiệu & quan sát','信号与确认','Sinyal & cek'],
+k_g4:['画面','がめん','Screen','Màn hình','画面','Layar'],
+a_accel:['アクセル','アクセル','Accelerate','Ga','油门','Gas'],
+a_brake:['ブレーキ','ブレーキ','Brake','Phanh','刹车','Rem'],
+a_left:['ハンドル左','ハンドル ひだり','Steer left','Lái trái','向左打方向','Setir kiri'],
+a_right:['ハンドル右','ハンドル みぎ','Steer right','Lái phải','向右打方向','Setir kanan'],
+a_center:['ハンドルをまっすぐ','ハンドル まっすぐ','Straighten wheel','Thẳng lái','方向盘回正','Luruskan setir'],
+a_gP:['P（パーキング）','P','P (park)','P (đỗ)','P（驻车）','P (parkir)'],
+a_gR:['R（バック）','R（うしろ）','R (reverse)','R (lùi)','R（倒车）','R (mundur)'],
+a_gN:['N（ニュートラル）','N','N (neutral)','N (số mo)','N（空挡）','N (netral)'],
+a_gD:['D（前へ）','D（まえ）','D (drive)','D (tiến)','D（前进）','D (maju)'],
+a_winkL:['左ウインカー','ひだり ウインカー','Left signal','Xi nhan trái','左转向灯','Sein kiri'],
+a_winkR:['右ウインカー','みぎ ウインカー','Right signal','Xi nhan phải','右转向灯','Sein kanan'],
+a_pb:['パーキングブレーキ','パーキングブレーキ','Parking brake','Phanh tay','驻车制动','Rem parkir'],
+a_belt:['シートベルト','シートベルト','Seat belt','Dây an toàn','安全带','Sabuk'],
+a_lookL:['左を見る','ひだりを みる','Look left','Nhìn trái','看左边','Lihat kiri'],
+a_lookB:['右後ろを見る','みぎうしろを みる','Look back','Nhìn sau','看右后方','Lihat belakang'],
+a_lookR:['右を見る','みぎを みる','Look right','Nhìn phải','看右边','Lihat kanan'],
+a_view:['表示の切り替え','ひょうじ','Switch view','Đổi hiển thị','切换显示','Ganti tampilan'],
+a_map:['地図の拡大・全体','ちず','Map zoom / whole','Bản đồ phóng to / toàn bộ','地图放大/全图','Peta zoom / penuh'],
+k_reset:['標準に戻す','もとに もどす','Reset to standard','Khôi phục chuẩn','恢复标准','Kembali ke standar'],
+road:['公道を走る（実際の道路データ）','ほんものの みちを はしる','Real roads (map data)','Đường thật (dữ liệu bản đồ)','真实道路（地图数据）','Jalan nyata (data peta)'],
+roadD:['佐賀県の教習所の周りなど、地図データ（OpenStreetMap）の本物の道・信号・一時停止・踏切・制限速度でコースを走る','ほんものの みちで れんしゅう','Drive a route on real roads, signals, stop signs, rail crossings and limits from OpenStreetMap — e.g. around Saga driving schools','Lái trên đường thật với đèn, biển dừng, đường ray, tốc độ từ OpenStreetMap — ví dụ quanh trường lái ở Saga','用OpenStreetMap的真实道路、信号灯、停车标志、道口和限速行驶，例如佐贺县驾校周边','Menyetir di jalan nyata (sinyal, rambu stop, perlintasan, batas kecepatan) dari OpenStreetMap — mis. sekitar sekolah mengemudi Saga'],
+r_where:['どこを走りますか？','どこを はしりますか？','Where do you want to drive?','Bạn muốn lái ở đâu?','想在哪里驾驶？','Mau menyetir di mana?'],
+r_loadSchools:['佐賀県の教習所を一覧で見る','さがけんの きょうしゅうじょ','List driving schools in Saga','Danh sách trường lái ở Saga','查看佐贺县驾校列表','Daftar sekolah mengemudi di Saga'],
+r_here:['現在地','いまいる ところ','My location','Vị trí của tôi','当前位置','Lokasi saya'],
+r_sample:['サンプルの町（架空・すぐ試せる）','サンプルの まち','Sample town (fictional, works offline)','Thị trấn mẫu (giả lập)','示例城镇（虚构，可离线使用）','Kota contoh (fiktif)'],
+r_sampleName:['サンプルの町（架空）','サンプルの まち','Sample town (fictional)','Thị trấn mẫu','示例城镇（虚构）','Kota contoh'],
+r_search:['場所を検索（例：佐賀駅、唐津市役所）','ばしょを さがす','Search a place (e.g. Saga Station)','Tìm địa điểm (vd: ga Saga)','搜索地点（例：佐贺站）','Cari tempat (mis. Stasiun Saga)'],
+r_searchBtn:['検索','さがす','Search','Tìm','搜索','Cari'],
+r_loading:['地図データを読み込んでいます…（10〜40秒）','よみこみ ちゅう…','Loading map data… (10–40 s)','Đang tải dữ liệu bản đồ… (10–40 giây)','正在加载地图数据…（10～40秒）','Memuat data peta… (10–40 dtk)'],
+r_fail:['地図データを読み込めませんでした。インターネットにつながっているか確かめてください。Claude の画面の中のプレビューでは読み込めないので、公開版（GitHub Pages）で開いてください。混んでいるときは少し待ってもう一度','よみこめませんでした。こうかいばんで ためして ください','Could not load map data. Check your connection. It does not work inside the Claude preview — open the published (GitHub Pages) version. If the server is busy, wait and retry','Không tải được dữ liệu bản đồ. Kiểm tra kết nối. Không chạy trong bản xem trước của Claude — hãy mở bản đã đăng (GitHub Pages)','无法加载地图数据。请检查网络。在Claude预览中无法加载，请打开发布版（GitHub Pages）。服务器繁忙时请稍后重试','Gagal memuat data peta. Periksa koneksi. Tidak berjalan di pratinjau Claude — buka versi publik (GitHub Pages)'],
+r_geoFail:['現在地を取得できませんでした（位置情報の許可を確認）','いまの ばしょが わかりません','Could not get your location (check permission)','Không lấy được vị trí','无法获取当前位置（请检查权限）','Lokasi tidak didapat'],
+r_none:['見つかりませんでした','みつかりません','Nothing found','Không tìm thấy','未找到','Tidak ditemukan'],
+r_schoolsNote:['{0}校が見つかりました（地図データに登録されているもの。佐賀県の周辺を含む）','{0}こう みつかりました','{0} found (as registered in the map data; includes nearby areas)','Tìm thấy {0} trường (theo dữ liệu bản đồ)','找到{0}所（地图数据中登记的，含周边）','{0} ditemukan (sesuai data peta)'],
+r_area:['{0}：道 {1}本・信号 {2}か所・一時停止 {3}か所・踏切 {4}か所','{0}','{0}: {1} roads, {2} signals, {3} stop signs, {4} rail crossings','{0}: {1} đường, {2} đèn, {3} biển dừng, {4} đường ray','{0}：道路{1}条・信号{2}处・停车让行{3}处・道口{4}处','{0}: {1} jalan, {2} lampu, {3} stop, {4} perlintasan'],
+r_traffic:['ほかの車・歩行者・列車を出す','ほかの くるま・ひと・でんしゃ','Show other cars, pedestrians and trains','Hiện xe khác, người đi bộ, tàu','显示其他车辆、行人和火车','Tampilkan mobil lain, pejalan kaki, kereta'],
+r_route:['コースを作る','コースを つくる','Make a route','Tạo lộ trình','制作路线','Buat rute'],
+r_tapHelp:['🚗 がスタート。地図を押すと通る点が順に増え、道にそってコースを作ります。ドラッグで移動、ホイール／2本指で拡大。赤＝信号、▽＝一時停止、黄＝踏切','ちずを おして コースを つくります','🚗 is the start. Tap the map to add points in order; the route follows the roads. Drag to pan, wheel/pinch to zoom. Red = signal, ▽ = stop, yellow = rail crossing','🚗 là điểm xuất phát. Chạm bản đồ để thêm điểm; lộ trình đi theo đường. Kéo để di chuyển, cuộn/chụm để phóng to','🚗为起点。点击地图按顺序添加途经点，路线沿道路生成。拖动平移，滚轮/双指缩放。红=信号，▽=停车，黄=道口','🚗 titik mulai. Ketuk peta untuk menambah titik; rute mengikuti jalan. Seret untuk geser, roda/cubit untuk zoom'],
+r_auto:['自動で作る','じどうで つくる','Auto route','Tự động tạo','自动生成','Rute otomatis'],
+r_undo:['1つ戻す','もどす','Undo','Hoàn tác','撤销','Batal'],
+r_clear:['消す','けす','Clear','Xóa','清除','Hapus'],
+r_gpx:['GPXを読み込む','GPX','Load GPX','Tải GPX','导入GPX','Muat GPX'],
+r_gpxBad:['GPXの中に道すじ（trkpt / rtept）が見つかりません','GPXが よめません','No track points (trkpt/rtept) in the GPX','Không có điểm (trkpt/rtept) trong GPX','GPX中没有轨迹点','Tidak ada titik di GPX'],
+r_gpxFar:['GPXの範囲が広すぎます。中心から約3km四方だけを使います','ひろすぎます','The GPX covers too wide an area; only about 3 km around the centre is used','GPX quá rộng; chỉ dùng khoảng 3 km quanh tâm','GPX范围过大，只使用中心约3公里范围','GPX terlalu luas; hanya ±3 km di tengah dipakai'],
+r_share:['このコースのURLをコピー','URLを コピー','Copy route URL','Sao chép URL','复制路线链接','Salin URL rute'],
+r_copied:['コピーしました','コピーしました','Copied','Đã sao chép','已复制','Disalin'],
+r_len:['コースの長さ 約{0}km・右左折 {1}回','やく {0}km','About {0} km, {1} turns','Khoảng {0} km, {1} lần rẽ','约{0}公里，转弯{1}次','±{0} km, {1} belokan'],
+r_noRoute:['コースがまだありません。地図を押すか「自動で作る」を押してください','コースを つくって ください','No route yet — tap the map or press Auto route','Chưa có lộ trình — chạm bản đồ hoặc bấm Tự động tạo','还没有路线——点击地图或按自动生成','Belum ada rute — ketuk peta atau tekan Rute otomatis'],
+r_noPath:['道がつながらず、コースを作れませんでした。点を道の近くに置いてください','みちが つながりません','Could not connect the roads. Put the points closer to roads','Không nối được đường. Đặt điểm gần đường hơn','道路无法连接，请把点放在道路附近','Jalan tidak tersambung. Taruh titik dekat jalan'],
+r_practice:['練習で走る（教官つき）','れんしゅう','Practice (with instructor)','Luyện tập (có giáo viên)','练习（有教练）','Latihan (dengan instruktur)'],
+r_exam:['路上検定で走る（採点）','けんてい','Road test (scored)','Thi trên đường (chấm điểm)','路考（评分）','Ujian jalan (dinilai)'],
+r_attr:['地図データ © OpenStreetMap contributors（ODbL）','© OpenStreetMap contributors','Map data © OpenStreetMap contributors (ODbL)','Dữ liệu bản đồ © OpenStreetMap contributors (ODbL)','地图数据 © OpenStreetMap contributors（ODbL）','Data peta © OpenStreetMap contributors (ODbL)'],
+r_noteRoute:['教習所の実際の検定コースは公開されていません。コースは地図で作るか、実際に走って記録したGPXを読み込んでください。地図データは誰でも編集できるものなので、信号・標識・速度が現地と違うことがあります。実際の道では必ず現地の標識に従ってください','ほんものの コースは こうかい されて いません','Driving schools do not publish their test routes. Make a route on the map or load a GPX you recorded. Map data is community-edited, so signals, signs and limits may differ from reality — always follow the real signs','Trường lái không công khai lộ trình thi. Hãy tạo lộ trình hoặc tải GPX. Dữ liệu bản đồ do cộng đồng biên tập nên có thể khác thực tế','驾校不公开考试路线。请在地图上制作或导入GPX。地图数据由社区编辑，信号、标志、限速可能与现场不同，请以现场标志为准','Sekolah tidak mempublikasikan rute ujian. Buat rute di peta atau muat GPX. Data peta disunting komunitas, bisa berbeda dari kenyataan'],
+r_offroute:['コースから外れています。緑の線に戻りましょう','コースから はずれて います','You are off the route — return to the green line','Bạn đã lệch lộ trình — quay lại đường xanh','偏离路线了，请回到绿线','Keluar rute — kembali ke garis hijau'],
+g_roadStart:['発進：まわりを確かめて、左の車線を走ろう。緑の線がコースです','みどりの せんが コース','Move off: check around and keep to the left lane. The green line is your route','Xuất phát: quan sát và đi làn trái. Đường xanh là lộ trình','起步：确认周围，走左侧车道。绿线是路线','Berangkat: cek sekitar, tetap di lajur kiri. Garis hijau adalah rute'],
+g_finishRoad:['ゴール：左に寄せて止まり、P に入れてパーキングブレーキ','ゴール：とまって P','Finish: pull over to the left, stop, shift to P and set the parking brake','Kết thúc: tấp trái, dừng, số P, kéo phanh tay','终点：靠左停车，挂P，拉驻车制动','Selesai: menepi ke kiri, berhenti, gigi P, rem parkir'],
+ev_oneway:['一方通行を逆に走った','いっぽうつうこうを ぎゃくに はしった','Drove the wrong way on a one-way street','Đi ngược chiều đường một chiều','单行道逆行','Melawan arah di jalan satu arah'],
+i_oneway:['一方通行だ！ 逆から入っちゃだめだ','いっぽうつうこう！','One-way street — wrong way!','Đường một chiều — đi ngược rồi!','单行道！不能逆行','Jalan satu arah — salah arah!'],
 tipBrake:['ヒント：実際の車では、ブレーキを踏みながらシフトします','ヒント：ほんとうの くるまは ブレーキを ふみながら ギアを かえます','Tip: in a real car, hold the brake while shifting','Mẹo: xe thật phải đạp phanh khi chuyển số','提示：真实车辆换挡时要踩住刹车','Tips: di mobil sungguhan, injak rem saat memindah gigi'],
 needStop:['止まってからシフトしよう','とまってから ギアを かえよう','Stop before shifting','Dừng hẳn rồi mới chuyển số','停稳后再换挡','Berhenti dulu sebelum memindah gigi'],
 pbHold:['パーキングブレーキがかかっています','パーキングブレーキが かかって います','Parking brake is on','Phanh tay đang kéo','驻车制动未松开','Rem parkir masih aktif'],
@@ -556,7 +661,7 @@ ls10:['自転車の横を通る（2026年4月〜）','じてんしゃの よこ�
 let LANG=store.get('jdp_lang',null)||(()=>{const n=(navigator.language||'ja').toLowerCase();return n.startsWith('ja')?'ja':n.startsWith('vi')?'vi':n.startsWith('zh')?'zh':(n.startsWith('id')||n.startsWith('ms'))?'id':'en';})();
 function t(k,...a){const e=S[k];if(!e)return k;let s=e[LI[LANG]];if(!s)s=LANG==='easy'?e[0]:(e[2]||e[0]);return s.replace(/\{(\d)\}/g,(_,i)=>a[i]);}
 function tq(o){if(o==null)return '';if(typeof o==='string')return o;return o[LANG]||(LANG==='easy'?o.ja:o.en)||o.ja;}
-function applyI18n(){document.documentElement.lang=LANG==='easy'?'ja':LANG;$$('[data-i]').forEach(el=>{el.textContent=t(el.dataset.i);});$('#keysHelp').innerHTML=t('keys');document.title=t('title');renderLangs();renderVehicles();$('#verT').textContent=VER+' © 合同会社アップテック';updViewBtn();}
+function applyI18n(){document.documentElement.lang=LANG==='easy'?'ja':LANG;$$('[data-i]').forEach(el=>{el.textContent=t(el.dataset.i);});renderKeyBar();document.title=t('title');renderLangs();renderVehicles();$('#verT').textContent=VER+' © 合同会社アップテック';updViewBtn();}
 
 /* ================= 設定 ================= */
 const SET=Object.assign({path:true,route:true,track:false,mirror:true,sound:true,sens:1,inst:true,voice:true},store.get('jdp_set',{}));
@@ -599,7 +704,7 @@ for(const R of RD){const h=R.w/2;for(let i=0;i<R.pts.length-1;i++){const [ax,ay]
 for(const F of FIL)addDrv(F);
 for(const k in BAYS){const b=BAYS[k];addDrv([[b.x0,b.y0],[b.x1,b.y0],[b.x1,b.y1],[b.x0,b.y1]],'#61666b');}
 function pip(P,x,y){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const [xi,yi]=P[i],[xj,yj]=P[j];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c;}return c;}
-function inDrv(x,y){for(const D of DRV){if(x<D.bb[0]||x>D.bb[2]||y<D.bb[1]||y>D.bb[3])continue;if(pip(D.pts,x,y))return true;}return false;}
+function inDrv(x,y){if(RW)return roadInDrv(x,y);for(const D of DRV){if(x<D.bb[0]||x>D.bb[2]||y<D.bb[1]||y>D.bb[3])continue;if(pip(D.pts,x,y))return true;}return false;}
 const JUNC=[[12,12],[138,12],[12,83],[138,83],[12,47.5],[138,47.5],[75,12],[75,83],[75,47.5]];
 const nearJ=(x,y,m)=>JUNC.some(([a,b])=>Math.abs(x-a)<m&&Math.abs(y-b)<m);
 // 路面の表示（白線など）
@@ -657,7 +762,7 @@ let MODE=null; // {kind:'free'|'lesson'|'exam', id}
 function sigState(ph){const c=W.sigT%30;if(ph==='NS')return c<1?'R':c<12?'G':c<15?'Y':'R';return c<16?'R':c<27?'G':'Y';}
 function trainInfo(){const T=W.train,tt=T.t;const warn=tt>=0&&tt<15;const gate=tt<0?0:tt<3?0:tt<6?(tt-3)/3:tt<12?1:tt<14?1-(tt-12)/2:0;
   let tx=null,t0=0,t1=0;if(tt>=6){const a=175-15*(tt-6);t0=Math.max(a,RAIL.x0);t1=Math.min(a+36,RAIL.x1);if(t1>t0+0.2)tx=a;}return {warn,gate,tx,t0,t1};}
-function worldTick(dt){W.sigT+=dt;const T=W.train;T.t+=dt;if(T.t>16){T.t=-(T.next);T.next=25+Math.random()*20;}
+function worldTick(dt){if(RW){roadWorldTick(dt);return;}W.sigT+=dt;const T=W.train;T.t+=dt;if(T.t>16){T.t=-(T.next);T.next=25+Math.random()*20;}
   // 歩行者：歩く → 待つ → 渡る → 反対で歩く
   const P=W.ped;P.t+=dt;const carOn=G&&carRectOverlap(CW.x0-1,CW.y0,CW.x1+1,CW.y1);
   const carNear=G&&carRectOverlap(CW.x0-6,CW.y0,CW.x1+6,CW.y1)&&Math.abs(G.v)>2;
@@ -679,9 +784,9 @@ function hitCircle(x,y,a,cx,cy,r){const [l,s]=toLocal(cx,cy,x,y,a);return l>-0.9
 function segHit(x,y,a,x1,y1,x2,y2){for(let i=0;i<=8;i++){const k=i/8;if(hitCircle(x,y,a,x1+(x2-x1)*k,y1+(y2-y1)*k,0.06))return true;}return false;}
 function gateLines(){const g=trainInfo().gate,L=4.3,ph=(1-g)*PI/2*0.95;const c=Math.cos(ph);return [{px:133.9,py:33.6,ex:133.9+L*c,ey:33.6,z:1.0+L*Math.sin(ph),down:g>0.65},{px:142.1,py:26.4,ex:142.1-L*c,ey:26.4,z:1.0+L*Math.sin(ph),down:g>0.65}];}
 // 補助ブレーキ用：道路の上にいる人・自転車・列車だけを見る（歩道の歩行者には反応しない）
-function crashAhead(x,y,a){const P=W.ped;if(inDrv(P.x,P.y)&&hitCircle(x,y,a,P.x,P.y,0.35))return true;const B=W.bike;if(B.on&&(hitCircle(x,y,a,B.x,B.y-0.8,0.35)||hitCircle(x,y,a,B.x,B.y+0.8,0.35)))return true;
+function crashAhead(x,y,a){if(RW)return roadCrashAhead(x,y,a);const P=W.ped;if(inDrv(P.x,P.y)&&hitCircle(x,y,a,P.x,P.y,0.35))return true;const B=W.bike;if(B.on&&(hitCircle(x,y,a,B.x,B.y-0.8,0.35)||hitCircle(x,y,a,B.x,B.y+0.8,0.35)))return true;
   const T=trainInfo();if(T.tx!=null&&Math.abs(y-30)<7){const C=bodyPts(x,y,a);if(C.some(([px,py])=>px>T.t0-0.5&&px<T.t1+0.5&&py>28.4&&py<31.6))return true;}return false;}
-function collide(x,y,a){
+function collide(x,y,a){if(RW)return roadCollide(x,y,a);
   for(const p of POLES)if(hitCircle(x,y,a,p.x,p.y,p.r))return 'touch';
   const P=W.ped;if(hitCircle(x,y,a,P.x,P.y,0.3))return 'crash';
   const B=W.bike;if(B.on&&(hitCircle(x,y,a,B.x,B.y-0.8,0.3)||hitCircle(x,y,a,B.x,B.y+0.8,0.3)))return 'crash';
@@ -690,7 +795,7 @@ function collide(x,y,a){
   return null;}
 
 /* ================= 採点・出来事 ================= */
-const EV={assist:[10,1],off:[20],offrun:[0,1],touch:[20],crash:[0,1],red:[0,1],nostop:[20],stoppos:[10],nolook:[10],railstop:[0,1],railin:[0,1],ped:[0,1],right:[20],speed:[10],slow:[10],sig:[10],siglate:[5],bike:[10],pb:[5],belt:[10],startlook:[10],startsig:[5],kiri:[5]};
+const EV={oneway:[0,1],assist:[10,1],off:[20],offrun:[0,1],touch:[20],crash:[0,1],red:[0,1],nostop:[20],stoppos:[10],nolook:[10],railstop:[0,1],railin:[0,1],ped:[0,1],right:[20],speed:[10],slow:[10],sig:[10],siglate:[5],bike:[10],pb:[5],belt:[10],startlook:[10],startsig:[5],kiri:[5]};
 function ev(k){if(G.over)return;G.events.push(k);(G.evLog||(G.evLog=[])).push([k,G.leg,+G.x.toFixed(1),+G.y.toFixed(1),G.wink]);sfx('pen');const [p,stop]=EV[k];
   if(MODE.kind==='exam'){if(stop){G.score=0;endRun('stopped',k);return;}G.score=Math.max(0,G.score-p);}
   else if(stop&&k==='crash'){G.v=0;}
@@ -712,14 +817,15 @@ function tick(dt){
   if(!G||G.over){return;}
   G.time+=dt;worldTick(dt);
   // ペダル
-  const accK=keys.ArrowUp||keys.KeyW,brkK=keys.ArrowDown||keys.KeyS;
+  const accK=act('accel'),brkK=act('brake');
   const accT=PED.acc!=null?PED.acc:(accK?1:0),brkT=PED.brk!=null?PED.brk:(brkK?1:0);
   G.thr+=(accT>G.thr?Math.min(accT-G.thr,(PED.acc!=null?4:1.3)*dt):Math.max(accT-G.thr,-5*dt));
   G.brk+=(brkT>G.brk?Math.min(brkT-G.brk,(PED.brk!=null?5:1.8)*dt):Math.max(brkT-G.brk,-6*dt));
   // ハンドル
-  const stK=(keys.ArrowLeft||keys.KeyA?-1:0)+(keys.ArrowRight||keys.KeyD?1:0);
-  if(stK)G.wheel=clamp(G.wheel+stK*420*SET.sens*dt,-540,540);
-  else if(!WHEEL.held&&Math.abs(G.v)>0.3){const r=(40+Math.abs(G.v)*45)*dt;G.wheel=Math.abs(G.wheel)<r?0:G.wheel-Math.sign(G.wheel)*r;}
+  const stK=(act('left')?-1:0)+(act('right')?1:0);
+  if(act('center')){const r=720*dt;G.wheel=Math.abs(G.wheel)<r?0:G.wheel-Math.sign(G.wheel)*r;}
+  if(stK){G.wheel=clamp(G.wheel+stK*420*SET.sens*dt,-540,540);G.keySteer=true;}
+  else if(!WHEEL.held&&Math.abs(G.v)>0.3&&!(SET.keyHold&&G.keySteer)){const r=(40+Math.abs(G.v)*45)*dt;G.wheel=Math.abs(G.wheel)<r?0:G.wheel-Math.sign(G.wheel)*r;}
   const dl=clamp(G.wheel/CAR.ratio*PI/180,-CAR.maxSt,CAR.maxSt);
   if(instOn()&&Math.abs(G.v)>0.6){const sg=Math.sign(G.v),look=G.v*G.v/(2*6)+Math.abs(G.v)*0.35+0.4;let px=G.x,py=G.y,pa=G.a,hitA=false;
     for(let d=0.4;d<=look;d+=0.4){px+=Math.cos(pa)*0.4*sg;py+=Math.sin(pa)*0.4*sg;pa+=0.4*sg/CAR.wb*Math.tan(dl);if(crashAhead(px,py,pa)){hitA=true;break;}}
@@ -763,8 +869,9 @@ function rules(dt){
     else if(!G.belt)ev('belt');}
   if(G.pb&&sp>0.6&&cool('pb',8))ev('pb');
   // 速度
-  if(sp*3.6>45&&cool('speed',8))ev('speed');
+  if(!RW&&sp*3.6>45&&cool('speed',8))ev('speed');
   G.maxV=Math.max(G.maxV,sp);
+  if(RW){roadRules(dt,fx,fy,sp);return;}
   // 停止線
   const Fx=G.x+fx*3.5,Fy=G.y+fy*3.5;const ti=trainInfo();
   for(const s of SL){const st=G.slState[s.id]||(G.slState[s.id]={pd:null,near:false,far:false,L:false,R:false});
@@ -856,7 +963,8 @@ const LESSONS=[
    {k:'turn',p:[74,60.5],sig:'R',m:'g_rightPark'},{k:'park',bay:'pp',m:'g_parallel',kiri:2},{k:'turn',p:[113,58.6],sig:'R',m:'g_parallelOut',pre:7,r:4},{k:'stop',p:[121,58.6],m:'g_end'}]},
  {id:10,spawn:{x:13.75,y:18,a:PI/2,gear:'D',pb:false,belt:true},bike:true,legs:[{k:'go',p:[13.75,44],r:5,m:'g_bike'},{k:'stop',p:[13.75,70],m:'g_end'}]}];
 function legTick(dt){
-  const L=G.legs[G.leg];if(!L)return;const d=G.legData;const [fx,fy]=fr(G.a);const cx=G.x+fx*1.3,cy=G.y+fy*1.3;
+  const L=G.legs[G.leg];if(!L)return;const d=G.legData;
+  if(RW&&L.idx!=null&&L.k!=='finish'&&L.k!=='stop'&&(G.rprog||0)>L.idx+2)return nextLeg();const [fx,fy]=fr(G.a);const cx=G.x+fx*1.3,cy=G.y+fy*1.3;
   if(L.kiri!=null&&G.gear==='R'&&G.prevGear!=='R'){d.rev=(d.rev||0)+1;if(d.rev>L.kiri)ev('kiri');}
   G.prevGear=G.gear;
   if(L.p){const dist=hyp(cx-L.p[0],cy-L.p[1]);
@@ -865,7 +973,7 @@ function legTick(dt){
       if(dist<lim){d.sigDone=true;if(G.wink!==L.sig)ev('sig');else if(lim===pre&&G.time-G.winkT<2.0)ev('siglate');}}
     if(L.k==='speed'){if(G.legStart==null)G.legStart=G.maxV=0;}
     if((L.k==='go'||L.k==='turn'||L.k==='speed')&&dist<(L.r||6))return nextLeg();
-    if(L.k==='stop'&&dist<2.5&&G.v===0)return nextLeg();
+    if(L.k==='stop'&&dist<(L.sr||2.5)&&G.v===0)return nextLeg();
     if(L.k==='finish'&&dist<4.5&&G.v===0&&G.gear==='P'&&G.pb)return nextLeg();}
   if(L.k==='do'&&L.chk())return nextLeg();
   if((L.k==='garage'||L.k==='park')&&G.v===0){const b=BAYS[L.bay];const inB=bodyPts(G.x,G.y,G.a).every(([x,y])=>x>=b.x0-0.05&&x<=b.x1+0.05&&y>=b.y0-0.05&&y<=b.y1+0.05);
@@ -878,11 +986,12 @@ function nextLeg(){const L=G.legs[G.leg];if(L&&L.k==='speed'&&G.maxV*3.6<L.min)e
   if(!N&&G.legs.length)endRun('done');}
 
 /* ================= 開始・終了 ================= */
-function startRun(mode){MODE=mode;let spawn,legs=[],title='';
-  if(mode.kind==='free'){spawn={...ST,gear:'P',pb:true,belt:false,startCheck:true};title=t('free');}
+function startRun(mode){MODE=mode;let spawn,legs=[],title='';if(!mode.road)RW=null;
+  if(mode.road){spawn=mode.spawnR;legs=mode.legsR;title=t('road')+'：'+(RW.label||'')+(mode.kind==='exam'?'（'+t('exam')+'）':'');}
+  else if(mode.kind==='free'){spawn={...ST,gear:'P',pb:true,belt:false,startCheck:true};title=t('free');}
   else if(mode.kind==='exam'){spawn={...ST,gear:'P',pb:true,belt:false,startCheck:true};legs=mode.id==='A'?LEGS_A:LEGS_B;title=t('exam')+' '+t(mode.id==='A'?'courseA':'courseB');}
   else{const Ls=LESSONS.find(l=>l.id===mode.id);spawn=Ls.spawn;legs=Ls.legs;title=mode.id+'. '+t('ls'+mode.id);}
-  G=newState(spawn);G.legs=legs;G.prevGear=G.gear;
+  G=newState(spawn);G.legs=legs;G.prevGear=G.gear;if(mode.road)trafficInit(RW);else TF=null;
   W.bike.on=mode.kind==='free'||(mode.kind==='lesson'&&mode.id===10);W.bike.y=mode.kind==='lesson'?spawn.y+16:30;W.bike.x=14.9;
   if(mode.kind==='lesson'&&mode.id===5){W.train.t=-14;}
   W.ped.s='walk';W.ped.t=0;
@@ -945,6 +1054,43 @@ function schoolEnd(kind,reason){const id=MODE.school;const cnt={};G.events.forEa
   const stopKind=G.events.some(k=>EV[k][1]);const pass=kind==='done'&&!stopKind&&G.events.length<=2;if(pass)schStamp(id);
   schModal(pass,pass?'i_passL':'i_failL',list);}
 
+/* ================= キーの割り当て ================= */
+const KEY_ACTS=[['k_g1',['accel','brake','left','right','center']],['k_g2',['gP','gR','gN','gD']],['k_g3',['winkL','winkR','pb','belt','lookL','lookB','lookR']],['k_g4',['view','map']]];
+const KEY_PRESETS={
+ p1:{accel:['ArrowUp','KeyW'],brake:['ArrowDown','KeyS'],left:['ArrowLeft','KeyA'],right:['ArrowRight','KeyD'],center:['KeyF'],gP:['Digit1'],gR:['Digit2'],gN:['Digit3'],gD:['Digit4'],winkL:['KeyQ'],winkR:['KeyE'],pb:['KeyB'],belt:['KeyV'],lookL:['KeyZ'],lookB:['KeyX'],lookR:['KeyC'],view:['Tab'],map:['KeyM']},
+ p2:{accel:['ArrowUp'],brake:['ArrowDown','Space'],left:['ArrowLeft'],right:['ArrowRight'],center:['Enter'],gP:['KeyP'],gR:['KeyR'],gN:['KeyN'],gD:['KeyD'],winkL:['Comma'],winkR:['Period'],pb:['KeyB'],belt:['KeyV'],lookL:['KeyZ'],lookB:['KeyX'],lookR:['KeyC'],view:['Tab'],map:['KeyM']},
+ p3:{accel:['KeyW'],brake:['KeyS','Space'],left:['KeyA'],right:['KeyD'],center:['KeyF'],gP:['Digit1'],gR:['Digit2'],gN:['Digit3'],gD:['Digit4'],winkL:['KeyQ'],winkR:['KeyE'],pb:['KeyG'],belt:['KeyT'],lookL:['KeyZ'],lookB:['KeyX'],lookR:['KeyC'],view:['Tab'],map:['KeyM']}};
+let KEYMAP=Object.assign({},KEY_PRESETS.p1,store.get('jdp_keys',{}));
+const act=a=>(KEYMAP[a]||[]).some(c=>keys[c]);
+function keyName(c){if(!c)return '—';const M={ArrowUp:'↑',ArrowDown:'↓',ArrowLeft:'←',ArrowRight:'→',Space:'Space',Enter:'Enter',Tab:'Tab',Comma:',',Period:'.',Slash:'/',Semicolon:';',Quote:"'",BracketLeft:'[',BracketRight:']',Minus:'-',Equal:'=',Backquote:'`',Backslash:'\\',ShiftLeft:'Shift',ShiftRight:'Shift→',ControlLeft:'Ctrl',ControlRight:'Ctrl→',AltLeft:'Alt',AltRight:'Alt→',Backspace:'BS',Escape:'Esc'};
+  return M[c]||c.replace(/^Key/,'').replace(/^Digit/,'').replace(/^Numpad/,'Num ');}
+function keyCaps(a){const L=KEYMAP[a]||[];return L.length?L.map(c=>`<span class="cap" data-kc="${c}">${keyName(c)}</span>`).join('<span class="muted">/</span>'):'<span class="muted">—</span>';}
+function renderKeyBar(){const B=$('#keyBar');if(!B)return;
+  B.innerHTML=KEY_ACTS.map(([g,L])=>`<div class="kg"><b>${t(g)}</b>${L.map(a=>`<span class="ki">${keyCaps(a)} ${t('a_'+a)}</span>`).join('')}</div>`).join('')+`<button class="btn" id="kbOpen">${t('k_open')}</button>`;
+  $('#kbOpen').onclick=openKeyEditor;markButtons();}
+const BTN_ACT={'#gears [data-g=P]':'gP','#gears [data-g=R]':'gR','#gears [data-g=N]':'gN','#gears [data-g=D]':'gD','#bPB':'pb','#bBelt':'belt','#bWL':'winkL','#bWR':'winkR','#bLL':'lookL','#bLB':'lookB','#bLR':'lookR','#pBrk':'brake','#pAcc':'accel'};
+function markButtons(){for(const sel in BTN_ACT){const el=$(sel);if(el)el.dataset.kk=(KEYMAP[BTN_ACT[sel]]||[]).map(keyName).join('/');}}
+function lightKeys(){$$('#keyBar .cap').forEach(el=>el.classList.toggle('on',!!keys[el.dataset.kc]));}
+let KCAP=null; // {a,i}
+function openKeyEditor(){const rows=KEY_ACTS.map(([g,L])=>`<tr class="grp"><td colspan="3">${t(g)}</td></tr>`+L.map(a=>`<tr><td>${t('a_'+a)}</td>${[0,1].map(i=>`<td><button class="slot" data-a="${a}" data-i="${i}">${keyName((KEYMAP[a]||[])[i])}</button></td>`).join('')}</tr>`).join('')).join('');
+  openModal(`<h3>${t('k_title')}</h3><p class="muted" style="margin:0">${t('k_help')}</p>
+   <div class="set"><b>${t('k_preset')}</b><div class="btns" style="display:grid;gap:6px">${['p1','p2','p3'].map(k=>`<button class="btn" data-pre="${k}">${t('k_'+k)}</button>`).join('')}</div>
+   <label><input type="checkbox" id="kHold" ${SET.keyHold?'checked':''}> ${t('k_hold')}</label><label>${t('sens')} <input type="range" min="0.5" max="2" step="0.1" value="${SET.sens}" id="kSens"></label></div>
+   <div class="kmsg" id="kMsg"></div><table class="keyTbl">${rows}</table><div class="btns"><button class="btn pri" id="kClose">${t('close')}</button></div>`);
+  $$('#mbox .slot').forEach(b=>b.onclick=()=>{$$('#mbox .slot').forEach(x=>x.classList.remove('wait'));KCAP={a:b.dataset.a,i:+b.dataset.i};b.classList.add('wait');b.textContent='…';$('#kMsg').textContent=t('k_wait');});
+  $$('#mbox [data-pre]').forEach(b=>b.onclick=()=>{KEYMAP=JSON.parse(JSON.stringify(KEY_PRESETS[b.dataset.pre]));store.set('jdp_keys',KEYMAP);KCAP=null;openKeyEditor();renderKeyBar();});
+  $('#kHold').onchange=e=>{SET.keyHold=e.target.checked;store.set('jdp_set',SET);};
+  $('#kSens').oninput=e=>{SET.sens=+e.target.value;store.set('jdp_set',SET);};
+  $('#kClose').onclick=()=>{KCAP=null;closeModal();renderKeyBar();};}
+function captureKey(e){if(!KCAP)return false;e.preventDefault();e.stopPropagation();const {a,i}=KCAP;KCAP=null;let msg='';
+  if(e.code==='Escape'){}else{const L=(KEYMAP[a]||[]).slice();
+    if(e.code==='Delete'||e.code==='Backspace'){L.splice(i,1);}
+    else{for(const k in KEYMAP){if(k===a)continue;const j=KEYMAP[k].indexOf(e.code);if(j>=0){KEYMAP[k]=KEYMAP[k].filter(c=>c!==e.code);msg=t('k_moved',keyName(e.code),t('a_'+k));}}
+      const j=L.indexOf(e.code);if(j>=0)L.splice(j,1);L[Math.min(i,L.length)]=e.code;}
+    KEYMAP[a]=L.filter(Boolean).slice(0,2);store.set('jdp_keys',KEYMAP);}
+  openKeyEditor();if(msg)$('#kMsg').textContent=msg;renderKeyBar();return true;}
+addEventListener('keydown',e=>{if(KCAP)captureKey(e);},true);
+
 /* ================= 入力 ================= */
 const PED={acc:null,brk:null};const WHEEL={held:false,last:0};
 function pedal(el,key){const fill=el.querySelector('i');const set=e=>{const r=el.getBoundingClientRect();const k=clamp((e.clientY-r.top)/r.height,0,1);PED[key]=0.15+0.85*k;fill.style.height=(PED[key]*100)+'%';};
@@ -953,13 +1099,13 @@ function pedal(el,key){const fill=el.querySelector('i');const set=e=>{const r=el
   const up=()=>{PED[key]=null;fill.style.height='0';};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up);}
 pedal($('#pAcc'),'acc');pedal($('#pBrk'),'brk');
 {const c=$('#cWheel');const ang=e=>{const r=c.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/PI;};
- c.addEventListener('pointerdown',e=>{e.preventDefault();try{c.setPointerCapture(e.pointerId);}catch(_){}WHEEL.held=true;WHEEL.last=ang(e);audioInit();});
+ c.addEventListener('pointerdown',e=>{e.preventDefault();try{c.setPointerCapture(e.pointerId);}catch(_){}WHEEL.held=true;if(G)G.keySteer=false;WHEEL.last=ang(e);audioInit();});
  c.addEventListener('pointermove',e=>{if(!WHEEL.held||!G)return;const a=ang(e);let d=a-WHEEL.last;if(d>180)d-=360;if(d<-180)d+=360;WHEEL.last=a;G.wheel=clamp(G.wheel+d,-540,540);});
  const up=()=>{WHEEL.held=false;};c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);c.addEventListener('lostpointercapture',up);}
 function shift(g){if(!G||G.over||G.gear===g)return;
   if(g!=='N'&&Math.abs(G.v)>0.4&&(g==='P'||g==='R'||G.gear==='R')){setSub(t('needStop'),true);return;}
   // ブレーキを踏んでいる（または直前3秒以内に踏んだ）ならそのまま。踏んでいなくても止まっていればシフトでき、アドバイスだけ出す
-  const braked=G.brk>0.05||PED.brk!=null||keys.ArrowDown||keys.KeyS||G.time-(G.brkT||-99)<3;
+  const braked=G.brk>0.05||PED.brk!=null||act('brake')||G.time-(G.brkT||-99)<3;
   if((G.gear==='P'||g==='P'||g==='R'||g==='D')&&!braked){G.brk=Math.max(G.brk,1);setSub(t('tipBrake'),false);}
   G.gear=g;sfx('click');syncUI();}
 function wink(s){if(!G)return;if(G.wink===s){G.wink=null;}else{G.wink=s;G.winkT=G.time;G.winkA=G.a;G.lastWink=s;}syncUI();}
@@ -970,11 +1116,14 @@ $('#bBelt').onclick=()=>{if(!G)return;G.belt=!G.belt;sfx('click');syncUI();};
 $('#bWL').onclick=()=>wink('L');$('#bWR').onclick=()=>wink('R');
 $('#bLL').onclick=()=>look('L');$('#bLR').onclick=()=>look('R');$('#bLB').onclick=()=>look('B');
 addEventListener('keydown',e=>{if($('#scDrive').hidden)return;if(e.target.tagName==='INPUT')return;audioInit();
-  const c=e.code;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c))e.preventDefault();
+  if(!$('#modal').hidden)return;
+  const c=e.code;const mine=Object.keys(KEYMAP).filter(a=>KEYMAP[a].includes(c));
+  if(mine.length||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(c))e.preventDefault();
   if(e.repeat){keys[c]=true;return;}keys[c]=true;
-  if(c==='Digit1')shift('P');else if(c==='Digit2')shift('R');else if(c==='Digit3')shift('N');else if(c==='Digit4')shift('D');
-  else if(c==='KeyQ')wink('L');else if(c==='KeyE')wink('R');else if(c==='KeyB'){G.pb=!G.pb;syncUI();}else if(c==='KeyV'){G.belt=!G.belt;syncUI();}
-  else if(c==='KeyZ')look('L');else if(c==='KeyX')look('B');else if(c==='KeyC')look('R');});
+  for(const a of mine){if(a[0]==='g'&&a.length===2)shift(a[1]);else if(a==='winkL')wink('L');else if(a==='winkR')wink('R');
+    else if(a==='pb'&&G){G.pb=!G.pb;syncUI();}else if(a==='belt'&&G){G.belt=!G.belt;syncUI();}
+    else if(a==='lookL')look('L');else if(a==='lookB')look('B');else if(a==='lookR')look('R');
+    else if(a==='view')$('#dView').click();else if(a==='map')TOPZ=TOPZ?0:1;}});
 addEventListener('keyup',e=>{keys[e.code]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 function syncUI(){if(!G)return;$$('#gears button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.g===G.gear));
@@ -996,7 +1145,7 @@ addEventListener('resize',()=>{resize();updViewBtn();});
 let TOPZ=1;  // 1=追従、0=全体
 $('#cTop').addEventListener('click',()=>{TOPZ=TOPZ?0:1;});
 function drawTop(){const c=$('#cTop'),[W2,H2,dpr]=fitCanvas(c),x=c.getContext('2d');
-  x.setTransform(1,0,0,1,0,0);x.fillStyle='#456b37';x.fillRect(0,0,W2,H2);
+  x.setTransform(1,0,0,1,0,0);x.fillStyle='#456b37';x.fillRect(0,0,W2,H2);if(RW){drawTopRoad(x,W2,H2,dpr);return;}
   let sc,ox,oy;if(TOPZ){sc=W2/42;ox=W2/2-(G.x+Math.cos(G.a)*1.3)*sc;oy=H2/2-(G.y+Math.sin(G.a)*1.3)*sc;}else{sc=Math.min(W2/152,H2/97);ox=(W2-150*sc)/2;oy=(H2-95*sc)/2;}
   x.setTransform(sc,0,0,sc,ox,oy);
   const poly=(P,col)=>{x.beginPath();x.moveTo(P[0][0],P[0][1]);for(let i=1;i<P.length;i++)x.lineTo(P[i][0],P[i][1]);x.closePath();x.fillStyle=col;x.fill();};
@@ -1067,7 +1216,8 @@ function sceneObjects(own){const O=[];
   if(W.bike.on)O.push({t:'bike',x:W.bike.x,y:W.bike.y,a:PI/2});
   if(own)O.push({t:'box',x:G.x+Math.cos(G.a)*1.3,y:G.y+Math.sin(G.a)*1.3,hw:2.2,hh:0.85,a:G.a,z0:0.2,z1:1.45,col:'#2f7fe0'});
   return O;}
-function drawObj(x,C,o){
+function roadSceneObjs(C,own){const O=[];roadObjects(O,C,own);if(own)O.push({t:'box',x:G.x+Math.cos(G.a)*1.3,y:G.y+Math.sin(G.a)*1.3,hw:2.2,hh:0.85,a:G.a,z0:0.2,z1:1.45,col:'#2f7fe0'});return O;}
+function drawObj(x,C,o){if(o.t==='bld')return drawBld(x,C,o.b);if(o.t==='aicar')return drawAiCar(x,C,o.c);
   if(o.t==='box')return drawBox(x,C,o);
   if(o.t==='tree'){drawBox(x,C,{x:o.x,y:o.y,hw:0.18,hh:0.18,z0:0,z1:1.6,col:'#6b4a2e'});drawBox(x,C,{x:o.x,y:o.y,hw:1.3,hh:1.3,z0:1.5,z1:4.2,col:'#3f7a36'});return;}
   if(o.t==='ped'){drawBox(x,C,{x:o.x,y:o.y,hw:0.24,hh:0.16,z0:0,z1:1.35,col:'#d6457f'});drawBox(x,C,{x:o.x,y:o.y,hw:0.13,hh:0.13,z0:1.35,z1:1.65,col:'#f0c8a0'});return;}
@@ -1090,9 +1240,8 @@ function objDist(C,o){return hyp((o.x||0)-C.ex,(o.y||0)-C.ey);}
 function renderScene(x,C,Wd,Ht,own,night){
   const g=x.createLinearGradient(0,0,0,C.hy);g.addColorStop(0,'#7fb3e6');g.addColorStop(1,'#cfe2f2');x.fillStyle=g;x.fillRect(0,0,Wd,C.hy+1);
   x.fillStyle='#4d7a3a';x.fillRect(0,C.hy,Wd,Ht-C.hy);
-  for(const p of GND)fillP(x,C,p.pts,p.col);
-  for(const m of MARK)fillP(x,C,m.pts,m.col);
-  const O=sceneObjects(own).map(o=>[objDist(C,o),o]).filter(a=>a[0]<190).sort((a,b)=>b[0]-a[0]);
+  if(RW)renderRoadGround(x,C,own);else{for(const p of GND)fillP(x,C,p.pts,p.col);for(const m of MARK)fillP(x,C,m.pts,m.col);}
+  const O=(RW?roadSceneObjs(C,own):sceneObjects(own)).map(o=>[objDist(C,o),o]).filter(a=>a[0]<190).sort((a,b)=>b[0]-a[0]);
   for(const [,o] of O)drawObj(x,C,o);}
 const MIR={rm:document.createElement('canvas'),ml:document.createElement('canvas'),mr:document.createElement('canvas')};
 let frameN=0;
@@ -1131,6 +1280,8 @@ function drawCab(){const c=$('#cCab'),[Wd,Ht,dpr]=fitCanvas(c),x=c.getContext('2
     x.font=`bold ${Math.round(Ht*0.032)}px sans-serif`;x.fillStyle=G.pb?'#ff4a3a':'#3a2424';x.fillText('(P)',bx-Wd*0.125,by+Ht*0.05);
     x.fillStyle=G.belt?'#2b3036':'#ff4a3a';x.fillText('🔔',bx-Wd*0.085,by+Ht*0.05);}
   else{x.font=`bold ${Math.round(Ht*0.05)}px sans-serif`;x.textAlign='center';x.fillStyle='rgba(0,0,0,.55)';x.fillRect(Wd*0.3,Ht*0.86,Wd*0.4,Ht*0.09);x.fillStyle='#fff';x.fillText(G.look<-0.5?t('lookL'):G.look>2?t('lookB'):G.look>0.5?t('lookR'):'',Wd/2,Ht*0.925);}
+  if(RW&&G.limit&&fw){const r=Ht*0.06,cx=Wd*0.06+r,cy=Ht*0.17+r;x.beginPath();x.arc(cx,cy,r,0,7);x.fillStyle='#fff';x.fill();x.lineWidth=r*0.2;x.strokeStyle='#d7261e';x.stroke();x.fillStyle='#1f4ea8';x.font=`bold ${Math.round(r*0.95)}px sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText(G.limit,cx,cy+r*0.05);x.textBaseline='alphabetic';}
+  if(RW&&Math.floor(G.time*2.2)!==G._bell&&RW.lx.some(c=>roadTrainWarn(c)&&hyp(G.x-c.x,G.y-c.y)<70)){G._bell=Math.floor(G.time*2.2);sfx('bell');}
   // 警報音
   const ti=trainInfo();if(ti.warn&&hyp(G.x-138,G.y-30)<60&&Math.floor(G.time*2.2)!==G._bell){G._bell=Math.floor(G.time*2.2);sfx('bell');}
   if(G.wink&&Math.floor(G.time*2.6)!==G._tk){G._tk=Math.floor(G.time*2.6);sfx('tick');}}
@@ -1147,7 +1298,7 @@ function hud(){const L=G.legs[G.leg];const icon=L?({turn:L.sig==='L'?'↰':'↱'
 /* ================= ループ ================= */
 let last=performance.now();
 function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
-  if(G&&!$('#scDrive').hidden){if(!G.over&&$('#modal').hidden){const n=2;for(let i=0;i<n;i++)tick(dt/n);}drawTop();drawCab();drawWheel();hud();if((frameN&7)===0)syncUI();}
+  if(G&&!$('#scDrive').hidden){if(!G.over&&$('#modal').hidden){const n=2;for(let i=0;i<n;i++)tick(dt/n);}drawTop();drawCab();drawWheel();hud();lightKeys();if((frameN&7)===0)syncUI();}
   requestAnimationFrame(loop);}
 
 /* ================= 標識の絵 ================= */
@@ -1329,9 +1480,9 @@ function renderBook(){const B=$('#bookB');$('#tbRule').setAttribute('aria-presse
 $('#tbRule').onclick=()=>{BOOKTAB='rule';renderBook();};$('#tbSign').onclick=()=>{BOOKTAB='sign';renderBook();};
 
 /* ================= 画面の切り替え ================= */
-const SCREENS=['scTitle','scList','scDrive','scQuiz','scBook','scSchool'];let STACK=['scTitle'];
+const SCREENS=['scTitle','scList','scDrive','scQuiz','scBook','scSchool','scRoad'];let STACK=['scTitle'];
 function show(id){SCREENS.forEach(s=>$('#'+s).hidden=s!==id);if(STACK[STACK.length-1]!==id)STACK.push(id);scrollTo(0,0);}
-function goBack(){if(STACK.length>1)STACK.pop();const id=STACK[STACK.length-1];SCREENS.forEach(s=>$('#'+s).hidden=s!==id);if(id==='scList')renderList(LISTKIND);if(id==='scSchool')renderSchool();stopSpeak();INST.until=0;for(const k in keys)keys[k]=false;}
+function goBack(){if(STACK.length>1)STACK.pop();const id=STACK[STACK.length-1];SCREENS.forEach(s=>$('#'+s).hidden=s!==id);if(id==='scList')renderList(LISTKIND);if(id==='scSchool')renderSchool();if(id==='scRoad'&&RS.redraw)setTimeout(RS.redraw,0);stopSpeak();INST.until=0;for(const k in keys)keys[k]=false;}
 $$('[data-back]').forEach(b=>b.onclick=goBack);$('#dBack').onclick=goBack;
 $('#dRestart').onclick=()=>startRun(MODE);
 let VIEW=store.get('jdp_view','both');const isLand=()=>matchMedia('(orientation:landscape) and (max-height:540px)').matches;
@@ -1343,7 +1494,7 @@ function renderList(kind){LISTKIND=kind;$('#listT').textContent=t(kind);const B=
     $$('#listB [data-l]').forEach(b=>b.onclick=()=>startRun({kind:'lesson',id:+b.dataset.l}));}
   else{B.innerHTML=['A','B'].map(k=>`<button class="item" data-e="${k}"><span class="no">${k}</span><span class="tx"><b>${t('course'+k)}</b><span>${t('course'+k+'D')}</span></span><span class="st">${PROG['E'+k]!=null?PROG['E'+k]+t('pts'):''}</span></button>`).join('');
     $$('#listB [data-e]').forEach(b=>b.onclick=()=>startRun({kind:'exam',id:b.dataset.e}));}}
-$$('[data-go]').forEach(b=>b.onclick=()=>{audioInit();const g=b.dataset.go;if(g==='school'){renderSchool();show('scSchool');}else if(g==='lessons'||g==='exams'){renderList(g);show('scList');}else if(g==='free')startRun({kind:'free'});else if(g==='book'){renderBook();show('scBook');}else startQuiz(g.slice(2));});
+$$('[data-go]').forEach(b=>b.onclick=()=>{audioInit();const g=b.dataset.go;if(g==='school'){renderSchool();show('scSchool');}else if(g==='road'){renderRoadScreen();show('scRoad');}else if(g==='lessons'||g==='exams'){renderList(g);show('scList');}else if(g==='free')startRun({kind:'free'});else if(g==='book'){renderBook();show('scBook');}else startQuiz(g.slice(2));});
 function renderLangs(){$('#langs').innerHTML=LANGS.map(([k,n])=>`<button data-lg="${k}" aria-pressed="${k===LANG}">${n}</button>`).join('');$$('#langs [data-lg]').forEach(b=>b.onclick=()=>{LANG=b.dataset.lg;store.set('jdp_lang',LANG);applyI18n();});}
 let VEH='car';
 function renderVehicles(){const V=[['car',1],['truck',0],['taxi',0],['moto',0],['tractor',0],['excav',0]];
@@ -1351,13 +1502,438 @@ function renderVehicles(){const V=[['car',1],['truck',0],['taxi',0],['moto',0],[
 function openModal(h){$('#mbox').innerHTML=h;$('#modal').hidden=false;}
 function closeModal(){$('#modal').hidden=true;}
 $('#bSet').onclick=()=>{const ck=(k,l)=>`<label><input type="checkbox" data-set="${k}" ${SET[k]?'checked':''}> ${t(l)}</label>`;
-  openModal(`<h3>${t('settings')}</h3><div class="set"><b>${t('assist')}</b>${ck('path','aPath')}${ck('route','aRoute')}${ck('track','aTrack')}${ck('mirror','aMirror')}${ck('sound','sound')}${ck('inst','inst')}${ck('voice','voice')}<label>${t('sens')} <input type="range" min="0.5" max="2" step="0.1" value="${SET.sens}" id="sSens"></label></div><div class="btns"><button class="btn pri" id="mClose">${t('close')}</button></div>`);
-  $$('[data-set]').forEach(c=>c.onchange=()=>{SET[c.dataset.set]=c.checked;store.set('jdp_set',SET);});$('#sSens').oninput=e=>{SET.sens=+e.target.value;store.set('jdp_set',SET);};$('#mClose').onclick=closeModal;};
+  openModal(`<h3>${t('settings')}</h3><div class="set"><b>${t('assist')}</b>${ck('path','aPath')}${ck('route','aRoute')}${ck('track','aTrack')}${ck('mirror','aMirror')}${ck('sound','sound')}${ck('inst','inst')}${ck('voice','voice')}<button class="btn" id="sKeys">${t('k_open')}</button><label>${t('sens')} <input type="range" min="0.5" max="2" step="0.1" value="${SET.sens}" id="sSens"></label></div><div class="btns"><button class="btn pri" id="mClose">${t('close')}</button></div>`);
+  $$('[data-set]').forEach(c=>c.onchange=()=>{SET[c.dataset.set]=c.checked;store.set('jdp_set',SET);});$('#sSens').oninput=e=>{SET.sens=+e.target.value;store.set('jdp_set',SET);};$('#mClose').onclick=closeModal;$('#sKeys').onclick=openKeyEditor;};
+
+/* ================= 公道モード（OpenStreetMap の道路データ） ================= */
+let RW=null;        // 走行中の道路データ（公道モードのときだけ）
+let AREA=null;      // 読み込んだエリア（コース作りで使う）
+const OVERPASS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
+const SAGA_BB=[32.95,129.70,33.62,130.56];
+async function overpass(q){let err;for(const u of OVERPASS){try{const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),70000);
+  const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctl.signal});clearTimeout(tm);
+  if(!r.ok)throw new Error('HTTP '+r.status);return await r.json();}catch(e){err=e;}}throw err||new Error('overpass');}
+function areaQuery(s,w,n,e){const bb=`(${s.toFixed(6)},${w.toFixed(6)},${n.toFixed(6)},${e.toFixed(6)})`;
+  return `[out:json][timeout:90];(way["highway"~"^(trunk|primary|secondary|tertiary|unclassified|residential|living_street|service|trunk_link|primary_link|secondary_link|tertiary_link)$"]${bb};node["highway"~"^(traffic_signals|stop|crossing)$"]${bb};node["railway"="level_crossing"]${bb};way["railway"~"^(rail|light_rail)$"]${bb};);out body geom;way["building"]${bb};out geom 2500;`;}
+function bboxAround(lat,lon,half){const dLat=half/110540,dLon=half/(111320*Math.cos(lat*PI/180));return [lat-dLat,lon-dLon,lat+dLat,lon+dLon];}
+async function loadArea(lat,lon,label,half){half=half||1000;const [s,w,n,e]=bboxAround(lat,lon,half);const osm=await overpass(areaQuery(s,w,n,e));return buildRoadWorld(osm,{lat,lon},label,half);}
+
+/* ---------- 道路データを組み立てる ---------- */
+const HW_W={trunk:10,primary:9,secondary:7.5,tertiary:6.5,unclassified:5,residential:5,living_street:4,service:3.6,trunk_link:4.5,primary_link:4.5,secondary_link:4.5,tertiary_link:4.5};
+const HW_COST={service:3,residential:1.35,living_street:1.8,unclassified:1.15};
+const GC=25;  // 判定用の升目（m）
+const gkey=(gx,gy)=>gx*100003+gy;
+function gridAdd(G,x0,y0,x1,y1,v,cs){cs=cs||GC;for(let gx=Math.floor(x0/cs);gx<=Math.floor(x1/cs);gx++)for(let gy=Math.floor(y0/cs);gy<=Math.floor(y1/cs);gy++){const k=gkey(gx,gy);let a=G.get(k);if(!a)G.set(k,a=[]);a.push(v);}}
+function gridNear(G,x,y,r,cs){cs=cs||GC;const out=new Set();for(let gx=Math.floor((x-r)/cs);gx<=Math.floor((x+r)/cs);gx++)for(let gy=Math.floor((y-r)/cs);gy<=Math.floor((y+r)/cs);gy++){const a=G.get(gkey(gx,gy));if(a)for(const v of a)out.add(v);}return out;}
+function segDist(px,py,s){const t=clamp(((px-s.ax)*s.dx+(py-s.ay)*s.dy),0,s.L);const qx=s.ax+s.dx*t,qy=s.ay+s.dy*t;return [hyp(px-qx,py-qy),t];}
+function buildRoadWorld(osm,center,label,half){
+  const lat0=center.lat,lon0=center.lon,kx=111320*Math.cos(lat0*PI/180),ky=110540;
+  const P=(lat,lon)=>[(lon-lon0)*kx,-(lat-lat0)*ky];
+  const R={center,label,half:half||1000,kx,ky,nodes:new Map(),ways:[],segs:[],sg:new Map(),rg:new Map(),mg:new Map(),bg:new Map(),
+    sig:[],stops:[],lx:[],cross:[],rails:[],blds:[],adj:new Map(),junc:[],jg:new Map(),schools:[]};
+  R.toXY=P;R.toLL=(x,y)=>({lat:lat0-y/ky,lon:lon0+x/kx});
+  const tagged=new Map();
+  for(const el of osm.elements||[]){if(el.type==='node'&&el.tags)tagged.set(el.id,el);}
+  const nidWays=new Map();
+  for(const el of osm.elements||[]){if(el.type!=='way'||!el.geometry)continue;const tg=el.tags||{};
+    const pts=el.geometry.map(g=>P(g.lat,g.lon));
+    if(tg.highway){
+      if(tg.area==='yes'||tg.access==='private'||tg.access==='no'||['parking_aisle','drive-through','emergency_access'].includes(tg.service))continue;
+      const hw=tg.highway;let lanes=parseInt(tg.lanes)||0;let ow=(tg.oneway==='yes'||tg.oneway==='1'||tg.oneway==='true'||tg.junction==='roundabout')?1:tg.oneway==='-1'?-1:0;
+      let w=HW_W[hw]||5;if(lanes)w=Math.max(3.2,lanes*3.1);const tw=parseFloat(tg.width);if(tw>=3&&tw<=25)w=tw;
+      const two=!ow&&w>=6&&(lanes>=2||(!lanes&&['trunk','primary','secondary','tertiary'].includes(hw)));
+      let lim=parseInt(tg.maxspeed);if(!(lim>=10&&lim<=120))lim=two||(ow&&lanes>=2)||['trunk','primary'].includes(hw)?60:30;
+      const wi=R.ways.length;const W2={id:el.id,hw,w,hw2:w/2,ow,two,lim,pts,nids:el.nodes||[],name:tg.name||'',cost:HW_COST[hw]||1};R.ways.push(W2);
+      W2.nids.forEach((nid,i)=>{const p=pts[i];if(!p)return;let n=R.nodes.get(nid);if(!n){n={id:nid,x:p[0],y:p[1],e:0,ways:new Set()};R.nodes.set(nid,n);}n.ways.add(wi);
+        n.e+=(i>0?1:0)+(i<W2.nids.length-1?1:0);let a=nidWays.get(nid);if(!a)nidWays.set(nid,a=[]);a.push([wi,i]);});
+      for(let i=0;i<pts.length-1;i++){const [ax,ay]=pts[i],[bx,by]=pts[i+1];const L=hyp(bx-ax,by-ay);if(L<0.05)continue;
+        const s={ax,ay,bx,by,dx:(bx-ax)/L,dy:(by-ay)/L,L,w,hw:w/2,two,ow,lim,wi};const si=R.segs.length;R.segs.push(s);
+        gridAdd(R.sg,Math.min(ax,bx)-s.hw-1,Math.min(ay,by)-s.hw-1,Math.max(ax,bx)+s.hw+1,Math.max(ay,by)+s.hw+1,si);
+        const a=W2.nids[i],b=W2.nids[i+1];const c=L*W2.cost;
+        if(ow!==-1){let A=R.adj.get(a);if(!A)R.adj.set(a,A=[]);A.push({to:b,len:L,c,hw:w/2,ow,lim});}
+        if(ow!==1){let B=R.adj.get(b);if(!B)R.adj.set(b,B=[]);B.push({to:a,len:L,c,hw:w/2,ow,lim});}}}
+    else if(tg.railway){R.rails.push(pts);}
+    else if(tg.building){const pp=pts.slice(0,-1);if(pp.length<3)continue;let h=parseFloat(tg.height);if(!(h>2&&h<200))h=(parseInt(tg['building:levels'])||(tg.building==='apartments'?4:2))*3.1;
+      let cx=0,cy=0;pp.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=pp.length;cy/=pp.length;const bi=R.blds.length;R.blds.push({pts:pp,h,cx,cy,col:['#cfc6b8','#b9c2c9','#d8cdb7','#c4b6a3','#aab3ba'][Math.abs(el.id)%5]});
+      gridAdd(R.bg,cx,cy,cx,cy,bi,50);}}
+  if(!R.segs.length)throw new Error('no roads');
+  // 交差点
+  for(const n of R.nodes.values()){if(n.e>=3){R.junc.push(n);gridAdd(R.jg,n.x,n.y,n.x,n.y,n,50);}}
+  // 交差点の角の丸み（隅切り）：交差点に円を足す
+  R.discs=[];R.dg=new Map();for(const n of R.junc){let mh=0;for(const wi of n.ways)mh=Math.max(mh,R.ways[wi].hw2);const r=Math.min(mh+3.2,10);const poly=[];for(let k=0;k<14;k++){const a2=k/14*2*PI;poly.push([n.x+Math.cos(a2)*r,n.y+Math.sin(a2)*r]);}
+    const D={x:n.x,y:n.y,r,ax:n.x,ay:n.y,bx:n.x,by:n.y,L:0,w:2*r,quad:poly};R.discs.push(D);gridAdd(R.dg,n.x-r,n.y-r,n.x+r,n.y+r,D);}
+  const nearJunc=(x,y,r)=>{let best=null,bd=r;for(const n of gridNear(R.jg,x,y,r,50)){const d=hyp(n.x-x,n.y-y);if(d<bd){bd=d;best=n;}}return best;};
+  R.nearJunc=nearJunc;
+  const wayAt=(nid)=>nidWays.get(nid)||[];
+  // 信号（近いものをまとめて1つの交差点に）
+  const sigN=[...tagged.values()].filter(n=>n.tags.highway==='traffic_signals').map(n=>P(n.lat,n.lon));
+  const used=new Array(sigN.length).fill(false);
+  for(let i=0;i<sigN.length;i++){if(used[i])continue;const grp=[sigN[i]];used[i]=true;for(let j=i+1;j<sigN.length;j++){if(!used[j]&&hyp(sigN[j][0]-sigN[i][0],sigN[j][1]-sigN[i][1])<35){used[j]=true;grp.push(sigN[j]);}}
+    let cx=0,cy=0;grp.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=grp.length;cy/=grp.length;const j=nearJunc(cx,cy,28);if(j){cx=j.x;cy=j.y;}
+    // 一番広い道の向きを軸に
+    let bw=0,ax=0;for(const si of gridNear(R.sg,cx,cy,15)){const s=R.segs[si];if(segDist(cx,cy,s)[0]<12&&s.w>bw){bw=s.w;ax=Math.atan2(s.dy,s.dx);}}
+    const r=clamp(bw/2+5,8,15);R.sig.push({x:cx,y:cy,r,axis:ax,off:(R.sig.length*11)%30});}
+  // 一時停止・踏切・横断歩道
+  for(const n of tagged.values()){const tg=n.tags;const [x,y]=P(n.lat,n.lon);const occ=wayAt(n.id);if(!occ.length)continue;const [wi,idx]=occ[0];const W2=R.ways[wi];
+    const nb=W2.pts[idx+1]||W2.pts[idx-1];const sgn=W2.pts[idx+1]?1:-1;let dx=(nb[0]-x)*sgn,dy=(nb[1]-y)*sgn;const L=hyp(dx,dy)||1;dx/=L;dy/=L;
+    if(tg.highway==='stop'){let dir=0;if(tg.direction==='forward')dir=1;else if(tg.direction==='backward')dir=-1;
+      else{const walk=s=>{let d=0;for(let k=idx;k>=0&&k<W2.nids.length-1+(s<0?1:0);k+=s){const a=W2.pts[k],b=W2.pts[k+s];if(!b)break;d+=hyp(b[0]-a[0],b[1]-a[1]);const nn=R.nodes.get(W2.nids[k+s]);if(nn&&nn.e>=3)return d;if(d>45)break;}return 1e9;};
+        dir=walk(1)<=walk(-1)?1:-1;}
+      R.stops.push({x,y,dx:dx*dir,dy:dy*dir,hw:W2.hw2,two:W2.two});}
+    else if(tg.railway==='level_crossing'){R.lx.push({x,y,dx,dy,hw:W2.hw2});}
+    else if(tg.highway==='crossing'&&!((R.nodes.get(n.id)||{}).e>=3)){R.cross.push({x,y,dx,dy,hw:W2.hw2});}}
+  for(const n of tagged.values())if(n.tags.amenity==='driving_school'){const [x,y]=P(n.lat,n.lon);R.schools.push({x,y,name:n.tags.name||''});}
+  // 地面（道路の四角形）と白線などを升目に
+  for(const D of R.discs)gridAdd(R.rg,D.x,D.y,D.x,D.y,D,50);
+  for(const s of R.segs){const h=s.hw+0.8,ex=s.dx*h,ey=s.dy*h,nx=-s.dy*h,ny=s.dx*h;const A=[s.ax-ex,s.ay-ey],B=[s.bx+ex,s.by+ey];
+    s.quad=[[A[0]+nx,A[1]+ny],[B[0]+nx,B[1]+ny],[B[0]-nx,B[1]-ny],[A[0]-nx,A[1]-ny]];gridAdd(R.rg,(s.ax+s.bx)/2,(s.ay+s.by)/2,(s.ax+s.bx)/2,(s.ay+s.by)/2,s,50);}
+  const mark=(pts,col)=>{let cx=0,cy=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=pts.length;cy/=pts.length;gridAdd(R.mg,cx,cy,cx,cy,{pts,col},50);};
+  for(const s of R.segs){if(!s.two)continue;for(let d=1;d<s.L-1;d+=6){const x=s.ax+s.dx*d,y=s.ay+s.dy*d,e=Math.min(s.L,d+3);const x2=s.ax+s.dx*e,y2=s.ay+s.dy*e;
+    if(nearJunc(x,y,s.hw+5)||nearJunc(x2,y2,s.hw+5))continue;mark(quadAlong(x,y,x2,y2,0.08),'#ece9df');}}
+  // 信号の停止線：交差点の円に入る道の左側の車線に
+  for(const S2 of R.sig){S2.lines=[];for(const si of gridNear(R.sg,S2.x,S2.y,S2.r+30)){const s=R.segs[si];const da=hyp(s.ax-S2.x,s.ay-S2.y),db=hyp(s.bx-S2.x,s.by-S2.y);
+      if((da<S2.r)===(db<S2.r))continue;let ix,iy,ox,oy;const inA=da<S2.r;const t0=inA?0:s.L,step=inA?1:-1;
+      for(let k=0;k<=s.L;k+=0.5){const tt=inA?k:s.L-k;const x=s.ax+s.dx*tt,y=s.ay+s.dy*tt;if(hyp(x-S2.x,y-S2.y)>=S2.r){ix=x;iy=y;break;}}
+      if(ix==null)continue;ox=inA?s.dx:-s.dx;oy=inA?s.dy:-s.dy;  // 交差点から外向き
+      const vx=-ox,vy=-oy;const lx=vy,ly=-vx;  // 入ってくる車の左
+      const wdt=s.ow?s.w:s.hw;const ax2=ix+(s.ow?-lx*s.hw:0),ay2=iy+(s.ow?-ly*s.hw:0);const bx2=ax2+lx*wdt,by2=ay2+ly*wdt;
+      mark([[ax2-ox*0.22,ay2-oy*0.22],[bx2-ox*0.22,by2-oy*0.22],[bx2+ox*0.22,by2+oy*0.22],[ax2+ox*0.22,ay2+oy*0.22]],'#f2f2ea');S2.lines.push({x:ix,y:iy,ox,oy,lx,ly,hw:s.hw});}}
+  // 一時停止の停止線
+  for(const s of R.stops){const lx=s.dy,ly=-s.dx;const wdt=s.two||s.hw<2.6?s.hw:s.hw;const a=[s.x,s.y],b=[s.x+lx*wdt,s.y+ly*wdt];
+    mark([[a[0]-s.dx*0.25,a[1]-s.dy*0.25],[b[0]-s.dx*0.25,b[1]-s.dy*0.25],[b[0]+s.dx*0.25,b[1]+s.dy*0.25],[a[0]+s.dx*0.25,a[1]+s.dy*0.25]],'#f2f2ea');}
+  // 横断歩道
+  for(const c of R.cross){const nx=-c.dy,ny=c.dx;for(let o=-c.hw+0.3;o<c.hw-0.2;o+=0.9){const cx=c.x+nx*(o+0.22),cy=c.y+ny*(o+0.22);mark(quadAlong(cx-c.dx*2,cy-c.dy*2,cx+c.dx*2,cy+c.dy*2,0.22),'#f2f2ea');}}
+  // 線路（地面）
+  R.railQ=[];for(const L of R.rails)for(let i=0;i<L.length-1;i++){const [ax,ay]=L[i],[bx,by]=L[i+1];R.railQ.push({q:quadAlong(ax,ay,bx,by,1.7),r1:quadAlong(ax,ay,bx,by,0.75),cx:(ax+bx)/2,cy:(ay+by)/2});}
+  for(const q of R.railQ)gridAdd(R.mg,q.cx,q.cy,q.cx,q.cy,{pts:q.q,col:'#6e6152',rail:q},50);
+  // 全体の地図（キャッシュ）
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const s of R.segs){x0=Math.min(x0,s.ax,s.bx);y0=Math.min(y0,s.ay,s.by);x1=Math.max(x1,s.ax,s.bx);y1=Math.max(y1,s.ay,s.by);}R.bounds=[x0,y0,x1,y1];
+  return R;}
+const SH=0.8; // 路肩（白線の外側）も走れる範囲に含める
+function roadSegAt(R,x,y){let best=null,bd=1e9,bt=0;for(const si of gridNear(R.sg,x,y,0.1)){const s=R.segs[si];const [d,t2]=segDist(x,y,s);if(d<=s.hw+SH+0.05&&d<bd){bd=d;best=s;bt=t2;}}return best?{s:best,d:bd,t:bt}:null;}
+function roadInDrv(x,y){if(roadSegAt(RW,x,y))return true;for(const D of gridNear(RW.dg,x,y,0.1))if(hyp(x-D.x,y-D.y)<=D.r)return true;return false;}
+
+/* ---------- 道順（ダイクストラ） ---------- */
+function nearestNode(R,x,y,maxd){let best=null,bd=maxd||1e9;for(const si of gridNear(R.sg,x,y,Math.min(maxd||200,200))){const s=R.segs[si];const W2=R.ways[s.wi];
+  for(const nid of W2.nids){const n=R.nodes.get(nid);if(!n||!R.adj.get(nid))continue;const d=hyp(n.x-x,n.y-y);if(d<bd){bd=d;best=n;}}}
+  if(!best&&maxd==null){for(const n of R.nodes.values()){if(!R.adj.get(n.id))continue;const d=hyp(n.x-x,n.y-y);if(d<bd){bd=d;best=n;}}}return best;}
+function dijkstra(R,from,to,ban){if(from===to)return [from];const dist=new Map([[from,0]]),prev=new Map(),H=[[0,from]];
+  const push=(d,n)=>{H.push([d,n]);let i=H.length-1;while(i>0){const p=(i-1)>>1;if(H[p][0]<=H[i][0])break;[H[p],H[i]]=[H[i],H[p]];i=p;}};
+  const pop=()=>{const top=H[0],last=H.pop();if(H.length){H[0]=last;let i=0;for(;;){const l=2*i+1,r=l+1;let m=i;if(l<H.length&&H[l][0]<H[m][0])m=l;if(r<H.length&&H[r][0]<H[m][0])m=r;if(m===i)break;[H[m],H[i]]=[H[i],H[m]];i=m;}}return top;};
+  while(H.length){const [d,n]=pop();if(n===to)break;if(d>(dist.get(n)??1e18))continue;for(const e of R.adj.get(n)||[]){if(n===from&&e.to===ban)continue;const nd=d+e.c;if(nd<(dist.get(e.to)??1e18)){dist.set(e.to,nd);prev.set(e.to,n);push(nd,e.to);}}}
+  if(!prev.has(to))return null;const path=[to];let c=to;while(c!==from){c=prev.get(c);path.push(c);}return path.reverse();}
+function joinPath(R,stops){let out=[];for(let i=0;i<stops.length-1;i++){const ban=out.length>1?out[out.length-2]:null;const p=dijkstra(R,stops[i],stops[i+1],ban);if(!p)return null;if(out.length)p.shift();out=out.concat(p);}return out;}
+function autoRoute(R,sx,sy){const S0=nearestNode(R,sx,sy);if(!S0)return null;let best=null;
+  for(let tries=0;tries<24;tries++){const rot=Math.random()*2*PI,wps=[S0.id];
+    for(let k=0;k<3;k++){const ang=rot+k*2*PI/3+(Math.random()-0.5)*0.6,dd=380+Math.random()*380;const tx=S0.x+Math.cos(ang)*dd,ty=S0.y+Math.sin(ang)*dd;
+      let bn=null,bd=1e9;for(const n of gridNear(R.jg,tx,ty,160,50)){if(!R.adj.get(n.id))continue;const d=hyp(n.x-tx,n.y-ty);if(d<bd){bd=d;bn=n;}}if(bn)wps.push(bn.id);}
+    if(wps.length<3)continue;wps.push(S0.id);const p=joinPath(R,wps);if(!p)continue;const rt=routeFrom(R,p);if(!rt)continue;
+    const sc=Math.abs(rt.len-2500)/1000+(rt.turns<4?1:0);if(!best||sc<best.sc){best=rt;best.sc=sc;}if(sc<0.5)break;}
+  return best;}
+function routeFromTaps(R,taps){if(taps.length<2)return null;const ids=[];for(const [x,y] of taps){const n=nearestNode(R,x,y,300);if(n&&ids[ids.length-1]!==n.id)ids.push(n.id);}if(ids.length<2)return null;const p=joinPath(R,ids);return p?routeFrom(R,p):null;}
+function routeFromTrack(R,track){const ids=[];let last=null;
+  for(const [x,y] of track){if(last&&hyp(x-last[0],y-last[1])<15)continue;last=[x,y];const n=nearestNode(R,x,y,35);if(n&&ids[ids.length-1]!==n.id)ids.push(n.id);}
+  if(ids.length<2)return null;const out=[ids[0]];for(let i=1;i<ids.length;i++){const p=dijkstra(R,out[out.length-1],ids[i]);if(!p)continue;if(p.length>40)continue;p.shift();out.push(...p);}
+  return out.length>1?routeFrom(R,out):null;}
+function routeFrom(R,nids){const pts=nids.map(id=>{const n=R.nodes.get(id);return [n.x,n.y];});
+  // 5m ごとの点
+  const dense=[];let len=0;for(let i=0;i<pts.length-1;i++){const [ax,ay]=pts[i],[bx,by]=pts[i+1];const L=hyp(bx-ax,by-ay);const n=Math.max(1,Math.ceil(L/5));for(let k=0;k<n;k++){dense.push({x:ax+(bx-ax)*k/n,y:ay+(by-ay)*k/n,ni:i,s:len+L*k/n});}len+=L;}
+  const lp=pts[pts.length-1];dense.push({x:lp[0],y:lp[1],ni:pts.length-1,s:len});
+  const di=ni=>{for(let k=0;k<dense.length;k++)if(dense[k].ni>=ni)return k;return dense.length-1;};
+  const at=(k)=>dense[clamp(k,0,dense.length-1)];
+  const legs=[];let turns=0;
+  for(let i=1;i<nids.length-1;i++){const n=R.nodes.get(nids[i]);const k=di(i);
+    const a=at(k-3),b=at(k+3);const hin=Math.atan2(n.y-a.y,n.x-a.x),hout=Math.atan2(b.y-n.y,b.x-n.x);const dlt=angDiff(hout,hin);
+    if(n.e>=3&&Math.abs(dlt)>0.6){turns++;legs.push({k:'turn',p:[n.x,n.y],sig:dlt>0?'R':'L',m:dlt>0?'g_right':'g_left',r:9,idx:k});}}
+  for(const S2 of R.sig){let k0=-1;for(let k=0;k<dense.length;k++){if(hyp(dense[k].x-S2.x,dense[k].y-S2.y)<S2.r){k0=k;break;}}if(k0<0)continue;if(legs.some(L=>Math.abs(L.idx-k0)<6))continue;legs.push({k:'go',p:[S2.x,S2.y],m:'g_straight',r:10,idx:k0});}
+  for(const s of R.stops){for(let k=1;k<dense.length;k++){const d=dense[k];if(hyp(d.x-s.x,d.y-s.y)<6){const pd=dense[k-1];if((d.x-pd.x)*s.dx+(d.y-pd.y)*s.dy>0)legs.push({k:'go',p:[s.x-s.dx*4,s.y-s.dy*4],m:'g_stopline',r:7,idx:Math.max(0,k-2)});break;}}}
+  for(const c of R.lx){for(let k=0;k<dense.length;k++){if(hyp(dense[k].x-c.x,dense[k].y-c.y)<6){legs.push({k:'go',p:[dense[Math.max(0,k-2)].x,dense[Math.max(0,k-2)].y],m:'g_rail',r:7,idx:Math.max(0,k-3)});break;}}}
+  legs.sort((a,b)=>a.idx-b.idx);
+  return {nids,pts,dense,len,turns,legs};}
+
+/* ---------- 走行中の判定 ---------- */
+function sigGroup(S2,heading){return Math.abs(Math.cos(heading-S2.axis))>0.7071?'A':'B';}
+function sigStateR(S2,grp){const c=(W.sigT+S2.off)%30;if(grp==='A')return c<13?'G':c<16?'Y':'R';return c<17?'R':c<27?'G':'Y';}
+function roadRules(dt,fx,fy,sp){const R=RW;
+  // 制限速度・一方通行・左側通行
+  const cx=G.x+fx*1.3,cy=G.y+fy*1.3;const here=roadSegAt(R,cx,cy);
+  if(here){G.limit=here.s.lim;const s=here.s;const al=fx*s.dx+fy*s.dy;
+    if(s.ow&&G.v>0.5&&al*s.ow<-0.6){G.owT=(G.owT||0)+dt;if(G.owT>1&&cool('oneway',10))ev('oneway');}else G.owT=0;
+    let wrong=false;if(!s.ow&&s.w>=4.4&&sp>0.5&&Math.abs(al)>0.8&&!R.nearJunc(cx,cy,s.hw+12)){const offn=(cx-s.ax)*(-s.dy)+(cy-s.ay)*s.dx;const left=-offn*(al>0?1:-1);if(left<(s.two?-0.35:-0.8))wrong=true;}
+    G.rightT=wrong?G.rightT+dt:Math.max(0,G.rightT-dt*2);if(G.rightT>1.3&&cool('right',6))ev('right');}
+  if(G.limit&&sp*3.6>G.limit+5){G.spT=(G.spT||0)+dt;if(G.spT>1.5&&cool('speed',8))ev('speed');}else G.spT=0;
+  const Fx=G.x+fx*3.5,Fy=G.y+fy*3.5;
+  // 信号
+  for(const S2 of R.sig){const d=hyp(Fx-S2.x,Fy-S2.y);if(d>S2.r+40){continue;}const st=G.slState['s'+S2.x.toFixed(0)+S2.y.toFixed(0)]||(G.slState['s'+S2.x.toFixed(0)+S2.y.toFixed(0)]={in:d<S2.r});
+    const inside=d<S2.r;if(inside&&!st.in&&G.v>0.3){const toC=Math.atan2(S2.y-Fy,S2.x-Fx);const mv=Math.cos(toC-G.a);if(mv>0.3&&sigStateR(S2,sigGroup(S2,G.a))==='R')ev('red');}st.in=inside;}
+  // 一時停止
+  for(const s of R.stops){const d=(Fx-s.x)*s.dx+(Fy-s.y)*s.dy,lat=Math.abs((Fx-s.x)*-s.dy+(Fy-s.y)*s.dx),al=fx*s.dx+fy*s.dy;const key='t'+s.x.toFixed(0)+s.y.toFixed(0);
+    const st=G.slState[key]||(G.slState[key]={pd:null,near:false,far:false,L:false,R:false});
+    if(lat>s.hw+1.5||al<0.5||d<-16||d>5){st.pd=null;st.near=st.far=st.L=st.R=false;continue;}
+    if(d<1&&d>-4&&sp<0.05)st.near=true;if(d<=-4&&d>-14&&sp<0.05)st.far=true;
+    if(d<1&&d>-7&&sp<1.5){if(G.lookT.L>G.time-6)st.L=true;if(G.lookT.R>G.time-6)st.R=true;}
+    if(st.pd!=null&&st.pd<1.5&&d>=1.5&&G.v>0){if(!st.near)ev(st.far?'stoppos':'nostop');else if(!(st.L&&st.R))ev('nolook');}st.pd=d;}
+  // 踏切（どちらの向きからでも）
+  for(const c of R.lx){const al=fx*c.dx+fy*c.dy;if(Math.abs(al)<0.5){continue;}const sx=al>0?1:-1;const dx=c.dx*sx,dy=c.dy*sx;const d=(Fx-c.x)*dx+(Fy-c.y)*dy,lat=Math.abs((Fx-c.x)*-dy+(Fy-c.y)*dx);
+    const key='x'+c.x.toFixed(0)+c.y.toFixed(0)+sx;const st=G.slState[key]||(G.slState[key]={pd:null,near:false,L:false,R:false});
+    if(lat>c.hw+1.5||d<-16||d>6){st.pd=null;st.near=st.L=st.R=false;continue;}
+    if(d<-3.1&&d>-8.5&&sp<0.05)st.near=true;if(d<0&&d>-9&&sp<1.5){if(G.lookT.L>G.time-6)st.L=true;if(G.lookT.R>G.time-6)st.R=true;}
+    if(st.pd!=null&&st.pd<-3&&d>=-3&&G.v>0){if(roadTrainWarn(c))ev('railin');else if(!st.near)ev('railstop');else if(!(st.L&&st.R))ev('nolook');}st.pd=d;}
+  roadTrafficRules(dt,fx,fy,sp);
+  // コースの進み具合
+  const rt=RW.route;if(rt){let bk=-1,bd=1e9;const k0=Math.max(0,(G.rprog||0)-4),k1=Math.min(rt.dense.length-1,(G.rprog||0)+40);for(let k=k0;k<=k1;k++){const p=rt.dense[k];const d=hyp(p.x-cx,p.y-cy);if(d<bd){bd=d;bk=k;}}
+    if(bd<14&&bk>(G.rprog||0))G.rprog=bk;
+    if(bd>28){G.offT=(G.offT||0)+dt;if(G.offT>3&&cool('offroute',8))setSub(t('r_offroute'),true);}else G.offT=0;}}
+
+/* ---------- 交通（ほかの車・歩行者・列車） ---------- */
+let TF=null;  // {cars,peds,train}
+const CAR_COLS=['#d8dde1','#2b2f33','#b3262e','#e8e4da','#3a5f8f','#7a7f84','#d9a521','#2f6b4a'];
+function edgeList(R){if(R.edges)return R.edges;const E=[];for(const [a,L] of R.adj){const na=R.nodes.get(a);for(const e of L){const nb=R.nodes.get(e.to);if(!na||!nb)continue;E.push({a,b:e.to,len:e.len,hw:e.hw||2.5,ow:e.ow||0,lim:e.lim||30,mx:(na.x+nb.x)/2,my:(na.y+nb.y)/2});}}R.edges=E;return E;}
+function edgeOf(R,a,b){for(const e of R.adj.get(a)||[])if(e.to===b)return e;return null;}
+function carPose(R,c){const na=R.nodes.get(c.a),nb=R.nodes.get(c.b);const k=clamp(c.t/(c.len||1),0,1);const dx=nb.x-na.x,dy=nb.y-na.y,l=hyp(dx,dy)||1;const ux=dx/l,uy=dy/l;
+  const off=c.ow?0:Math.min(c.hw*0.5,1.7);return {x:na.x+dx*k+uy*off,y:na.y+dy*k-ux*off,h:Math.atan2(uy,ux)};}
+function trafficInit(R){if(!RS.traffic){TF=null;return;}const E=edgeList(R);TF={cars:[],peds:[],train:null,tick:0};
+  const n=Math.min(14,Math.max(4,Math.round(E.length/30)));for(let i=0;i<n;i++)spawnCar(R,true);
+  // 線路
+  const lines=R.rails.map(L=>{const cum=[0];for(let i=1;i<L.length;i++)cum.push(cum[i-1]+hyp(L[i][0]-L[i-1][0],L[i][1]-L[i-1][1]));return {L,cum,len:cum[cum.length-1]};}).filter(l=>l.len>150);
+  if(lines.length){TF.lines=lines;TF.train={li:0,s:0,dir:1,on:false,wait:12+Math.random()*20};
+    for(const c of R.lx){c.li=-1;let bd=8;lines.forEach((ln,li)=>{for(let i=0;i<ln.L.length-1;i++){const [ax,ay]=ln.L[i],[bx,by]=ln.L[i+1];const L2=hyp(bx-ax,by-ay)||1;const tt=clamp(((c.x-ax)*(bx-ax)+(c.y-ay)*(by-ay))/L2,0,L2);const qx=ax+(bx-ax)*tt/L2,qy=ay+(by-ay)*tt/L2;const d=hyp(c.x-qx,c.y-qy);if(d<bd){bd=d;c.li=li;c.sl=ln.cum[i]+tt;}}});}}}
+function spawnCar(R,initial){const E=edgeList(R);const px=G?G.x:0,py=G?G.y:0;let e=null;
+  const wide=E.filter(c=>c.hw>=3);const pool=wide.length>=10?wide:E;for(let k=0;k<60;k++){const c=pool[Math.floor(Math.random()*pool.length)];const d=hyp(c.mx-px,c.my-py);if(c.len<12)continue;if(d>(initial?40:150)&&d<320){e=c;break;}}
+  if(!e)return;const car={a:e.a,b:e.b,len:e.len,hw:e.hw,ow:e.ow,lim:e.lim,t:Math.random()*e.len,v:0,col:CAR_COLS[Math.floor(Math.random()*CAR_COLS.length)],h:0,x:0,y:0,wait:0};const q=carPose(R,car);car.x=q.x;car.y=q.y;car.h=q.h;
+  if(G&&hyp(car.x-G.x,car.y-G.y)<30)return;TF.cars.push(car);}
+function linePt(ln,s){s=clamp(s,0,ln.len);let i=1;while(i<ln.cum.length-1&&ln.cum[i]<s)i++;const k=(s-ln.cum[i-1])/((ln.cum[i]-ln.cum[i-1])||1);const a=ln.L[i-1],b=ln.L[i];return [a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,Math.atan2(b[1]-a[1],b[0]-a[0])];}
+function trainPieces(){const T=TF&&TF.train;if(!T||!T.on)return [];const ln=TF.lines[T.li];const P=[];for(let k=0;k<3;k++){const s1=T.dir>0?T.s-k*13:T.s+k*13,s0=T.dir>0?s1-12.5:s1+12.5;if((s1<0&&s0<0)||(s1>ln.len&&s0>ln.len))continue;
+    const a=linePt(ln,s0),b=linePt(ln,s1);P.push({x:(a[0]+b[0])/2,y:(a[1]+b[1])/2,a:Math.atan2(b[1]-a[1],b[0]-a[0]),L:hyp(b[0]-a[0],b[1]-a[1])/2});}return P;}
+function roadTrainWarn(c){const T=TF&&TF.train;if(!T||!T.on||c.li!==T.li||c.sl==null)return false;const head=T.s,tail=T.dir>0?T.s-40:T.s+40;
+  return T.dir>0?(c.sl>tail-6&&c.sl<head+260):(c.sl<tail+6&&c.sl>head-260);}
+function pedPos(p){const c=p.c,nx=-c.dy,ny=c.dx;return [c.x+nx*p.o,c.y+ny*p.o];}
+function roadWorldTick(dt){W.sigT+=dt;const R=RW;if(!TF)return;TF.tick+=dt;
+  const pcx=G.x+Math.cos(G.a)*1.3,pcy=G.y+Math.sin(G.a)*1.3;
+  // 車
+  for(const c of TF.cars){const p=carPose(R,c);c.x=p.x;c.y=p.y;c.h+=angDiff(p.h,c.h)*Math.min(1,dt*6);if(!isFinite(c.h))c.h=p.h;}
+  const pv=G.v,pfx=Math.cos(G.a),pfy=Math.sin(G.a);const obs=TF.cars.map(c=>[c.x,c.y,c]).concat([[pcx,pcy,null],[pcx+pfx*pv*1.0,pcy+pfy*pv*1.0,null],[pcx+pfx*pv*2.0,pcy+pfy*pv*2.0,null]]);for(const p of TF.peds)if(p.s==='cross'||p.s==='wait'){const q=pedPos(p);obs.push([q[0],q[1],'ped']);}
+  for(const c of TF.cars){const fx=Math.cos(c.h),fy=Math.sin(c.h);let vt=Math.min(c.lim,50)/3.6*0.85;const nA=R.nodes.get(c.a);const inJ=nA&&nA.e>=3&&c.t<9;
+    for(const [ox,oy,o] of obs){if(o===c)continue;const rx=ox-c.x,ry=oy-c.y;const l=rx*fx+ry*fy,s2=Math.abs(-rx*fy+ry*fx);if(l>0&&l<(inJ?7:30)&&s2<(o==='ped'?2.4:o===null?2.6:1.9)){const gap=l-(o==='ped'?3:5)+(inJ?2.5:0);vt=Math.min(vt,Math.sqrt(2*3*Math.max(0,gap-1.2)));}}
+    // 交差点の手前ではゆっくり。自分の車が交差点の近くにいたら待つ
+    const nb=R.nodes.get(c.b),rem=c.len-c.t;if(!inJ&&nb&&nb.e>=3&&rem<22&&rem>4){const sigJ=R.sig.some(S2=>hyp(S2.x-nb.x,S2.y-nb.y)<S2.r);if(!sigJ)vt=Math.min(vt,c.hw>=3?7:4.5);
+      const dp=hyp(pcx-nb.x,pcy-nb.y),dpp=hyp(pcx+pfx*pv*1.5-nb.x,pcy+pfy*pv*1.5-nb.y);const ahead=(pcx-c.x)*Math.cos(c.h)+(pcy-c.y)*Math.sin(c.h)>-1;const apv=Math.abs(pv);if(ahead&&((dp<8&&apv>0.3)||(dpp<dp-0.5&&dp/Math.max(apv,0.1)<4.5)))vt=Math.min(vt,Math.sqrt(2*3*Math.max(0,rem-8)));}
+    for(const S2 of R.sig){const d=hyp(c.x-S2.x,c.y-S2.y);if(d<S2.r-0.5||d>S2.r+30)continue;const toC=Math.atan2(S2.y-c.y,S2.x-c.x);if(Math.cos(toC-c.h)<0.5)continue;if(sigStateR(S2,sigGroup(S2,c.h))!=='G')vt=Math.min(vt,Math.sqrt(2*3*Math.max(0,d-S2.r-1.5)));}
+    for(const x2 of R.lx)if(roadTrainWarn(x2)){const d=hyp(c.x-x2.x,c.y-x2.y);const toC=Math.atan2(x2.y-c.y,x2.x-c.x);if(d<30&&d>5&&Math.cos(toC-c.h)>0.5)vt=Math.min(vt,Math.sqrt(2*3*Math.max(0,d-7)));}
+    if(!inJ){const rx=pcx-c.x,ry=pcy-c.y;if(hyp(rx,ry)<10&&rx*fx+ry*fy>0&&Math.abs(pv)>0.3)vt=0;}
+    c.v+=clamp(vt-c.v,-5*dt,1.6*dt);if(c.v<0.03&&vt<0.05)c.v=0;c.t+=c.v*dt;
+    while(c.t>=c.len){const nxt=(R.adj.get(c.b)||[]).filter(e=>e.to!==c.a);const L=nxt.length?nxt:(R.adj.get(c.b)||[]);if(!L.length){c.dead=true;break;}
+      const na=R.nodes.get(c.a),nb=R.nodes.get(c.b);const hin=Math.atan2(nb.y-na.y,nb.x-na.x);const LW=L.filter(e=>(e.hw||0)>=3);const L2=LW.length&&Math.random()<0.85?LW:L;let pick=L2[Math.floor(Math.random()*L2.length)];
+      if(Math.random()<0.6){let bd=9;for(const e of L2){const n2=R.nodes.get(e.to);const dd=Math.abs(angDiff(Math.atan2(n2.y-nb.y,n2.x-nb.x),hin));if(dd<bd){bd=dd;pick=e;}}}
+      c.t-=c.len;c.a=c.b;c.b=pick.to;c.len=pick.len;c.hw=pick.hw||2.5;c.ow=pick.ow||0;c.lim=pick.lim||30;}
+    if(hyp(c.x-pcx,c.y-pcy)>380)c.dead=true;}
+  TF.cars=TF.cars.filter(c=>!c.dead);const want=Math.min(14,Math.max(4,Math.round(edgeList(R).length/30)));if(TF.cars.length<want&&Math.random()<dt*2)spawnCar(R,false);
+  // 歩行者（近くの横断歩道）
+  if(Math.floor(TF.tick*2)!==TF.pk){TF.pk=Math.floor(TF.tick*2);const near=R.cross.filter(c=>hyp(c.x-pcx,c.y-pcy)<160);
+    for(const c of near)if(!TF.peds.some(p=>p.c===c))TF.peds.push({c,s:'idle',t:Math.random()*6,o:-(c.hw+1.4),side:-1});
+    TF.peds=TF.peds.filter(p=>hyp(p.c.x-pcx,p.c.y-pcy)<200);}
+  for(const p of TF.peds){p.t+=dt;const c=p.c,W2=c.hw+1.4;
+    const near=(L)=>[[pcx,pcy,G.v]].concat(TF.cars.map(k=>[k.x,k.y,k.v])).some(([x,y,v])=>{const rx=x-c.x,ry=y-c.y;const l=Math.abs(rx*c.dx+ry*c.dy),s2=Math.abs(-rx*c.dy+ry*c.dx);return s2<W2&&l<L&&Math.abs(v)>1.5;});
+    if(p.s==='idle'){if(p.t>7+Math.abs((c.x*7)%5)&&!near(28)){p.s='wait';p.t=0;}}
+    else if(p.s==='wait'){const busy=[[pcx,pcy,G.v]].concat(TF.cars.map(k=>[k.x,k.y,k.v])).some(([x,y,v])=>{const rx=x-c.x,ry=y-c.y;const l=Math.abs(rx*c.dx+ry*c.dy),s2=Math.abs(-rx*c.dy+ry*c.dx);return s2<W2&&(l<3||(l<12&&Math.abs(v)>2.5));});
+      if(p.t>1.8&&!busy){p.s='cross';p.t=0;}}
+    else if(p.s==='cross'){p.o+=-p.side*1.25*dt;if((p.side<0&&p.o>=W2)||(p.side>0&&p.o<=-W2)){p.o=clamp(p.o,-W2,W2);p.side=-p.side;p.s='idle';p.t=0;}}}
+  // 列車
+  const T=TF.train;if(T){if(!T.on){T.wait-=dt;if(T.wait<=0){T.li=Math.floor(Math.random()*TF.lines.length);T.dir=Math.random()<0.5?1:-1;const ln=TF.lines[T.li];T.s=T.dir>0?-260:ln.len+260;T.on=true;}}
+    else{T.s+=T.dir*15*dt;const ln=TF.lines[T.li];if((T.dir>0&&T.s-40>ln.len+10)||(T.dir<0&&T.s+40<-10)){T.on=false;T.wait=45+Math.random()*40;}}}}
+function gateBars(R){const out=[];for(const c of R.lx){if(!roadTrainWarn(c))continue;for(const sg of [1,-1]){const lx=c.dy*sg,ly=-c.dx*sg;const px=c.x-c.dx*sg*3+lx*(c.hw+0.8),py=c.y-c.dy*sg*3+ly*(c.hw+0.8);
+  out.push({px,py,ex:c.x-c.dx*sg*3-lx*0.1,ey:c.y-c.dy*sg*3-ly*0.1,z:1.0});}}return out;}
+function roadCollide(x,y,a){if(!TF)return null;for(const c of TF.cars){const fx=Math.cos(c.h),fy=Math.sin(c.h);for(const k of [-1.4,0,1.4])if(hitCircle(x,y,a,c.x+fx*k,c.y+fy*k,0.95))return 'crash';}
+  for(const p of TF.peds){const q=pedPos(p);if(hitCircle(x,y,a,q[0],q[1],0.3))return 'crash';}
+  for(const P of trainPieces()){const fx=Math.cos(P.a),fy=Math.sin(P.a);for(let k=-P.L;k<=P.L;k+=1.2)if(hitCircle(x,y,a,P.x+fx*k,P.y+fy*k,1.4))return 'crash';}
+  for(const g of gateBars(RW))if(segHit(x,y,a,g.px,g.py,g.ex,g.ey))return 'touch';return null;}
+function roadCrashAhead(x,y,a){if(!TF)return false;for(const p of TF.peds){const q=pedPos(p);if(hitCircle(x,y,a,q[0],q[1],0.4))return true;}
+  for(const c of TF.cars){const fx=Math.cos(c.h),fy=Math.sin(c.h);for(const k of [-1.4,0,1.4])if(hitCircle(x,y,a,c.x+fx*k,c.y+fy*k,1.0))return true;}
+  for(const P of trainPieces()){const fx=Math.cos(P.a),fy=Math.sin(P.a);for(let k=-P.L;k<=P.L;k+=1.2)if(hitCircle(x,y,a,P.x+fx*k,P.y+fy*k,1.5))return true;}return false;}
+function roadTrafficRules(dt,fx,fy,sp){if(!TF)return;const B=bodyPts(G.x,G.y,G.a);
+  for(const p of TF.peds){const c=p.c;const inZ=B.some(([x,y])=>{const rx=x-c.x,ry=y-c.y;return Math.abs(rx*c.dx+ry*c.dy)<2.2&&Math.abs(-rx*c.dy+ry*c.dx)<c.hw+0.6;});
+    if(inZ&&!p.carIn&&(p.s==='cross'||p.s==='wait')&&sp>0.3)ev('ped');p.carIn=inZ;}}
+function roadTrafficObjects(O,C){if(!TF)return;for(const c of TF.cars){if(hyp(c.x-C.ex,c.y-C.ey)>150)continue;O.push({t:'aicar',x:c.x,y:c.y,c});}
+  for(const p of TF.peds){const q=pedPos(p);if(hyp(q[0]-C.ex,q[1]-C.ey)<120)O.push({t:'ped',x:q[0],y:q[1]});}
+  for(const P of trainPieces())if(hyp(P.x-C.ex,P.y-C.ey)<200)O.push({t:'box',x:P.x,y:P.y,hw:P.L,hh:1.4,a:P.a,z0:0.6,z1:3.8,col:'#d6dde2',top:'#c4ccd2'});
+  for(const g of gateBars(RW))O.push({t:'gate',x:g.px,y:g.py,...g});}
+function drawAiCar(x,C,c){const o={x:c.x,y:c.y,hw:2.2,hh:0.85,a:c.h,z0:0.25,z1:0.95,col:c.col};drawBox(x,C,o);drawBox(x,C,{x:c.x-Math.cos(c.h)*0.3,y:c.y-Math.sin(c.h)*0.3,hw:1.2,hh:0.75,a:c.h,z0:0.95,z1:1.45,col:shade(c.col,0.8),top:shade(c.col,1.05)});}
+function roadTrafficTop(x){if(!TF)return;for(const c of TF.cars){x.save();x.translate(c.x,c.y);x.rotate(c.h);x.fillStyle=c.col;x.fillRect(-2.2,-0.85,4.4,1.7);x.fillStyle='rgba(20,30,45,.7)';x.fillRect(0.6,-0.7,0.7,1.4);x.restore();}
+  for(const p of TF.peds){const q=pedPos(p);x.beginPath();x.arc(q[0],q[1],0.4,0,7);x.fillStyle='#ff5ca8';x.fill();}
+  for(const P of trainPieces()){x.save();x.translate(P.x,P.y);x.rotate(P.a);x.fillStyle='#d6dde2';x.fillRect(-P.L,-1.4,P.L*2,2.8);x.fillStyle='#2e7bc4';x.fillRect(-P.L,-0.25,P.L*2,0.5);x.restore();}
+  x.strokeStyle='#ffd23a';x.lineWidth=0.25;for(const g of gateBars(RW)){x.beginPath();x.moveTo(g.px,g.py);x.lineTo(g.ex,g.ey);x.stroke();}
+  if(Math.floor(G.time*2)%2===0)for(const c of RW.lx)if(roadTrainWarn(c)){x.fillStyle='#ff3a2a';x.beginPath();x.arc(c.x+c.dy*(c.hw+0.8),c.y-c.dx*(c.hw+0.8),0.6,0,7);x.fill();}}
+
+
+/* ---------- 公道モードの描画 ---------- */
+function roadMapImage(R){if(R.img)return R.img;const [x0,y0,x1,y1]=R.bounds;const W2=Math.min(2400,Math.ceil((x1-x0)*1.0)+40),sc=(W2-40)/(x1-x0||1),H2=Math.ceil((y1-y0)*sc)+40;
+  const c=document.createElement('canvas');c.width=W2;c.height=H2;const x=c.getContext('2d');x.fillStyle='#3f5f34';x.fillRect(0,0,W2,H2);x.setTransform(sc,0,0,sc,20-x0*sc,20-y0*sc);
+  x.fillStyle='#8f8a7e';for(const b of R.blds){x.beginPath();b.pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.closePath();x.fill();}
+  x.strokeStyle='#6e6152';x.lineWidth=3.4;for(const L of R.rails){x.beginPath();L.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.stroke();}
+  x.lineCap='round';x.lineJoin='round';x.strokeStyle='#d9d6cc';for(const s of R.segs){x.lineWidth=Math.max(s.w,5/sc);x.beginPath();x.moveTo(s.ax,s.ay);x.lineTo(s.bx,s.by);x.stroke();}
+  x.fillStyle='#d9d6cc';for(const D of R.discs){x.beginPath();x.arc(D.x,D.y,D.r,0,7);x.fill();}
+  R.img={c,sc,ox:20-x0*sc,oy:20-y0*sc};return R.img;}
+function drawRouteLine(x,rt,from,col,w){if(!rt)return;x.strokeStyle=col;x.lineWidth=w;x.lineCap='round';x.lineJoin='round';x.beginPath();for(let k=from;k<rt.dense.length;k++){const p=rt.dense[k];k===from?x.moveTo(p.x,p.y):x.lineTo(p.x,p.y);}x.stroke();}
+function drawSigTop(x,S2){const d=[0,1,2,3].map(k=>S2.axis+k*PI/2);for(const a of d){const g=sigGroup(S2,a+PI);const st=sigStateR(S2,g);const px=S2.x-Math.cos(a)*S2.r,py=S2.y-Math.sin(a)*S2.r;
+  x.beginPath();x.arc(px,py,0.9,0,7);x.fillStyle=st==='G'?'#3de07a':st==='Y'?'#ffd23a':'#ff4a3a';x.fill();}}
+function drawTopRoad(x,W2,H2,dpr){const R=RW;let sc,ox,oy;
+  if(TOPZ){sc=W2/80;ox=W2/2-(G.x+Math.cos(G.a)*1.3)*sc;oy=H2/2-(G.y+Math.sin(G.a)*1.3)*sc;x.setTransform(sc,0,0,sc,ox,oy);
+    const cx=G.x,cy=G.y,rad=Math.max(W2,H2)/sc*0.75;
+    x.fillStyle='#8f8a7e';for(const bi of gridNear(R.bg,cx,cy,rad+30,50)){const b=R.blds[bi];x.beginPath();b.pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.closePath();x.fill();}
+    const segs=[...gridNear(R.rg,cx,cy,rad+20,50)];
+    for(const m of gridNear(R.mg,cx,cy,rad+20,50))if(m.rail){x.fillStyle=m.col;x.beginPath();m.pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.closePath();x.fill();}
+    x.lineCap='round';x.strokeStyle='#5b6065';for(const s of segs){x.lineWidth=s.w+1.6;x.beginPath();x.moveTo(s.ax,s.ay);x.lineTo(s.bx,s.by);x.stroke();}
+    for(const m of gridNear(R.mg,cx,cy,rad+20,50)){if(m.rail){x.strokeStyle='#c4c8cc';x.lineWidth=0.12;continue;}x.fillStyle=m.col;x.beginPath();m.pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.closePath();x.fill();}
+    for(const L of R.rails){x.strokeStyle='#b8bcc0';x.lineWidth=0.12;for(const off of [-0.7,0.7]){x.beginPath();L.forEach((p,i)=>{const q=L[Math.min(i+1,L.length-1)],r0=L[Math.max(i-1,0)];const dx=q[0]-r0[0],dy=q[1]-r0[1],l=hyp(dx,dy)||1;const px=p[0]-dy/l*off,py=p[1]+dx/l*off;i?x.lineTo(px,py):x.moveTo(px,py);});x.stroke();}}}
+  else{const img=roadMapImage(R);const [x0,y0,x1,y1]=R.bounds;sc=Math.min(W2/(x1-x0+40),H2/(y1-y0+40));ox=(W2-(x1+x0)*sc)/2;oy=(H2-(y1+y0)*sc)/2;
+    x.setTransform(sc/img.sc,0,0,sc/img.sc,ox-img.ox*sc/img.sc,oy-img.oy*sc/img.sc);x.drawImage(img.c,0,0);x.setTransform(sc,0,0,sc,ox,oy);}
+  // コース
+  if(SET.route&&R.route)drawRouteLine(x,R.route,G.rprog||0,'rgba(93,255,154,.45)',TOPZ?1.4:Math.max(3/sc,1.4));
+  for(const S2 of R.sig)drawSigTop(x,S2);
+  for(const s of R.stops)drawStopIcon(x,s.x+s.dy*(s.hw+0.8),s.y-s.dx*(s.hw+0.8),TOPZ?1.6:12/sc);
+  roadTrafficTop(x);
+  const L=G.legs[G.leg];if(SET.route&&L&&L.p){const pu=1+0.25*Math.sin(G.time*5);x.beginPath();x.arc(L.p[0],L.p[1],(TOPZ?1.6:8/sc)*pu,0,7);x.strokeStyle='#5dff9a';x.lineWidth=TOPZ?0.3:2/sc;x.stroke();if(L.k==='stop'||L.k==='finish'){x.fillStyle='rgba(93,255,154,.35)';x.fill();}}
+  if(SET.path&&TOPZ&&(G.gear==='D'||G.gear==='R')){const dl=clamp(G.wheel/CAR.ratio*PI/180,-CAR.maxSt,CAR.maxSt);const sg=G.gear==='R'?-1:1;const lines=[[],[],[],[]];let px=G.x,py=G.y,pa=G.a;
+    for(let i=0;i<=40;i++){const T=tirePts(px,py,pa);T.forEach((p,j)=>lines[j].push(p));const st=0.3*sg;px+=Math.cos(pa)*st;py+=Math.sin(pa)*st;pa+=st/CAR.wb*Math.tan(dl);}
+    x.lineWidth=0.09;lines.forEach((Ln,j)=>{x.strokeStyle=j<2?'rgba(255,230,90,.9)':'rgba(90,200,255,.9)';x.setLineDash([0.35,0.25]);x.beginPath();Ln.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));x.stroke();});x.setLineDash([]);}
+  if(TOPZ)drawCarTop(x,G.x,G.y,G.a,'#2f7fe0');else{x.beginPath();x.arc(G.x,G.y,7/sc,0,7);x.fillStyle='#2f7fe0';x.fill();x.lineWidth=2/sc;x.strokeStyle='#fff';x.stroke();}
+  x.setTransform(1,0,0,1,0,0);x.font=`${11*dpr}px sans-serif`;x.textAlign='left';x.fillStyle='rgba(255,255,255,.85)';x.fillText(t('r_attr'),8*dpr,H2-8*dpr);
+  x.textAlign='right';x.fillText(TOPZ?'🔍 tap: map':'🔍 tap: zoom',W2-8*dpr,H2-8*dpr);}
+// 運転席：近くの道路と建物
+function renderRoadGround(x,C,own){const R=RW;const fwx=C.c,fwy=C.s;const near=(px,py,rad)=>{const dx=px-C.ex,dy=py-C.ey;const d=hyp(dx,dy);return d<rad&&(dx*fwx+dy*fwy>-12||d<14);};
+  for(const s of gridNear(R.rg,C.ex,C.ey,140,50)){if(near((s.ax+s.bx)/2,(s.ay+s.by)/2,140+s.L/2))fillP(x,C,s.quad,'#5b6065');}
+  for(const m of gridNear(R.mg,C.ex,C.ey,110,50)){const p=m.pts[0];if(near(p[0],p[1],110)){fillP(x,C,m.pts,m.col);if(m.rail)fillP(x,C,m.rail.r1,'#8a8f94');}}
+  if(SET.route&&R.route&&!own){const rt=R.route;const k0=G.rprog||0;for(let k=k0;k<Math.min(rt.dense.length-1,k0+14);k+=1){const a=rt.dense[k],b=rt.dense[k+1];fillP(x,C,quadAlong(a.x,a.y,b.x,b.y,0.18),'rgba(93,255,154,.55)');}}}
+function roadObjects(O,C,own){const R=RW;
+  const bl=[...gridNear(R.bg,C.ex,C.ey,own?60:110,50)].map(bi=>R.blds[bi]).filter(b=>hyp(b.cx-C.ex,b.cy-C.ey)<(own?60:110)).sort((a,b)=>hyp(a.cx-C.ex,a.cy-C.ey)-hyp(b.cx-C.ex,b.cy-C.ey)).slice(0,own?20:70);
+  for(const b of bl)O.push({t:'bld',x:b.cx,y:b.cy,b});
+  for(const S2 of R.sig){if(hyp(S2.x-C.ex,S2.y-C.ey)>150)continue;for(let k=0;k<4;k++){const a=S2.axis+k*PI/2;const ux=Math.cos(a),uy=Math.sin(a);
+    // 向き a に進む車のための信号：交差点の向こう側・左寄り
+    const lx=uy,ly=-ux;O.push({t:'signal',x:S2.x+ux*(S2.r-1)+lx*(S2.r*0.55),y:S2.y+uy*(S2.r-1)+ly*(S2.r*0.55),fd:[-ux,-uy],st:sigStateR(S2,sigGroup(S2,a))});}}
+  for(const s of R.stops){if(hyp(s.x-C.ex,s.y-C.ey)>120)continue;O.push({t:'stopsign',x:s.x+s.dy*(s.hw+0.8),y:s.y-s.dx*(s.hw+0.8),fd:[-s.dx,-s.dy]});}
+  for(const c of R.lx){if(hyp(c.x-C.ex,c.y-C.ey)>120)continue;const on=roadTrainWarn(c);for(const sg of [1,-1]){const lx=c.dy*sg,ly=-c.dx*sg;O.push({t:'alarm',x:c.x-c.dx*sg*4+lx*(c.hw+0.8),y:c.y-c.dy*sg*4+ly*(c.hw+0.8),fd:[-c.dx*sg,-c.dy*sg],on});}}
+  roadTrafficObjects(O,C);}
+function drawBld(x,C,b){const P=b.pts,n=P.length;let cx=0,cy=0;
+  for(let i=0;i<n;i++){const A=P[i],B=P[(i+1)%n];const nx=(B[1]-A[1]),ny=-(B[0]-A[0]);const mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2;
+    // 外向きの面だけ（多角形の向きに関係なく、中心から外向きを判定）
+    const ox=mx-b.cx,oy=my-b.cy;const sgn=(nx*ox+ny*oy)>0?1:-1;if((nx*sgn)*(C.ex-mx)+(ny*sgn)*(C.ey-my)<=0)continue;
+    fillP(x,C,[[A[0],A[1],0],[B[0],B[1],0],[B[0],B[1],b.h],[A[0],A[1],b.h]],shade(b.col,0.72+0.25*Math.abs(Math.cos(Math.atan2(ny,nx)-0.6))));}
+  if(C.eh<b.h)return;fillP(x,C,P.map(p=>[p[0],p[1],b.h]),shade(b.col,1.1));}
+
+/* ---------- サンプルの町（架空・オフライン用） ---------- */
+function sampleOSM(){const lat0=33.20,lon0=130.20,kx=111320*Math.cos(lat0*PI/180),ky=110540;const LL=(x,y)=>({lat:lat0-y/ky,lon:lon0+x/kx});
+  const el=[],ids=new Map();let nid=1,wid=1;const node=(x,y,tags)=>{const k=Math.round(x*10)+','+Math.round(y*10);let id=ids.get(k);if(!id){id=nid++;ids.set(k,id);const n={type:'node',id,...LL(x,y)};if(tags)n.tags=tags;el.push(n);}else if(tags){const n=el.find(e=>e.type==='node'&&e.id===id);n.tags=Object.assign(n.tags||{},tags);}return id;};
+  const way=(pts,tags)=>{const nodes=pts.map(([x,y,tg])=>node(x,y,tg));el.push({type:'way',id:wid++,nodes,geometry:pts.map(([x,y])=>LL(x,y)),tags});};
+  const G2=[-440,-330,-220,-110,0,110,220,330,440];
+  // 大通り（東西 y=0、南北 x=0）、2車線、信号
+  for(let i=0;i<G2.length-1;i++){const m=(G2[i]+G2[i+1])/2;way([[G2[i],0],[m,0],[G2[i+1],0]],{highway:'secondary',lanes:'2',maxspeed:'50',name:'サンプル大通り'});way([[0,G2[i]],[0,m],[0,G2[i+1]]],{highway:'secondary',lanes:'2',maxspeed:'40',name:'サンプル中央通り'});}
+  for(const [x,y] of [[0,0],[-220,0],[220,0],[0,-220],[0,220]])node(x,y,{highway:'traffic_signals'});
+  // 住宅街の道（中央線なし）。大通りに出る手前に一時停止
+  for(const y of G2){if(y===0)continue;for(let i=0;i<G2.length-1;i++){const tg={highway:'residential'};if(y===-220)Object.assign(tg,{oneway:'yes',name:'一方通行の道'});
+      const a=G2[i],b=G2[i+1];const pts=[[a,y]];if(a===0)pts.push([a+12,y,{highway:'stop'}]);if(b===0)pts.push([b-12,y,{highway:'stop'}]);pts.push([b,y]);
+      if(Math.abs(y)===220&&(a===-220||b===-220||a===220||b===220)){}  way(pts,tg);}}
+  for(const x of G2){if(x===0)continue;for(let i=0;i<G2.length-1;i++){const a=G2[i],b=G2[i+1];const pts=[[x,a]];if(a===0)pts.push([x,a+12,{highway:'stop'}]);if(b===0)pts.push([x,b-12,{highway:'stop'}]);
+      if(a<330&&b>330)pts.push([x,330,{railway:'level_crossing'}]);if(b===330)pts.push([x,330]);pts.push([x,b]);way(pts,{highway:'residential'});}}
+  // 線路と踏切
+  el.push({type:'way',id:wid++,nodes:[],geometry:[LL(-520,330),LL(520,330)],tags:{railway:'rail'}});
+  for(const x of G2)node(x,330,{railway:'level_crossing'});
+  // 大通りの横断歩道
+  node(-165,0,{highway:'crossing'});node(165,0,{highway:'crossing'});node(0,-165,{highway:'crossing'});node(0,165,{highway:'crossing'});
+  // 教習所
+  node(-330,-345,{amenity:'driving_school',name:'サンプル自動車学校（架空）'});
+  // 建物
+  let bi=0;for(let i=0;i<G2.length-1;i++)for(let j=0;j<G2.length-1;j++){const x0=G2[i],y0=G2[j];for(const [ox,oy,w,h] of [[14,14,36,30],[60,16,34,26],[16,62,30,32],[58,60,36,34]]){const lv=(bi++%5===0)?6:2;
+    const p=[[x0+ox,y0+oy],[x0+ox+w,y0+oy],[x0+ox+w,y0+oy+h],[x0+ox,y0+oy+h],[x0+ox,y0+oy]];el.push({type:'way',id:wid++,nodes:[],geometry:p.map(([x,y])=>LL(x,y)),tags:{building:'yes','building:levels':String(lv)}});}}
+  return {elements:el,center:{lat:lat0,lon:lon0}};}
+
+/* ---------- 画面：場所えらび・コース作り ---------- */
+const RS={taps:[],route:null,mode:'tap',view:null,start:null,traffic:true};
+function roadMsg(s,warn){const m=$('#rMsg');if(m){m.textContent=s||'';m.className='kmsg'+(warn?' warn':'');}}
+function renderRoadScreen(){const B=$('#roadB');const A=AREA;
+  B.innerHTML=`<div class="rbox"><b>${t('r_where')}</b>
+   <div class="rrow"><button class="btn" id="rSchools">${t('r_loadSchools')}</button><button class="btn" id="rHere">📍 ${t('r_here')}</button><button class="btn" id="rSample">${t('r_sample')}</button></div>
+   <div class="rrow"><input id="rQ" placeholder="${t('r_search')}"><button class="btn" id="rQBtn">${t('r_searchBtn')}</button></div>
+   <div id="rList" class="rlist"></div><div class="kmsg" id="rMsg"></div><p class="muted" style="margin:4px 0 0;font-size:12.5px">${t('r_noteRoute')}</p></div>
+   ${A?`<div class="rbox"><b>${t('r_route')}</b> <span class="muted" style="font-size:13px">${t('r_area',A.label,A.ways.length,A.sig.length,A.stops.length,A.lx.length)}</span>
+   <p class="muted" style="margin:2px 0;font-size:13px">${t('r_tapHelp')}</p>
+   <div class="rrow"><button class="btn" id="rAuto">🎲 ${t('r_auto')}</button><button class="btn" id="rUndo">↶ ${t('r_undo')}</button><button class="btn" id="rClear">✕ ${t('r_clear')}</button>
+   <label class="btn" style="cursor:pointer">📂 ${t('r_gpx')}<input type="file" id="rGpx" accept=".gpx,application/gpx+xml" hidden></label><button class="btn" id="rShare">🔗 ${t('r_share')}</button></div>
+   <canvas id="rMap"></canvas><div id="rInfo" class="muted" style="font-size:13.5px"></div>
+   <label style="font-size:14px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="rTraffic" ${RS.traffic?'checked':''}> ${t('r_traffic')}</label>
+   <div class="rrow"><button class="btn pri" id="rPractice">${t('r_practice')}</button><button class="btn pri" id="rExam" style="background:#4d2a2a;border-color:var(--red)">${t('r_exam')}</button></div>
+   <div class="muted" style="font-size:12px">${t('r_attr')}</div></div>`:''}`;
+  $('#rSchools').onclick=loadSchools;$('#rSample').onclick=()=>useArea(buildRoadWorld(sampleOSM(),{lat:33.20,lon:130.20},t('r_sampleName'),600),{x:-330,y:-345});
+  $('#rHere').onclick=()=>{if(!navigator.geolocation){roadMsg(t('r_fail'),true);return;}roadMsg(t('r_loading'));navigator.geolocation.getCurrentPosition(p=>openArea(p.coords.latitude,p.coords.longitude,t('r_here')),()=>roadMsg(t('r_geoFail'),true),{timeout:15000});};
+  const doSearch=async()=>{const q=$('#rQ').value.trim();if(!q)return;roadMsg('…');try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&countrycodes=jp&accept-language=ja&q='+encodeURIComponent(q));const js=await r.json();
+      if(!js.length){roadMsg(t('r_none'),true);return;}roadMsg('');$('#rList').innerHTML=js.map((p,i)=>`<button class="item" data-i="${i}"><span class="tx"><b>${(p.name||p.display_name).replace(/[<>&"]/g,'')}</b><span>${p.display_name.replace(/[<>&"]/g,'').slice(0,90)}</span></span></button>`).join('');
+      $$('#rList [data-i]').forEach(b=>b.onclick=()=>{const p=js[+b.dataset.i];openArea(+p.lat,+p.lon,p.name||p.display_name.split(',')[0]);});}catch(e){roadMsg(t('r_fail'),true);}};
+  $('#rQBtn').onclick=doSearch;$('#rQ').onkeydown=e=>{if(e.key==='Enter')doSearch();};
+  if(A)setupRouteEditor();}
+async function loadSchools(){roadMsg(t('r_loading'));try{const [s,w,n,e]=SAGA_BB;const js=await overpass(`[out:json][timeout:30];nwr["amenity"="driving_school"](${s},${w},${n},${e});out center tags;`);
+  const L=(js.elements||[]).map(el=>({name:(el.tags&&el.tags.name)||'(名称なし)',lat:el.lat||(el.center&&el.center.lat),lon:el.lon||(el.center&&el.center.lon),addr:el.tags&&(el.tags['addr:city']||'')})).filter(p=>p.lat).sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+  if(!L.length){roadMsg(t('r_none'),true);return;}roadMsg(t('r_schoolsNote',L.length));
+  $('#rList').innerHTML=L.map((p,i)=>`<button class="item" data-i="${i}"><span class="tx"><b>🚗 ${p.name.replace(/[<>&"]/g,'')}</b><span>${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}</span></span></button>`).join('');
+  $$('#rList [data-i]').forEach(b=>b.onclick=()=>{const p=L[+b.dataset.i];openArea(p.lat,p.lon,p.name);});}catch(e){roadMsg(t('r_fail'),true);}}
+async function openArea(lat,lon,label,half,then){roadMsg(t('r_loading'));try{const R=await loadArea(lat,lon,label,half);useArea(R,{x:0,y:0});if(then)then(R);}catch(e){roadMsg(t('r_fail'),true);}}
+function useArea(R,start){AREA=R;RS.taps=[];RS.route=null;RS.start=start||{x:0,y:0};RS.view=null;renderRoadScreen();roadMsg('');}
+function setupRouteEditor(){const c=$('#rMap');const R=AREA;const img=roadMapImage(R);
+  const fit=()=>{const r=c.getBoundingClientRect();const dpr=Math.min(2,devicePixelRatio||1);c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);
+    if(!RS.view){const [x0,y0,x1,y1]=R.bounds;const s=Math.min(c.width/(x1-x0+60),c.height/(y1-y0+60));RS.view={cx:(x0+x1)/2,cy:(y0+y1)/2,s};}};
+  const toW=(px,py)=>{const r=c.getBoundingClientRect();const k=c.width/r.width;return [(px*k-c.width/2)/RS.view.s+RS.view.cx,(py*k-c.height/2)/RS.view.s+RS.view.cy];};
+  const draw=()=>{if(!c.isConnected)return;fit();const x=c.getContext('2d');const V=RS.view;x.setTransform(1,0,0,1,0,0);x.fillStyle='#2c3e27';x.fillRect(0,0,c.width,c.height);
+    x.setTransform(V.s,0,0,V.s,c.width/2-V.cx*V.s,c.height/2-V.cy*V.s);x.save();x.translate(-img.ox/img.sc,-img.oy/img.sc);x.scale(1/img.sc,1/img.sc);x.drawImage(img.c,0,0);x.restore();
+    for(const S2 of R.sig){x.beginPath();x.arc(S2.x,S2.y,Math.max(4/V.s,3),0,7);x.fillStyle='#ff4a3a';x.fill();}
+    for(const s of R.stops)drawStopIcon(x,s.x,s.y,Math.max(10/V.s,4));
+    for(const c2 of R.lx){x.fillStyle='#ffd23a';x.fillRect(c2.x-Math.max(4/V.s,2),c2.y-Math.max(4/V.s,2),Math.max(8/V.s,4),Math.max(8/V.s,4));}
+    if(RS.route){drawRouteLine(x,RS.route,0,'rgba(93,255,154,.85)',Math.max(4/V.s,2));const L=RS.route.legs;x.font=`bold ${12/V.s}px sans-serif`;x.textAlign='center';
+      for(const g of L){if(g.k!=='turn')continue;x.fillStyle=g.sig==='L'?'#7fd0ff':'#ffb36b';x.beginPath();x.arc(g.p[0],g.p[1],7/V.s,0,7);x.fill();x.fillStyle='#111';x.fillText(g.sig==='L'?'←':'→',g.p[0],g.p[1]+4/V.s);}}
+    RS.taps.forEach(([px,py],i)=>{x.beginPath();x.arc(px,py,9/V.s,0,7);x.fillStyle='#fff';x.fill();x.fillStyle='#111';x.font=`bold ${11/V.s}px sans-serif`;x.textAlign='center';x.fillText(i+1,px,py+4/V.s);});
+    const st=RS.start;x.font=`${18/V.s}px sans-serif`;x.textAlign='center';x.fillText('🚗',st.x,st.y+6/V.s);
+    const rt=RS.route;$('#rInfo').textContent=rt?t('r_len',(rt.len/1000).toFixed(1),rt.turns):t('r_noRoute');};
+  RS.redraw=draw;
+  let drag=null,pts=new Map();
+  c.addEventListener('pointerdown',e=>{try{c.setPointerCapture(e.pointerId);}catch(_){}pts.set(e.pointerId,[e.clientX,e.clientY]);drag={x:e.clientX,y:e.clientY,moved:false,cx:RS.view.cx,cy:RS.view.cy,s:RS.view.s,d0:null};
+    if(pts.size===2){const [a,b]=[...pts.values()];drag.d0=hyp(a[0]-b[0],a[1]-b[1]);}});
+  c.addEventListener('pointermove',e=>{if(!drag||!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);const r=c.getBoundingClientRect(),k=c.width/r.width;
+    if(pts.size===2&&drag.d0){const [a,b]=[...pts.values()];RS.view.s=clamp(drag.s*hyp(a[0]-b[0],a[1]-b[1])/drag.d0,0.05,8);drag.moved=true;draw();return;}
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(hyp(dx,dy)>6)drag.moved=true;if(drag.moved){RS.view.cx=drag.cx-dx*k/RS.view.s;RS.view.cy=drag.cy-dy*k/RS.view.s;draw();}});
+  const up=e=>{if(!drag)return;const r=c.getBoundingClientRect();if(!drag.moved&&pts.size===1){const w=toW(e.clientX-r.left,e.clientY-r.top);RS.taps.push(w);updRoute();}pts.delete(e.pointerId);if(!pts.size)drag=null;};
+  c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>{pts.delete(e.pointerId);drag=null;});
+  c.addEventListener('wheel',e=>{e.preventDefault();RS.view.s=clamp(RS.view.s*(e.deltaY<0?1.2:1/1.2),0.05,8);draw();},{passive:false});
+  const updRoute=()=>{const taps=RS.taps.length?[[RS.start.x,RS.start.y],...RS.taps]:[];RS.route=taps.length>=2?routeFromTaps(R,taps):null;if(RS.taps.length&&!RS.route)roadMsg(t('r_noPath'),true);else roadMsg('');draw();};
+  $('#rAuto').onclick=()=>{RS.taps=[];RS.route=autoRoute(R,RS.start.x,RS.start.y);if(!RS.route)roadMsg(t('r_noPath'),true);draw();};
+  $('#rUndo').onclick=()=>{RS.taps.pop();updRoute();};$('#rClear').onclick=()=>{RS.taps=[];RS.route=null;draw();};
+  $('#rGpx').onchange=async e=>{const f=e.target.files[0];if(!f)return;const txt=await f.text();loadGpx(txt);};
+  $('#rShare').onclick=()=>{const url=shareURL();try{navigator.clipboard.writeText(url).then(()=>roadMsg(t('r_copied')+'：'+url),()=>roadMsg(url));}catch(_){roadMsg(url);}};
+  $('#rTraffic').onchange=e=>{RS.traffic=e.target.checked;};
+  $('#rPractice').onclick=()=>{if(!RS.route){roadMsg(t('r_noRoute'),true);return;}startRoadRun('lesson');};
+  $('#rExam').onclick=()=>{if(!RS.route){roadMsg(t('r_noRoute'),true);return;}startRoadRun('exam');};
+  draw();}
+function parseGpx(txt){const d=new DOMParser().parseFromString(txt,'application/xml');const pts=[...d.querySelectorAll('trkpt,rtept')].map(n=>[+n.getAttribute('lat'),+n.getAttribute('lon')]).filter(p=>isFinite(p[0])&&isFinite(p[1]));return pts;}
+function loadGpx(txt){const ll=parseGpx(txt);if(ll.length<2){roadMsg(t('r_gpxBad'),true);return;}
+  let s=90,w=180,n=-90,e=-180;ll.forEach(([a,b])=>{s=Math.min(s,a);n=Math.max(n,a);w=Math.min(w,b);e=Math.max(e,b);});const lat=(s+n)/2,lon=(w+e)/2;
+  let half=Math.max((n-s)*110540,(e-w)*111320*Math.cos(lat*PI/180))/2+250;if(half>1600){roadMsg(t('r_gpxFar'),true);half=1600;}
+  const go=R=>{const tr=ll.map(([a,b])=>R.toXY(a,b));RS.start={x:tr[0][0],y:tr[0][1]};RS.taps=[];RS.route=routeFromTrack(R,tr);if(!RS.route)roadMsg(t('r_noPath'),true);RS.redraw&&RS.redraw();};
+  if(AREA&&ll.every(([a,b])=>{const [x,y]=AREA.toXY(a,b);return Math.abs(x)<AREA.half&&Math.abs(y)<AREA.half;})){go(AREA);return;}
+  openArea(lat,lon,'GPX',half,go);}
+function shareURL(){const A=AREA;if(!A)return location.href;const base=location.href.split('#')[0].split('?')[0];const r=[RS.start,...RS.taps.map(([x,y])=>({x,y}))].map(p=>{const q=A.toLL(p.x,p.y);return q.lat.toFixed(5)+','+q.lon.toFixed(5);}).join(';');
+  return `${base}?lat=${A.center.lat.toFixed(5)}&lon=${A.center.lon.toFixed(5)}&name=${encodeURIComponent(A.label)}&r=${r}`;}
+function openFromURL(){try{const q=new URLSearchParams(location.search);const lat=+q.get('lat'),lon=+q.get('lon');if(!lat||!lon)return;
+  renderRoadScreen();show('scRoad');openArea(lat,lon,q.get('name')||'—',1000,R=>{const pts=(q.get('r')||'').split(';').map(s=>s.split(',').map(Number)).filter(p=>p.length===2&&p.every(isFinite)).map(([a,b])=>R.toXY(a,b));
+    if(pts.length){RS.start={x:pts[0][0],y:pts[0][1]};RS.taps=pts.slice(1).map(p=>[p[0],p[1]]);const taps=[pts[0],...RS.taps];RS.route=taps.length>=2?routeFromTaps(R,taps):null;}renderRoadScreen();});}catch(e){}}
+
+/* ---------- 公道で走り出す ---------- */
+function startRoadRun(kind){RW=AREA;RW.route=RS.route;const rt=RW.route;const d0=rt.dense[0],d1=rt.dense[Math.min(3,rt.dense.length-1)];const a=Math.atan2(d1.y-d0.y,d1.x-d0.x);
+  const here=roadSegAt(RW,d0.x,d0.y);const hw=here?here.s.hw:2.5;const off=here&&!here.s.ow?Math.min(hw*0.55,1.8):0;const lx=Math.sin(a),ly=-Math.cos(a);
+  const sx=d0.x+lx*off-Math.cos(a)*1.3,sy=d0.y+ly*off-Math.sin(a)*1.3;
+  const legs=[{k:'go',p:[rt.dense[Math.min(6,rt.dense.length-1)].x,rt.dense[Math.min(6,rt.dense.length-1)].y],m:kind==='exam'?'g_start':'g_roadStart',r:7,idx:6}].concat(rt.legs.map(L=>Object.assign({},L)));
+  const end=rt.dense[rt.dense.length-1];legs.push(kind==='exam'?{k:'finish',p:[end.x,end.y],m:'g_finishRoad',idx:rt.dense.length-1}:{k:'stop',p:[end.x,end.y],m:'g_end',sr:7,idx:rt.dense.length-1});
+  startRun({kind,id:'road',road:true,legsR:legs,spawnR:{x:sx,y:sy,a,gear:kind==='exam'?'P':'P',pb:true,belt:false,startCheck:true}});}
 
 /* テスト用の窓口（ブラウザの開発者ツールから確認できる） */
-window.__jdp={SCH,renderSchool,startQuiz,get QZ(){return QZ;},S:S_PTS,get G(){return G;},W,startRun,inDrv,SL,tick,shift,wink,look,LESSONS,LEGS_A,LEGS_B,BAYS,trainInfo,sigState,keys,PED,endRun,QS,QR,QH,setLang:l=>{LANG=l;applyI18n();}};
+window.__jdp={get TF(){return TF;},roadTrainWarn,tirePts,inDrv,get RW(){return RW;},get AREA(){return AREA;},RS,sampleOSM,buildRoadWorld,useArea,startRoadRun,autoRoute,routeFromTaps,loadGpx,roadSegAt,sigStateR,sigGroup,get KEYMAP(){return KEYMAP;},openKeyEditor,SCH,renderSchool,startQuiz,get QZ(){return QZ;},S:S_PTS,get G(){return G;},W,startRun,inDrv,SL,tick,shift,wink,look,LESSONS,LEGS_A,LEGS_B,BAYS,trainInfo,sigState,keys,PED,endRun,QS,QR,QH,setLang:l=>{LANG=l;applyI18n();}};
 
-applyI18n();requestAnimationFrame(loop);
+applyI18n();requestAnimationFrame(loop);openFromURL();
 })();
 </script>
 </body>
